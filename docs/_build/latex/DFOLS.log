@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.23)  5 FEB 2018 15:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.23)  5 FEB 2018 16:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1211,7 +1211,7 @@ Chapter 6.
 ] [28
 
 ] (./DFOLS.ind)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1246.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1249.
  [29
 
 pdfTeX warning (ext4): destination with the same identifier (name{cite.CFMR2018
@@ -1219,18 +1219,18 @@ pdfTeX warning (ext4): destination with the same identifier (name{cite.CFMR2018
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.1246 \end{document}
+l.1249 \end{document}
                      pdfTeX warning (ext4): destination with the same identifie
 r (name{cite.CFMR2018}) has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.1246 \end{document}
+l.1249 \end{document}
                      ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1246.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1249.
  (./DFOLS.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1246.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1246.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1249.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1249.
 
 Package rerunfilecheck Info: File `DFOLS.out' has not changed.
 (rerunfilecheck)             Checksum: 3DD946E4ADFEDA36993DB09D2FCE2A6A;7064.
@@ -1266,7 +1266,7 @@ lvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvbo
 8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on DFOLS.pdf (33 pages, 292802 bytes).
+Output written on DFOLS.pdf (33 pages, 293108 bytes).
 PDF statistics:
  512 PDF objects out of 1000 (max. 8388607)
  445 compressed objects within 5 object streams

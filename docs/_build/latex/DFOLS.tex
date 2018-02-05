@@ -88,7 +88,7 @@ DFO-LS is released under the GNU General Public License. Please \sphinxhref{http
 
 
 \chapter{Installing DFO-LS}
-\label{\detokenize{install::doc}}\label{\detokenize{install:installing-dfo-ls}}\label{\detokenize{install:dfo-ls-derivative-free-optimizer-for-least-squares-minimization}}
+\label{\detokenize{install:installing-dfo-ls}}\label{\detokenize{install::doc}}\label{\detokenize{install:dfo-ls-derivative-free-optimizer-for-least-squares-minimization}}
 
 \section{Requirements}
 \label{\detokenize{install:requirements}}
@@ -201,7 +201,7 @@ If DFO-LS was installed manually you have to remove the installed files by hand 
 
 
 \chapter{Overview}
-\label{\detokenize{info::doc}}\label{\detokenize{info:overview}}
+\label{\detokenize{info:overview}}\label{\detokenize{info::doc}}
 
 \section{When to use DFO-LS}
 \label{\detokenize{info:when-to-use-dfo-ls}}
@@ -277,7 +277,7 @@ At each step, we compute a trial step \(s_k\) designed to make our approximation
 
 In DFO-LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well-spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO-LS algorithm is given in our paper \phantomsection\label{\detokenize{info:id1}}{\hyperref[\detokenize{userguide:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
+A complete description of the DFO-LS algorithm is given in our paper \phantomsection\label{\detokenize{info:id1}}{\hyperref[\detokenize{advanced:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
 
 
 \section{References}
@@ -298,7 +298,7 @@ DFO-LS is designed to solve the local optimization problem
 where the bound constraints \(a \leq x \leq b\) are optional.
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the paper \phantomsection\label{\detokenize{userguide:id1}}{\hyperref[\detokenize{userguide:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
+For an in-depth technical description of the algorithm see the paper \phantomsection\label{\detokenize{userguide:id1}}{\hyperref[\detokenize{advanced:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
 
 
 \section{How to use DFO-LS}
@@ -841,10 +841,10 @@ Here, we see that both entries of the residual vector are very small, so both eq
 \label{\detokenize{userguide:references}}
 
 \chapter{Advanced Usage}
-\label{\detokenize{advanced::doc}}\label{\detokenize{advanced:advanced-usage}}
+\label{\detokenize{advanced:advanced-usage}}\label{\detokenize{advanced::doc}}
 This section describes different optional user parameters available in DFO-LS.
 
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO-LS}}}}), we introduced \sphinxcode{dfols.solve()}, which has the optional input \sphinxcode{user\_params}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \phantomsection\label{\detokenize{advanced:id1}}{\hyperref[\detokenize{userguide:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO-LS}}}}), we introduced \sphinxcode{dfols.solve()}, which has the optional input \sphinxcode{user\_params}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \phantomsection\label{\detokenize{advanced:id1}}{\hyperref[\detokenize{advanced:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
 
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{objfun} has stochastic noise; that is, whether evaluating \sphinxcode{objfun(x)} several times at the same \sphinxcode{x} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{objfun\_has\_noise} input to \sphinxcode{dfols.solve()} (and not by inspecting \sphinxcode{objfun}, for instance).
 
@@ -1021,6 +1021,9 @@ The default values, used if no override is given, in some cases vary depending o
 
 \item {} 
 \sphinxcode{restarts.max\_npt} - Maximum allowed value of \(|Y_k|\), useful if increasing with each restart. Default is \sphinxcode{npt}, the input parameter to \sphinxcode{dfols.solve()}.
+
+\item {} 
+\sphinxcode{restarts.soft.max\_fake\_successful\_steps} - The maximum number of successful steps in a given run where the new (smaller) objective value is larger than the best value found in a previous run. Default is \sphinxcode{maxfun}, the input to \sphinxcode{dfols.solve()}.
 
 \item {} 
 \sphinxcode{restarts.auto\_detect} - Whether or not to automatically determine when to restart. This is an extra condition, and restarts can still be triggered by small trust region radius, etc. Default is \sphinxcode{True}.
