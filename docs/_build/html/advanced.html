@@ -1,0 +1,258 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Advanced Usage &#8212; DFO-LS v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Diagnostic Information" href="diagnostic.html" />
+    <link rel="prev" title="Using DFO-LS" href="userguide.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="advanced-usage">
+<h1>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h1>
+<p>This section describes different optional user parameters available in DFO-LS.</p>
+<p>In the last section (<a class="reference internal" href="userguide.html"><span class="doc">Using DFO-LS</span></a>), we introduced <code class="code docutils literal"><span class="pre">dfols.solve()</span></code>, which has the optional input <code class="code docutils literal"><span class="pre">user_params</span></code>. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper <a class="reference internal" href="userguide.html#cfmr2018" id="id1">[CFMR2018]</a>.</p>
+<p>The default values, used if no override is given, in some cases vary depending on whether <code class="code docutils literal"><span class="pre">objfun</span></code> has stochastic noise; that is, whether evaluating <code class="code docutils literal"><span class="pre">objfun(x)</span></code> several times at the same <code class="code docutils literal"><span class="pre">x</span></code> gives the same result or not. Whether or not this is the case is determined by the <code class="code docutils literal"><span class="pre">objfun_has_noise</span></code> input to <code class="code docutils literal"><span class="pre">dfols.solve()</span></code> (and not by inspecting <code class="code docutils literal"><span class="pre">objfun</span></code>, for instance).</p>
+<div class="section" id="general-algorithm-parameters">
+<h2>General Algorithm Parameters<a class="headerlink" href="#general-algorithm-parameters" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">general.rounding_error_constant</span></code> - Internally, all interpolation points are stored with respect to a base point <span class="math">\(x_b\)</span>; that is, we store <span class="math">\(\{y_t-x_b\}\)</span>, which reduces the risk of roundoff errors. We shift <span class="math">\(x_b\)</span> to <span class="math">\(x_k\)</span> when <span class="math">\(\|s_k\| \leq \text{const}\|x_k-x_b\|\)</span>, where ‘const’ is this parameter. Default is 0.1.</li>
+<li><code class="code docutils literal"><span class="pre">general.safety_step_thresh</span></code> - Threshold for when to call the safety step, <span class="math">\(\|s_k\| \leq \gamma_S \rho_k\)</span>. Default is <span class="math">\(\gamma_S =0.5\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">general.check_objfun_for_overflow</span></code> - Whether to cap the value of <span class="math">\(r_i(x)\)</span> when they are large enough that an OverflowError will be encountered when trying to evaluate <span class="math">\(f(x)\)</span>. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="logging-and-output">
+<h2>Logging and Output<a class="headerlink" href="#logging-and-output" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">logging.n_to_print_whole_x_vector</span></code> - If printing all function evaluations to screen/log file, the maximum <code class="code docutils literal"><span class="pre">len(x)</span></code> for which the full vector <code class="code docutils literal"><span class="pre">x</span></code> should be printed also. Default is 6.</li>
+<li><code class="code docutils literal"><span class="pre">logging.save_diagnostic_info</span></code> - Flag so save diagnostic information at each iteration. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">logging.save_poisedness</span></code> - If saving diagnostic information, whether to include the <span class="math">\(\Lambda\)</span>-poisedness of <span class="math">\(Y_k\)</span> in the diagnostic information. This is the most computationally expensive piece of diagnostic information. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">logging.save_xk</span></code> - If saving diagnostic information, whether to include the full vector <span class="math">\(x_k\)</span>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">logging.save_rk</span></code> - If saving diagnostic information, whether to include the full vector <span class="math">\([r_1(x_k)\:\cdots\:r_m(x_k)]\)</span>. The value <span class="math">\(f(x_k)\)</span> is always included. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="initialization-of-points">
+<h2>Initialization of Points<a class="headerlink" href="#initialization-of-points" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">init.random_initial_directions</span></code> - Build the initial interpolation set using random directions (as opposed to coordinate directions). Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">init.random_directions_make_orthogonal</span></code> - If building initial interpolation set with random directions, whether or not these should be orthogonalized. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">init.run_in_parallel</span></code> - If using random directions, whether or not to ask for all <code class="code docutils literal"><span class="pre">objfun</span></code> to be evaluated at all points without any intermediate processing. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="trust-region-management">
+<h2>Trust Region Management<a class="headerlink" href="#trust-region-management" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">tr_radius.eta1</span></code> - Threshold for unsuccessful trust region iteration, <span class="math">\(\eta_1\)</span>. Default is 0.1.</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.eta2</span></code> - Threshold for very successful trust region iteration, <span class="math">\(\eta_2\)</span>. Default is 0.7.</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.gamma_dec</span></code> - Ratio to decrease <span class="math">\(\Delta_k\)</span> in unsuccessful iteration, <span class="math">\(\gamma_{dec}\)</span>. Default is 0.5 for smooth problems or 0.98 for noisy problems (i.e. <code class="code docutils literal"><span class="pre">objfun_has_noise</span> <span class="pre">=</span> <span class="pre">True</span></code>).</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.gamma_inc</span></code> - Ratio to increase <span class="math">\(\Delta_k\)</span> in very successful iterations, <span class="math">\(\gamma_{inc}\)</span>. Default is 2.</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.gamma_inc_overline</span></code> - Ratio of <span class="math">\(\|s_k\|\)</span> to increase <span class="math">\(\Delta_k\)</span> by in very successful iterations, <span class="math">\(\overline{\gamma}_{inc}\)</span>. Default is 4.</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.alpha1</span></code> - Ratio to decrease <span class="math">\(\rho_k\)</span> by when it is reduced, <span class="math">\(\alpha_1\)</span>. Default is 0.1 for smooth problems or 0.9 for noisy problems (i.e. <code class="code docutils literal"><span class="pre">objfun_has_noise</span> <span class="pre">=</span> <span class="pre">True</span></code>).</li>
+<li><code class="code docutils literal"><span class="pre">tr_radius.alpha2</span></code> - Ratio of <span class="math">\(\rho_k\)</span> to decrease <span class="math">\(\Delta_k\)</span> by when <span class="math">\(\rho_k\)</span> is reduced, <span class="math">\(\alpha_2\)</span>. Default is 0.5 for smooth problems or 0.95 for noisy problems (i.e. <code class="code docutils literal"><span class="pre">objfun_has_noise</span> <span class="pre">=</span> <span class="pre">True</span></code>).</li>
+</ul>
+</div>
+<div class="section" id="termination-on-small-objective-value">
+<h2>Termination on Small Objective Value<a class="headerlink" href="#termination-on-small-objective-value" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">model.abs_tol</span></code> - Tolerance on <span class="math">\(f(x_k)\)</span>; quit if <span class="math">\(f(x_k)\)</span> is below this value. Default is <span class="math">\(10^{-12}\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">model.rel_tol</span></code> - Relative tolerance on <span class="math">\(f(x_k)\)</span>; quit if <span class="math">\(f(x_k)/f(x_0)\)</span> is below this value. Default is <span class="math">\(10^{-20}\)</span>.</li>
+</ul>
+</div>
+<div class="section" id="termination-on-slow-progress">
+<h2>Termination on Slow Progress<a class="headerlink" href="#termination-on-slow-progress" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">slow.history_for_slow</span></code> - History used to determine whether the current iteration is ‘slow’. Default is 5.</li>
+<li><code class="code docutils literal"><span class="pre">slow.thresh_for_slow</span></code> - Threshold for objective decrease used to determine whether the current iteration is ‘slow’. Default is <span class="math">\(10^{-4}\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">slow.max_slow_iters</span></code> - Number of consecutive slow successful iterations before termination (or restart). Default is <code class="code docutils literal"><span class="pre">20*len(x0)</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="stochastic-noise-information">
+<h2>Stochastic Noise Information<a class="headerlink" href="#stochastic-noise-information" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">noise.quit_on_noise_level</span></code> - Flag to quit (or restart) if all <span class="math">\(f(y_t)\)</span> are within noise level of <span class="math">\(f(x_k)\)</span>. Default is <code class="code docutils literal"><span class="pre">False</span></code> for smooth problems or <code class="code docutils literal"><span class="pre">True</span></code> for noisy problems.</li>
+<li><code class="code docutils literal"><span class="pre">noise.scale_factor_for_quit</span></code> - Factor of noise level to use in termination criterion. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">noise.multiplicative_noise_level</span></code> - Multiplicative noise level in <span class="math">\(f\)</span>. Can only specify one of multiplicative or additive noise levels. Default is <code class="code docutils literal"><span class="pre">None</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">noise.additive_noise_level</span></code> - Additive noise level in <span class="math">\(f\)</span>. Can only specify one of multiplicative or additive noise levels. Default is <code class="code docutils literal"><span class="pre">None</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="interpolation-management">
+<h2>Interpolation Management<a class="headerlink" href="#interpolation-management" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">interpolation.precondition</span></code> - whether or not to scale the interpolation linear system to improve conditioning. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="regression-model-management">
+<h2>Regression Model Management<a class="headerlink" href="#regression-model-management" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">regression.num_extra_steps</span></code> - In successful iterations, the number of extra points (other than accepting the trust region step) to move, useful when <span class="math">\(|Y_k|&gt;n+1\)</span> (<span class="math">\(n\)</span> is <code class="code docutils literal"><span class="pre">len(x0)</span></code>). Default is 0.</li>
+<li><code class="code docutils literal"><span class="pre">regression.increase_num_extra_steps_with_restart</span></code> - The amount to increase <code class="code docutils literal"><span class="pre">regression.num_extra_steps</span></code> by with each restarts, for instance if increasing the number of points with each restart. Default is 0.</li>
+<li><code class="code docutils literal"><span class="pre">regression.momentum_extra_steps</span></code> - If moving extra points in successful iterations, whether to use the ‘momentum’ method. If not, uses geometry-improving steps. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="multiple-restarts">
+<h2>Multiple Restarts<a class="headerlink" href="#multiple-restarts" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">restarts.use_restarts</span></code> - Whether to do restarts when <span class="math">\(\rho_k\)</span> reaches <span class="math">\(\rho_{end}\)</span>, or (optionally) when all points are within noise level of <span class="math">\(f(x_k)\)</span>. Default is <code class="code docutils literal"><span class="pre">False</span></code> for smooth problems or <code class="code docutils literal"><span class="pre">True</span></code> for noisy problems.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.max_unsuccessful_restarts</span></code> - Maximum number of consecutive unsuccessful restarts allowed (i.e.~restarts which did not reduce the objective further). Default is 10.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.rhoend_scale</span></code> - Factor to reduce <span class="math">\(\rho_{end}\)</span> by with each restart. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.use_soft_restarts</span></code> - Whether to use soft or hard restarts. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.soft.num_geom_steps</span></code> - For soft restarts, the number of points to move. Default is 3.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.soft.move_xk</span></code> - For soft restarts, whether to preserve <span class="math">\(x_k\)</span>, or move it to the best new point evaluated. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.increase_npt</span></code> - Whether to increase <span class="math">\(|Y_k|\)</span> with each restart. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.increase_npt_amt</span></code> - Amount to increase <span class="math">\(|Y_k|\)</span> by with each restart. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.hard.increase_ndirs_initial_amt</span></code> - Amount to increase <code class="code docutils literal"><span class="pre">growing.ndirs_initial</span></code> by with each hard restart. To avoid a growing phase, it is best to set it to the same value as <code class="code docutils literal"><span class="pre">restarts.increase_npt_amt</span></code>. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.hard.use_old_rk</span></code> - If using hard restarts, whether or not to recycle the objective value at the best iterate found when performing a restart. This saves one objective evaluation. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.max_npt</span></code> - Maximum allowed value of <span class="math">\(|Y_k|\)</span>, useful if increasing with each restart. Default is <code class="code docutils literal"><span class="pre">npt</span></code>, the input parameter to <code class="code docutils literal"><span class="pre">dfols.solve()</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.auto_detect</span></code> - Whether or not to automatically determine when to restart. This is an extra condition, and restarts can still be triggered by small trust region radius, etc. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.auto_detect.history</span></code> - How many iterations of data on model changes and trust region radii to store. There are two criteria used: trust region radius decreases (no increases over the history, more decreases than no changes), and change in model Jacobian (consistently increasing trend as measured by slope and correlation coefficient of line of best fit). Default is 30.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.auto_detect.min_chgJ_slope</span></code> - Minimum rate of increase of <span class="math">\(\log(\|J_k-J_{k-1}\|_F)\)</span> over the past iterations to cause a restart. Default is 0.015.</li>
+<li><code class="code docutils literal"><span class="pre">restarts.auto_detect.min_correl</span></code> - Minimum correlation of the data set <span class="math">\((k, \log(\|J_k-J_{k-1}\|_F))\)</span> required to cause a restart. Default is 0.1.</li>
+</ul>
+</div>
+<div class="section" id="dynamically-growing-initial-set">
+<h2>Dynamically Growing Initial Set<a class="headerlink" href="#dynamically-growing-initial-set" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">growing.ndirs_initial</span></code> - Number of initial points to add (excluding <span class="math">\(x_k\)</span>). Default is <code class="code docutils literal"><span class="pre">npt-1</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.num_new_dirns_each_iter</span></code> - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">growing.delta_scale_new_dirns</span></code> - When adding new search directions, the length of the step as a multiple of <span class="math">\(\Delta_k\)</span>. Default is 1, but if setting <code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step=True</span></code> should be made smaller (e.g. 0.1).</li>
+<li><code class="code docutils literal"><span class="pre">growing.do_geom_steps</span></code> - While still growing the initial set, whether to do geometry-improving steps in the trust region algorithm, as per the usual algorithm. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.do_safety_step</span></code> - While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> - While still growing the initial set, whether to reduce <span class="math">\(\Delta_k\)</span> in safety steps. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.full_geom_step</span></code> - While still growing the initial set, whether to do a full geometry-improving step within safety steps (the same as the post-growing phase of the algorithm). Since this involves reducing <span class="math">\(\Delta_k\)</span>, cannot be <code class="code docutils literal"><span class="pre">True</span></code> if <code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> is <code class="code docutils literal"><span class="pre">True</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code> - Whether to perturb the interpolated <span class="math">\(J_k\)</span> to make it full rank, allowing the trust region step to include components in the full search space. If <code class="code docutils literal"><span class="pre">True</span></code>, setting <code class="code docutils literal"><span class="pre">growing.num_new_dirns_each_iter</span></code> to 0 is recommended. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.scale_factor</span></code> - Magnitude of extra components added to <span class="math">\(J_k\)</span>. Default is <span class="math">\(10^{-2}\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.svd_scale_factor</span></code> - Floor singular values of <span class="math">\(J_k\)</span> at this factor of the last nonzero value. Default is 1.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.min_sing_val</span></code> - Absolute floor on singular values of <span class="math">\(J_k\)</span>. Default is <span class="math">\(10^{-6}\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.svd_max_jac_cond</span></code> - Cap on condition number of <span class="math">\(J_k\)</span> after applying floors to singular values (effectively another floor on the smallest singular value, since the largest singular value is fixed). Default is <span class="math">\(10^8\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.reset_delta</span></code> - Whether or not to reset trust region radius <span class="math">\(\Delta_k\)</span> to its initial value at the end of the growing phase. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.reset_rho</span></code> - Whether or not to reset trust region radius lower bound <span class="math">\(\rho_k\)</span> to its initial value at the end of the growing phase. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.gamma_dec</span></code> - Trust region decrease parameter during the growing phase. Default is <code class="code docutils literal"><span class="pre">tr_radius.gamma_dec</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step</span></code> - Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to <code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="cfmr2018" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[CFMR2018]</a></td><td><ol class="first last upperalpha simple" start="3">
+<li>Cartis, J. Fiala, B. Marteau and L. Roberts, Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers, technical report, University of Oxford, (2018).</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">DFO-LS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing DFO-LS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">Using DFO-LS</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-algorithm-parameters">General Algorithm Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging-and-output">Logging and Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initialization-of-points">Initialization of Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trust-region-management">Trust Region Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#termination-on-small-objective-value">Termination on Small Objective Value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#termination-on-slow-progress">Termination on Slow Progress</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stochastic-noise-information">Stochastic Noise Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interpolation-management">Interpolation Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#regression-model-management">Regression Model Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multiple-restarts">Multiple Restarts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamically-growing-initial-set">Dynamically Growing Initial Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="diagnostic.html">Diagnostic Information</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="userguide.html" title="previous chapter">Using DFO-LS</a></li>
+      <li>Next: <a href="diagnostic.html" title="next chapter">Diagnostic Information</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Lindon Roberts.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/advanced.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

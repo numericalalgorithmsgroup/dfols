@@ -1,0 +1,180 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization &#8212; DFO-LS v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installing DFO-LS" href="install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dfo-ls-derivative-free-optimizer-for-least-squares-minimization">
+<h1>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization<a class="headerlink" href="#dfo-ls-derivative-free-optimizer-for-least-squares-minimization" title="Permalink to this headline">¶</a></h1>
+<p><strong>Release:</strong> 1.0</p>
+<p><strong>Date:</strong> 05 February 2018</p>
+<p><strong>Author:</strong> <a class="reference external" href="mailto:lindon&#46;roberts&#37;&#52;&#48;maths&#46;ox&#46;ac&#46;uk">Lindon Roberts</a></p>
+<p>DFO-LS is a flexible package for finding local solutions to nonlinear least-squares minimization problems (with optional bound constraints), without requiring any derivatives of the objective. DFO-LS stands for Derivative-Free Optimizer for Least-Squares.</p>
+<p>That is, DFO-LS solves</p>
+<div class="math">
+\[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
+\text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
+<p>Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers, technical report, University of Oxford, (2017).</p>
+<p>DFO-LS is released under the GNU General Public License. Please <a class="reference external" href="http://www.nag.com/content/worldwide-contact-information">contact NAG</a> for alternative licensing.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing DFO-LS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installation-using-pip">Installation using pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#manual-installation">Manual installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#uninstallation">Uninstallation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="info.html#when-to-use-dfo-ls">When to use DFO-LS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="info.html#parameter-fitting">Parameter Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="info.html#solving-nonlinear-systems-of-equations">Solving Nonlinear Systems of Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="info.html#details-of-the-dfo-ls-algorithm">Details of the DFO-LS Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="info.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">Using DFO-LS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#nonlinear-least-squares-minimization">Nonlinear Least-Squares Minimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#how-to-use-dfo-ls">How to use DFO-LS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#optional-arguments">Optional Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#a-simple-example">A Simple Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#adding-bounds-and-more-output">Adding Bounds and More Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#example-noisy-objective-evaluation">Example: Noisy Objective Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#example-parameter-estimation-data-fitting">Example: Parameter Estimation/Data Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#example-solving-a-nonlinear-system-of-equations">Example: Solving a Nonlinear System of Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#general-algorithm-parameters">General Algorithm Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#logging-and-output">Logging and Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#initialization-of-points">Initialization of Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#trust-region-management">Trust Region Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#termination-on-small-objective-value">Termination on Small Objective Value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#termination-on-slow-progress">Termination on Slow Progress</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#stochastic-noise-information">Stochastic Noise Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#interpolation-management">Interpolation Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#regression-model-management">Regression Model Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#multiple-restarts">Multiple Restarts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#dynamically-growing-initial-set">Dynamically Growing Initial Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="diagnostic.html">Diagnostic Information</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="diagnostic.html#current-iterate">Current Iterate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostic.html#trust-region">Trust Region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostic.html#model-interpolation">Model Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostic.html#iteration-count">Iteration Count</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostic.html#algorithm-progress">Algorithm Progress</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<p>This software was developed under the supervision of <a class="reference external" href="https://www.maths.ox.ac.uk/people/coralia.cartis">Coralia Cartis</a>, and was supported by the EPSRC Centre For Doctoral Training in <a class="reference external" href="https://www.maths.ox.ac.uk/study-here/postgraduate-study/industrially-focused-mathematical-modelling-epsrc-cdt">Industrially Focused Mathematical Modelling</a> (EP/L015803/1) in collaboration with the <a class="reference external" href="http://www.nag.com/">Numerical Algorithms Group</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">DFO-LS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing DFO-LS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">Using DFO-LS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diagnostic.html">Diagnostic Information</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="install.html" title="next chapter">Installing DFO-LS</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Lindon Roberts.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
