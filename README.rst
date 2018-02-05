@@ -78,7 +78,7 @@ Alternatively, the HTML documentation provides some simple examples of how to ru
 
 Examples
 --------
-Examples of how to run DFO-LS are given in the `documentation <http://people.maths.ox.ac.uk/robertsl/dfols>`_, and the `examples <https://github.com/numericalalgorithmsgroup/dfols/examples>`_ directory in Github.
+Examples of how to run DFO-LS are given in the `documentation <http://people.maths.ox.ac.uk/robertsl/dfols>`_, and the `examples <https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples>`_ directory in Github.
 
 Uninstallation
 --------------

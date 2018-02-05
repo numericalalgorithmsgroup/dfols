@@ -139,7 +139,7 @@ Note that DFO-LS is a randomized algorithm: in its first phase, it builds an int
       Success: Objective is sufficiently small
       ****************************
 
-This and all following problems can be found in the `examples <https://github.com/numericalalgorithmsgroup/dfols/examples>`_ directory on the DFO-LS Github page.
+This and all following problems can be found in the `examples <https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples>`_ directory on the DFO-LS Github page.
 
 Adding Bounds and More Output
 -----------------------------
