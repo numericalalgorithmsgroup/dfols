@@ -82,13 +82,13 @@ That is, DFO-LS solves
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &\quad  a \leq x \leq b\end{split}
 \end{equation*}
-Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers, technical report, University of Oxford, (2017).
+Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers, technical report, University of Oxford, (2018).
 
 DFO-LS is released under the GNU General Public License. Please \sphinxhref{http://www.nag.com/content/worldwide-contact-information}{contact NAG} for alternative licensing.
 
 
 \chapter{Installing DFO-LS}
-\label{\detokenize{install:installing-dfo-ls}}\label{\detokenize{install:dfo-ls-derivative-free-optimizer-for-least-squares-minimization}}\label{\detokenize{install::doc}}
+\label{\detokenize{install::doc}}\label{\detokenize{install:installing-dfo-ls}}\label{\detokenize{install:dfo-ls-derivative-free-optimizer-for-least-squares-minimization}}
 
 \section{Requirements}
 \label{\detokenize{install:requirements}}
@@ -201,7 +201,7 @@ If DFO-LS was installed manually you have to remove the installed files by hand 
 
 
 \chapter{Overview}
-\label{\detokenize{info:overview}}\label{\detokenize{info::doc}}
+\label{\detokenize{info::doc}}\label{\detokenize{info:overview}}
 
 \section{When to use DFO-LS}
 \label{\detokenize{info:when-to-use-dfo-ls}}
@@ -284,7 +284,7 @@ A complete description of the DFO-LS algorithm is given in our paper \phantomsec
 \label{\detokenize{info:references}}
 
 \chapter{Using DFO-LS}
-\label{\detokenize{userguide:using-dfo-ls}}\label{\detokenize{userguide::doc}}
+\label{\detokenize{userguide::doc}}\label{\detokenize{userguide:using-dfo-ls}}
 This section describes the main interface to DFO-LS and how to use it.
 
 
@@ -841,7 +841,7 @@ Here, we see that both entries of the residual vector are very small, so both eq
 \label{\detokenize{userguide:references}}
 
 \chapter{Advanced Usage}
-\label{\detokenize{advanced:advanced-usage}}\label{\detokenize{advanced::doc}}
+\label{\detokenize{advanced::doc}}\label{\detokenize{advanced:advanced-usage}}
 This section describes different optional user parameters available in DFO-LS.
 
 In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO-LS}}}}), we introduced \sphinxcode{dfols.solve()}, which has the optional input \sphinxcode{user\_params}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \phantomsection\label{\detokenize{advanced:id1}}{\hyperref[\detokenize{userguide:cfmr2018}]{\sphinxcrossref{{[}CFMR2018{]}}}}.
@@ -1094,7 +1094,7 @@ The default values, used if no override is given, in some cases vary depending o
 \label{\detokenize{advanced:references}}
 
 \chapter{Diagnostic Information}
-\label{\detokenize{diagnostic:diagnostic-information}}\label{\detokenize{diagnostic::doc}}
+\label{\detokenize{diagnostic::doc}}\label{\detokenize{diagnostic:diagnostic-information}}
 In {\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO-LS}}}}, we saw that the output of DFO-LS returns a container which includes diagnostic information about the progress of the algorithm (\sphinxcode{soln.diagnostic\_info}). This object is a \sphinxhref{http://pandas.pydata.org/}{Pandas} DataFrame, with one row per iteration of the algorithm. In this section, we explain the meaning of each type of output (the columns of the DataFrame).
 
 To save this information to a CSV file, use:
