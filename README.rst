@@ -98,5 +98,5 @@ License
 -------
 This algorithm is released under the GNU GPL license.
 
-.. |PyPI Version| image:: https://img.shields.io/pypi/v/DFOLS.svg
-                  :target: https://pypi.python.org/pypi/DFOLS
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/DFO-LS.svg
+                  :target: https://pypi.python.org/pypi/DFO-LS
