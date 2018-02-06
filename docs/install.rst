@@ -17,21 +17,21 @@ Installation using pip
 ----------------------
 For easy installation, use *pip* (http://www.pip-installer.org/) as root::
 
-    $ [sudo] pip install dfols
+    $ [sudo] pip install DFO-LS
 
 or alternatively *easy_install*::
 
-    $ [sudo] easy_install dfols
+    $ [sudo] easy_install DFO-LS
 
 If you do not have root privileges or you want to install DFO-LS for your private use, you can use::
 
-    $ pip install --user dfols
+    $ pip install --user DFO-LS
 
 which will install DFO-LS in your home directory.
 
 Note that if an older install of DFO-LS is present on your system you can use::
 
-    $ [sudo] pip install --upgrade dfols
+    $ [sudo] pip install --upgrade DFO-LS
 
 to upgrade DFO-LS to the latest version.
 
@@ -74,7 +74,7 @@ If DFO-LS was installed using *pip* you can uninstall as follows:
 
  .. code-block:: bash
 
-    $ [sudo] pip uninstall dfols
+    $ [sudo] pip uninstall DFO-LS
 
 If DFO-LS was installed manually you have to remove the installed files by hand (located in your python site-packages directory).
 
