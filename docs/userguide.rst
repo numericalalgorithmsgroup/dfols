@@ -162,9 +162,9 @@ DFO-LS correctly finds the solution to the constrained problem:
       Solution xmin = [ 0.9   0.81]
       Residual vector = [ 0.   0.1]
       Objective value f(xmin) = 0.01
-      Needed 64 objective evaluations (at 64 points)
+      Needed 65 objective evaluations (at 65 points)
       Approximate Jacobian = [[ -1.79999998e+01   9.99999990e+00]
-       [ -1.00000000e+00  -1.26970349e-09]]
+       [ -9.99999998e-01  -2.53940698e-09]]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -196,8 +196,8 @@ And we can now see each evaluation of :code:`objfun`:
       Function eval 2 at point 2 has f = 14.337296 at x = [-1.08  0.85]
       Function eval 3 at point 3 has f = 55.25 at x = [-1.2   0.73]
       ...
-      Function eval 63 at point 63 has f = 0.0100000029949496 at x = [ 0.89999999  0.81      ]
-      Function eval 64 at point 64 has f = 0.00999999999999993 at x = [ 0.9   0.81]
+      Function eval 64 at point 64 has f = 0.0100000029949496 at x = [ 0.89999999  0.81      ]
+      Function eval 65 at point 65 has f = 0.00999999999999993 at x = [ 0.9   0.81]
       Did a total of 1 run(s)
 
 If we wanted to save this output to a file, we could replace the above call to :code:`logging.basicConfig()` with
@@ -453,11 +453,11 @@ The output of this is
   
       ****** DFO-LS Results ******
       Solution xmin = [ 0.09777309 -2.32510588]
-      Residual vector = [ -3.16191517e-13  -3.58602037e-12]
-      Objective value f(xmin) = 1.295951917e-23
-      Needed 17 objective evaluations (at 17 points)
-      Approximate Jacobian = [[  3.32510506   0.9022256 ]
-       [ 10.22775528  -1.00001417]]
+      Residual vector = [  2.89990254e-13   3.31557004e-12]
+      Objective value f(xmin) = 1.107709904e-23
+      Needed 18 objective evaluations (at 18 points)
+      Approximate Jacobian = [[  3.32510429   0.90222738]
+       [ 10.22774647  -0.9999939 ]]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
