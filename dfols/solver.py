@@ -45,7 +45,7 @@ __all__ = ['solve']
 
 
 # A container for the results of the optimization routine
-class OptimResults:
+class OptimResults(object):
     def __init__(self, xmin, rmin, fmin, jacmin, nf, nx, nruns, exit_flag, exit_msg):
         self.x = xmin
         self.resid = rmin
