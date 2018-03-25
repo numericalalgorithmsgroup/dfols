@@ -1,6 +1,6 @@
-==================================================================
-DFO-LS: Derivative-Free Optimizer for Least-Squares |PyPI Version|
-==================================================================
+=================================================================================
+DFO-LS: Derivative-Free Optimizer for Least-Squares |Build Status| |PyPI Version|
+=================================================================================
 DFO-LS is a flexible package for solving nonlinear least-squares minimisation, without requiring derivatives of the objective. It is particularly useful when evaluations of the objective function are expensive and/or noisy.
 
 This is an implementation of the algorithm from our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers, technical report, University of Oxford, (2018). DFO-LS is more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
@@ -100,5 +100,7 @@ License
 -------
 This algorithm is released under the GNU GPL license.
 
+.. |Build Status| image::  https://travis-ci.org/numericalalgorithmsgroup/dfols.svg?branch=master
+                  :target: https://travis-ci.org/numericalalgorithmsgroup/dfols
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/DFO-LS.svg
                   :target: https://pypi.python.org/pypi/DFO-LS
