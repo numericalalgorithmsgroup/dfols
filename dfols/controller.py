@@ -92,8 +92,9 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, x0, r0, r0_nsamples, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes):
+    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes):
         self.objfun = objfun
+        self.args = args
         self.maxfun = maxfun
         self.model = Model(npt, x0, r0, xl, xu, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"))
@@ -405,7 +406,7 @@ class Controller(object):
             if not incremented_nx:
                 self.nx += 1
                 incremented_nx = True
-            rvec_list[i, :], f_list[i] = eval_least_squares_objective(self.objfun, remove_scaling(x, self.scaling_changes), eval_num=self.nf, pt_num=self.nx,
+            rvec_list[i, :], f_list[i] = eval_least_squares_objective(self.objfun, remove_scaling(x, self.scaling_changes), args=self.args, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                             check_for_overflow=params("general.check_objfun_for_overflow"))
             num_samples_run += 1
