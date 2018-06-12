@@ -93,7 +93,7 @@ class ParameterList(object):
         self.params["restarts.auto_detect.min_correl"] = 0.1
         # Growing
         self.params["growing.ndirs_initial"] = npt - 1
-        self.params["growing.num_new_dirns_each_iter"] = 1
+        self.params["growing.num_new_dirns_each_iter"] = 0
         self.params["growing.delta_scale_new_dirns"] = 1.0
         self.params["growing.do_geom_steps"] = False
         self.params["growing.reset_delta"] = False
