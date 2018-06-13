@@ -40,20 +40,28 @@ Installation using pip
 ----------------------
 For easy installation, use `pip <http://www.pip-installer.org/>`_ as root::
 
+ .. code-block:: bash
+ 
     $ [sudo] pip install DFO-LS
 
 or alternatively *easy_install*::
 
+ .. code-block:: bash
+ 
     $ [sudo] easy_install DFO-LS
 
 If you do not have root privileges or you want to install DFO-LS for your private use, you can use::
 
+ .. code-block:: bash
+ 
     $ pip install --user DFO-LS
 
 which will install DFO-LS in your home directory.
 
 Note that if an older install of DFO-LS is present on your system you can use::
 
+ .. code-block:: bash
+ 
     $ [sudo] pip install --upgrade DFO-LS
 
 to upgrade DFO-LS to the latest version.
@@ -80,6 +88,13 @@ If you do not have root privileges or you want to install DFO-LS for your privat
     $ pip install --user .
 
 instead.
+
+To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`setup.py`) and rerun the installation using :code:`pip`, as above:
+
+ .. code-block:: bash
+
+    $ git pull
+    $ [sudo] pip install .  # with admin privileges
 
 Testing
 -------
