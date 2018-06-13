@@ -405,10 +405,12 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                     rvec_list, f_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
                                                                                                params)
-                    if exit_info is not None:
-                        if num_samples_run > 0:
+                    
+                    if num_samples_run > 0:
                             control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0),
                                                      num_samples_run, x_in_abs_coords=True)
+                    
+                    if exit_info is not None:
                         nruns_so_far += 1
                         break  # quit
 
