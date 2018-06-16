@@ -24,8 +24,12 @@ alternative licensing.
 
 from setuptools import setup
 
-# Get package version
-from dfols import __version__
+# Get package version without "import dfols" (which requires dependencies to already be installed)
+import os
+version = {}
+with open(os.path.join('dfols', 'version.py')) as fp:
+    exec(fp.read(), version)
+__version__ = version['__version__']
 
 setup(
     name='DFO-LS',
