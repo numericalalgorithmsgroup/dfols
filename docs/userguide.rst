@@ -72,7 +72,7 @@ The :code:`solve` function has several optional arguments which the user may pro
 
 These arguments are:
 
-* :code:`args` - a tuple of extra arguments passed to the objective function. This feature is new, and not yet avaiable in the PyPI version of DFO-LS; instead, use Python's built-in function :code:`lambda`.
+* :code:`args` - a tuple of extra arguments passed to the objective function. 
 * :code:`bounds` - a tuple :code:`(lower, upper)` with the vectors :math:`a` and :math:`b` of lower and upper bounds on :math:`x` (default is :math:`a_i=-10^{20}` and :math:`b_i=10^{20}`). To set bounds for either :code:`lower` or :code:`upper`, but not both, pass a tuple :code:`(lower, None)` or :code:`(None, upper)`.
 * :code:`npt` - the number of interpolation points to use (default is :code:`len(x0)+1`). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in :code:`user_params`).
 * :code:`rhobeg` - the initial value of the trust region radius (default is :math:`0.1\max(\|x_0\|_{\infty}, 1)`).
