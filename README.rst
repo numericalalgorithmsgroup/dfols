@@ -44,7 +44,7 @@ For easy installation, use `pip <http://www.pip-installer.org/>`_ as root:
 
     $ [sudo] pip install DFO-LS
 
-or alternatively *easy_install*::
+or alternatively *easy_install*:
 
  .. code-block:: bash
 
