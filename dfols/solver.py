@@ -109,7 +109,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
         rvec_list = np.zeros((number_of_samples, m))
         f_list = np.zeros((number_of_samples,))
         rvec_list[0, :] = r0
-        f_list[0] = sumsq(f0)
+        f_list[0] = f0
         num_samples_run = 1
         exit_info = None
 
