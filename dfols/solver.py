@@ -823,7 +823,7 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     if npt is None:
         npt = n + 1
     if rhobeg is None:
-        rhobeg = 0.1 * max(np.max(np.abs(x0)), 1.0)
+        rhobeg = 0.1 if scaling_within_bounds else 0.1 * max(np.max(np.abs(x0)), 1.0)
     if maxfun is None:
         maxfun = min(100 * (n + 1), 1000)  # 100 gradients, capped at 1000
     if nsamples is None:
