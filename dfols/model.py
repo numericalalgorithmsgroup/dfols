@@ -210,7 +210,7 @@ class Model(object):
         if f < self.fopt():
             self.kopt = self.npt() - 1
 
-        self.lu_current = False
+        self.factorisation_current = False
         return
 
     def shift_base(self, xbase_shift):
