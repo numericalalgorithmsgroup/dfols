@@ -79,8 +79,10 @@ class OptimResults(object):
             output += "Needed %g objective evaluations (at %g points)\n" % (self.nf, self.nx)
             if self.nruns > 1:
                 output += "Did a total of %g runs\n" % self.nruns
-            if np.size(self.jacobian) < 200:
+            if self.jacobian is not None and np.size(self.jacobian) < 200:
                 output += "Approximate Jacobian = %s\n" % str(self.jacobian)
+            elif self.jacobian is None:
+                output += "No Jacobian returned\n"
             else:
                 output += "Not showing approximate Jacobian because it is too long; check self.jacobian\n"
             if self.diagnostic_info is not None:
@@ -985,7 +987,7 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     exit_flag = exit_info.flag
     exit_msg = exit_info.message(with_stem=True)
     # Un-scale Jacobian
-    if scaling_changes is not None:
+    if scaling_changes is not None and jacmin is not None:
         for i in range(n):
             jacmin[:, i] = jacmin[:, i] / scaling_changes[1][i]
     results = OptimResults(remove_scaling(xmin, scaling_changes), rmin, fmin, jacmin, nf, nx, nruns, exit_flag, exit_msg)
