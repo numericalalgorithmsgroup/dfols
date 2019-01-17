@@ -85,22 +85,22 @@ Multiple Restarts
 
 Dynamically Growing Initial Set
 -------------------------------
-* :code:`growing.ndirs_initial` - Number of initial points to add (excluding :math:`x_k`). Default is :code:`npt-1`. 
-* :code:`growing.num_new_dirns_each_iter` - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 1. 
-* :code:`growing.delta_scale_new_dirns` - When adding new search directions, the length of the step as a multiple of :math:`\Delta_k`. Default is 1, but if setting :code:`growing.perturb_trust_region_step=True` should be made smaller (e.g. 0.1). 
-* :code:`growing.do_geom_steps` - While still growing the initial set, whether to do geometry-improving steps in the trust region algorithm, as per the usual algorithm. Default is :code:`False`. 
-* :code:`growing.safety.do_safety_step` - While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is :code:`True`. 
-* :code:`growing.safety.reduce_delta` - While still growing the initial set, whether to reduce :math:`\Delta_k` in safety steps. Default is :code:`False`. 
-* :code:`growing.safety.full_geom_step` - While still growing the initial set, whether to do a full geometry-improving step within safety steps (the same as the post-growing phase of the algorithm). Since this involves reducing :math:`\Delta_k`, cannot be :code:`True` if :code:`growing.safety.reduce_delta` is :code:`True`. Default is :code:`False`. 
-* :code:`growing.full_rank.use_full_rank_interp` - Whether to perturb the interpolated :math:`J_k` to make it full rank, allowing the trust region step to include components in the full search space. If :code:`True`, setting :code:`growing.num_new_dirns_each_iter` to 0 is recommended. Default is :code:`False`. 
+* :code:`growing.ndirs_initial` - Number of initial points to add (excluding :math:`x_k`). This should only be changed to a value less than :math:`n`, and only if the default setup cost of :math:`n+1` evaluations of :code:`objfun` is impractical. If this is set to be less than the default, the input value :code:`npt` should be set to :math:`n`. If the default is used, all the below parameters have no effect on DFO-LS. Default is :code:`npt-1`. 
+* :code:`growing.full_rank.use_full_rank_interp` - If :code:`growing.ndirs_initial` is less than :code:`npt`, whether to perturb the interpolated :math:`J_k` to make it full rank, allowing the trust region step to include components in the full search space. Default is :code:`True` if :math:`m\geq n` and :code:`False` otherwise (opposite to :code:`growing.perturb_trust_region_step`). 
+* :code:`growing.perturb_trust_region_step` - Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to :code:`growing.full_rank.use_full_rank_interp`. Default is :code:`False` if :math:`m\geq n` and :code:`True` otherwise (opposite to :code:`growing.full_rank.use_full_rank_interp`).
+* :code:`growing.delta_scale_new_dirns` - When adding new search directions, the length of the step as a multiple of :math:`\Delta_k`. Default is 1, or 0.1 if :code:`growing.perturb_trust_region_step=True`. 
 * :code:`growing.full_rank.scale_factor` - Magnitude of extra components added to :math:`J_k`. Default is :math:`10^{-2}`. 
 * :code:`growing.full_rank.svd_scale_factor` - Floor singular values of :math:`J_k` at this factor of the last nonzero value. Default is 1.
 * :code:`growing.full_rank.min_sing_val` - Absolute floor on singular values of :math:`J_k`. Default is :math:`10^{-6}`.
 * :code:`growing.full_rank.svd_max_jac_cond` - Cap on condition number of :math:`J_k` after applying floors to singular values (effectively another floor on the smallest singular value, since the largest singular value is fixed). Default is :math:`10^8`.
+* :code:`growing.do_geom_steps` - While still growing the initial set, whether to do geometry-improving steps in the trust region algorithm, as per the usual algorithm. Default is :code:`False`. 
+* :code:`growing.safety.do_safety_step` - While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is :code:`True`. 
+* :code:`growing.safety.reduce_delta` - While still growing the initial set, whether to reduce :math:`\Delta_k` in safety steps. Default is :code:`False`. 
+* :code:`growing.safety.full_geom_step` - While still growing the initial set, whether to do a full geometry-improving step within safety steps (the same as the post-growing phase of the algorithm). Since this involves reducing :math:`\Delta_k`, cannot be :code:`True` if :code:`growing.safety.reduce_delta` is :code:`True`. Default is :code:`False`. 
 * :code:`growing.reset_delta` - Whether or not to reset trust region radius :math:`\Delta_k` to its initial value at the end of the growing phase. Default is :code:`False`.
 * :code:`growing.reset_rho` - Whether or not to reset trust region radius lower bound :math:`\rho_k` to its initial value at the end of the growing phase. Default is :code:`False`.
 * :code:`growing.gamma_dec` - Trust region decrease parameter during the growing phase. Default is :code:`tr_radius.gamma_dec`.
-* :code:`growing.perturb_trust_region_step` - Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to :code:`growing.full_rank.use_full_rank_interp`. Default is :code:`False`.
+* :code:`growing.num_new_dirns_each_iter` - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 0, as this approach is not recommended. 
 
 
 References

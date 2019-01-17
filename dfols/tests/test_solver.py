@@ -133,3 +133,41 @@ class TestRosenbrockGrowing(unittest.TestCase):
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=3e-0), "Wrong Jacobian")
         self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
 
+
+class TestInverseProblem(unittest.TestCase):
+    # Minimise an inverse problem
+    def runTest(self):
+        # Simple problem with global minimum at the origin, for instance
+        objfun = lambda x: np.array([np.sin(x[0])**2, np.sin(x[1])**2, np.sum(np.sin(x[2:]**2))])
+        jac = lambda x: np.array([[2*np.sin(x[0])*np.cos(x[0]), 0, 0, 0, 0], 
+                                  [0, 2*np.sin(x[1])*np.cos(x[1]), 0, 0, 0], 
+                                  [0, 0, 2*np.sin(x[2])*np.cos(x[2]), 2*np.sin(x[3])*np.cos(x[3]), 2*np.sin(x[4])*np.cos(x[4])]])  # for n=5 only
+        x0 = np.ones((5,))
+        np.random.seed(0)
+        soln = dfols.solve(objfun, x0)
+        self.assertTrue(array_compare(soln.x, np.zeros((5,)), thresh=1e-3), "Wrong xmin")
+        self.assertTrue(array_compare(soln.resid, objfun(soln.x), thresh=1e-10), "Wrong resid")
+        print(soln.jacobian)
+        print(jac(soln.x))
+        self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=1e-2), "Wrong Jacobian")
+        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+
+
+class TestInverseProblemGrowing(unittest.TestCase):
+    # Minimise an inverse problem, with growing
+    def runTest(self):
+        # Simple problem with global minimum at the origin, for instance
+        objfun = lambda x: np.array([np.sin(x[0])**2, np.sin(x[1])**2, np.sum(np.sin(x[2:]**2))])
+        jac = lambda x: np.array([[2*np.sin(x[0])*np.cos(x[0]), 0, 0, 0, 0], 
+                                  [0, 2*np.sin(x[1])*np.cos(x[1]), 0, 0, 0], 
+                                  [0, 0, 2*np.sin(x[2])*np.cos(x[2]), 2*np.sin(x[3])*np.cos(x[3]), 2*np.sin(x[4])*np.cos(x[4])]])  # for n=5 only
+        x0 = np.ones((5,))
+        np.random.seed(0)
+        soln = dfols.solve(objfun, x0, user_params={'growing.ndirs_initial':2})
+        self.assertTrue(array_compare(soln.x, np.zeros((5,)), thresh=1e-3), "Wrong xmin")
+        self.assertTrue(array_compare(soln.resid, objfun(soln.x), thresh=1e-10), "Wrong resid")
+        print(soln.jacobian)
+        print(jac(soln.x))
+        self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=1e-2), "Wrong Jacobian")
+        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+

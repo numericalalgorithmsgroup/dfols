@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Advanced Usage &mdash; DFO-LS v1.0.2 documentation</title>
+  <title>Advanced Usage &mdash; DFO-LS v1.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="DFO-LS v1.0.2 documentation" href="index.html"/>
+    <link rel="top" title="DFO-LS v1.1 documentation" href="index.html"/>
         <link rel="next" title="Diagnostic Information" href="diagnostic.html"/>
         <link rel="prev" title="Using DFO-LS" href="userguide.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.2
+                1.1
               </div>
             
           
@@ -280,22 +280,22 @@
 <div class="section" id="dynamically-growing-initial-set">
 <h2>Dynamically Growing Initial Set<a class="headerlink" href="#dynamically-growing-initial-set" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><code class="code docutils literal"><span class="pre">growing.ndirs_initial</span></code> - Number of initial points to add (excluding <span class="math">\(x_k\)</span>). Default is <code class="code docutils literal"><span class="pre">npt-1</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.num_new_dirns_each_iter</span></code> - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 1.</li>
-<li><code class="code docutils literal"><span class="pre">growing.delta_scale_new_dirns</span></code> - When adding new search directions, the length of the step as a multiple of <span class="math">\(\Delta_k\)</span>. Default is 1, but if setting <code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step=True</span></code> should be made smaller (e.g. 0.1).</li>
-<li><code class="code docutils literal"><span class="pre">growing.do_geom_steps</span></code> - While still growing the initial set, whether to do geometry-improving steps in the trust region algorithm, as per the usual algorithm. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.safety.do_safety_step</span></code> - While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> - While still growing the initial set, whether to reduce <span class="math">\(\Delta_k\)</span> in safety steps. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.safety.full_geom_step</span></code> - While still growing the initial set, whether to do a full geometry-improving step within safety steps (the same as the post-growing phase of the algorithm). Since this involves reducing <span class="math">\(\Delta_k\)</span>, cannot be <code class="code docutils literal"><span class="pre">True</span></code> if <code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> is <code class="code docutils literal"><span class="pre">True</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code> - Whether to perturb the interpolated <span class="math">\(J_k\)</span> to make it full rank, allowing the trust region step to include components in the full search space. If <code class="code docutils literal"><span class="pre">True</span></code>, setting <code class="code docutils literal"><span class="pre">growing.num_new_dirns_each_iter</span></code> to 0 is recommended. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.ndirs_initial</span></code> - Number of initial points to add (excluding <span class="math">\(x_k\)</span>). This should only be changed to a value less than <span class="math">\(n\)</span>, and only if the default setup cost of <span class="math">\(n+1\)</span> evaluations of <code class="code docutils literal"><span class="pre">objfun</span></code> is impractical. If this is set to be less than the default, the input value <code class="code docutils literal"><span class="pre">npt</span></code> should be set to <span class="math">\(n\)</span>. If the default is used, all the below parameters have no effect on DFO-LS. Default is <code class="code docutils literal"><span class="pre">npt-1</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code> - If <code class="code docutils literal"><span class="pre">growing.ndirs_initial</span></code> is less than <code class="code docutils literal"><span class="pre">npt</span></code>, whether to perturb the interpolated <span class="math">\(J_k\)</span> to make it full rank, allowing the trust region step to include components in the full search space. Default is <code class="code docutils literal"><span class="pre">True</span></code> if <span class="math">\(m\geq n\)</span> and <code class="code docutils literal"><span class="pre">False</span></code> otherwise (opposite to <code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step</span></code>).</li>
+<li><code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step</span></code> - Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to <code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code> if <span class="math">\(m\geq n\)</span> and <code class="code docutils literal"><span class="pre">True</span></code> otherwise (opposite to <code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code>).</li>
+<li><code class="code docutils literal"><span class="pre">growing.delta_scale_new_dirns</span></code> - When adding new search directions, the length of the step as a multiple of <span class="math">\(\Delta_k\)</span>. Default is 1, or 0.1 if <code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step=True</span></code>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.full_rank.scale_factor</span></code> - Magnitude of extra components added to <span class="math">\(J_k\)</span>. Default is <span class="math">\(10^{-2}\)</span>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.full_rank.svd_scale_factor</span></code> - Floor singular values of <span class="math">\(J_k\)</span> at this factor of the last nonzero value. Default is 1.</li>
 <li><code class="code docutils literal"><span class="pre">growing.full_rank.min_sing_val</span></code> - Absolute floor on singular values of <span class="math">\(J_k\)</span>. Default is <span class="math">\(10^{-6}\)</span>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.full_rank.svd_max_jac_cond</span></code> - Cap on condition number of <span class="math">\(J_k\)</span> after applying floors to singular values (effectively another floor on the smallest singular value, since the largest singular value is fixed). Default is <span class="math">\(10^8\)</span>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.do_geom_steps</span></code> - While still growing the initial set, whether to do geometry-improving steps in the trust region algorithm, as per the usual algorithm. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.do_safety_step</span></code> - While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is <code class="code docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> - While still growing the initial set, whether to reduce <span class="math">\(\Delta_k\)</span> in safety steps. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.safety.full_geom_step</span></code> - While still growing the initial set, whether to do a full geometry-improving step within safety steps (the same as the post-growing phase of the algorithm). Since this involves reducing <span class="math">\(\Delta_k\)</span>, cannot be <code class="code docutils literal"><span class="pre">True</span></code> if <code class="code docutils literal"><span class="pre">growing.safety.reduce_delta</span></code> is <code class="code docutils literal"><span class="pre">True</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.reset_delta</span></code> - Whether or not to reset trust region radius <span class="math">\(\Delta_k\)</span> to its initial value at the end of the growing phase. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.reset_rho</span></code> - Whether or not to reset trust region radius lower bound <span class="math">\(\rho_k\)</span> to its initial value at the end of the growing phase. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
 <li><code class="code docutils literal"><span class="pre">growing.gamma_dec</span></code> - Trust region decrease parameter during the growing phase. Default is <code class="code docutils literal"><span class="pre">tr_radius.gamma_dec</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">growing.perturb_trust_region_step</span></code> - Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to <code class="code docutils literal"><span class="pre">growing.full_rank.use_full_rank_interp</span></code>. Default is <code class="code docutils literal"><span class="pre">False</span></code>.</li>
+<li><code class="code docutils literal"><span class="pre">growing.num_new_dirns_each_iter</span></code> - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 0, as this approach is not recommended.</li>
 </ul>
 </div>
 <div class="section" id="references">
@@ -356,7 +356,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.2',
+            VERSION:'1.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -94,7 +94,7 @@ class OptimResults(object):
 
 
 def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
-               diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None):
+               diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
     if r0_avg_old is None:
@@ -142,6 +142,17 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
         num_samples_run = r0_nsamples_old
         nf = nf_so_far
         nx = nx_so_far
+    
+    # On the first run, set default growing method (unless the user has already done this)
+    if default_growing_method_set_by_user is not None and (not default_growing_method_set_by_user):
+        # If m>=n, the default growing method (use_full_rank_interp) is best
+        # However, this can fail for m<n, so need to use an alternative method (perturb_trust_region_step)
+        if m < len(x0):
+            logging.debug("Inverse problem (m<n), switching default growing method")
+            params('growing.full_rank.use_full_rank_interp', new_value=False)
+            params('growing.perturb_trust_region_step', new_value=True)
+            if not params.params_changed['growing.delta_scale_new_dirns']:
+                params('growing.delta_scale_new_dirns', new_value=0.1)
 
     # Initialise controller
     control = Controller(objfun, args, x0, r0_avg, num_samples_run, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes)
@@ -836,6 +847,11 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     if user_params is not None:
         for (key, val) in user_params.items():
             params(key, new_value=val)
+    
+    # Default growing method depends on if m>=n or m<n - need to set this once we know m
+    # But should only do this if the user hasn't forced a choice on us
+    default_growing_method_set_by_user = user_params is not None and \
+        ('growing.full_rank.use_full_rank_interp' in user_params or 'growing.perturb_trust_region_step' in user_params)
 
     scaling_changes = None
     if scaling_within_bounds:
@@ -948,7 +964,7 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     nx = 0
     xmin, rmin, fmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
         solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                    diagnostic_info, scaling_changes)
+                    diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user)
 
     # Hard restarts loop
     last_successful_run = nruns
