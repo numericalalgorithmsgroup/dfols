@@ -20,3 +20,7 @@ Version 1.1 (16 Jan 2019)
 * Use different default reduced initialization cost method for inverse problems to ensure whole space is searched correctly.
 * Bug fixes: default trust region radius when scaling feasible region, exit correctly when no Jacobian returned, handling overflow at initial value
 
+Version 1.1.1 (5 Apr 2019)
+--------------------------
+* Link code to Zenodo, to create DOI - no changes to the DFO-LS algorithm.
+
