@@ -47,6 +47,7 @@ class ParameterList(object):
         # Logging
         self.params["logging.n_to_print_whole_x_vector"] = 6
         self.params["logging.save_diagnostic_info"] = False
+        self.params["logging.build_unsampled_model"] = False
         self.params["logging.save_poisedness"] = True
         self.params["logging.save_xk"] = False
         self.params["logging.save_rk"] = False
@@ -145,6 +146,8 @@ class ParameterList(object):
         elif key == "logging.n_to_print_whole_x_vector":
             type_str, nonetype_ok, lower, upper = 'int', False, 0, None
         elif key == "logging.save_diagnostic_info":
+            type_str, nonetype_ok, lower, upper = 'bool', False, None, None
+        elif key == "logging.build_unsampled_model":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
         elif key == "logging.save_poisedness":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None

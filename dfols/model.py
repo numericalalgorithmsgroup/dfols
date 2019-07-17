@@ -38,11 +38,12 @@ import scipy.linalg as LA
 from .hessian import Hessian
 from .trust_region import trsbox_geometry
 from .util import sumsq
+from .sketcher import sketch
 
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, npt, x0, r0, xl, xu, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True):
+    def __init__(self, npt, x0, r0, xl, xu, r0_nsamples, n=None, m=None, sub_sample_dim=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True, sample_method=None):
         if n is None:
             n = len(x0)
         if m is None:
@@ -54,8 +55,10 @@ class Model(object):
         assert r0.shape == (m,), "r0 has wrong shape (got %s, expect (%g,))" % (str(r0.shape), m)
         self.dim = n
         self.resid_dim = m
+        self.sub_sample_dim = sub_sample_dim
         self.num_pts = npt
         self.npt_so_far = 1  # number of points added so far (with function values)
+        self._sample_method = sample_method
 
         # Initialise to blank some useful stuff
         # Interpolation points
@@ -79,8 +82,13 @@ class Model(object):
         self.rel_tol = rel_tol
 
         # Model information
-        self.model_const = np.zeros((m, ))  # constant term for model m(s) = c + J*s
-        self.model_jac = np.zeros((m, n))  # Jacobian term for model m(s) = c + J*s
+        sample_dim = sub_sample_dim if sub_sample_dim else m
+        self.model_const = np.zeros((sample_dim, ))  # constant term for model m(s) = c + J*s
+        self.model_jac = np.zeros((sample_dim, n))  # Jacobian term for model m(s) = c + J*s
+
+        # Unsampled Model information
+        self.unsampled_model_const = np.zeros((m, ))
+        self.unsampled_model_jac = np.zeros((m, n))
 
         # Saved point (in absolute coordinates) - always check this value before quitting solver
         self.xsave = None
@@ -103,6 +111,22 @@ class Model(object):
 
     def m(self):
         return self.resid_dim
+
+    def sample_size(self):
+        return self.sub_sample_dim
+
+    def sample_residuals(self, r):
+        # sample each model differently
+        return sketch(r.T, self.sample_size(), method=self.sample_method())
+
+        # full_sample = range(self.m())
+        # if self.sample_size() is None:
+        #     return full_sample
+        # else:
+        #     return  np.sort(np.random.choice(full_sample, self.sub_sample_dim, replace=False))
+
+    def sample_method(self):
+        return self._sample_method
 
     def npt(self):
         return min(self.num_pts, self.npt_so_far)
@@ -256,6 +280,14 @@ class Model(object):
             Jd = np.dot(self.model_jac, d)  # J * d
         return Jd + (self.model_const if with_const_term else 0.0)
 
+    # refactor this and above method
+    def unsampled_model_value(self, d, d_based_at_xopt=True, with_const_term=False):
+        if d_based_at_xopt:
+            Jd = np.dot(self.unsampled_model_jac, d + self.xopt())
+        else:  # d based at xbase
+            Jd = np.dot(self.unsampled_model_jac, d)  # J * d
+        return Jd + (self.unsampled_model_const if with_const_term else 0.0)
+
     def interpolation_matrix(self):
         W = np.zeros((self.npt(), self.n()+1))
         if self.precondition:
@@ -301,7 +333,7 @@ class Model(object):
             return LA.lstsq(W, rhs * left_scaling)[0] * right_scaling
 
     def interpolate_mini_models_svd(self, verbose=False, make_full_rank=False, min_sing_val=1e-6, sing_val_frac=1.0, max_jac_cond=1e8,
-                                    get_chg_J=False):
+                                    get_chg_J=False, build_unsampled_model=False, ratio_factor=1):
         W, left_scaling, right_scaling = self.interpolation_matrix()
         self.factorise_geom_system()
         ls_interp_cond_num = np.linalg.cond(W) if verbose else 0.0  # scipy.linalg does not have condition number!
@@ -321,21 +353,25 @@ class Model(object):
             Qy, Ry = LA.qr(Y, mode='full')  # Qy is (n,n), Ry is (n,npt-1)=(n,p)
             Qhat = Qy[:, :Y.shape[1]]
             self.model_jac = np.dot(self.model_jac, np.dot(Qhat, Qhat.T))
-        for m1 in range(self.m()):
-            g_old = self.model_jac[m1, :].copy()
-            rhs = self.fval_v[fval_row_idx, m1]  # length (npt)
+
+        # sample each model differently
+        r = self.fval_v[fval_row_idx]
+        residuals = self.sample_residuals(r) if self.sample_size() is not None else r.T
+
+        for index, rhs in enumerate(residuals):
+            g_old = self.model_jac[index, :].copy()
             try:
                 dg = self.solve_geom_system(rhs)
             except LA.LinAlgError:
-                return False, None, None, None, None  # flag error
+                return False, None, None, None, None, None  # flag error
             except ValueError:
-                return False, None, None, None, None  # flag error (e.g. inf or NaN encountered)
+                return False, None, None, None, None, None  # flag error (e.g. inf or NaN encountered)
 
             if not np.all(np.isfinite(dg)):  # another check for inf or NaN
-                return False, None, None, None, None  # flag error
+                return False, None, None, None, None, None  # flag error
 
-            self.model_jac[m1, :] = dg[1:]
-            self.model_const[m1] = dg[0] - np.dot(self.model_jac[m1, :], xopt)  # shift base to xbase
+            self.model_jac[index, :] = dg[1:]
+            self.model_const[index] = dg[0] - np.dot(self.model_jac[index, :], xopt)  # shift base to xbase
             if verbose or get_chg_J:
                 norm_J_error += sumsq(dg[1:] - g_old)
                 linalg_resid += sumsq(np.dot(W, dg) - rhs)
@@ -344,7 +380,7 @@ class Model(object):
             try:
                 U, s, Vt = LA.svd(self.model_jac, full_matrices=False)  # U is (m,k), s has length k, Vt is (k,n), where k=min(m,n)
             except LA.LinAlgError:
-                return False, None, None, None, None  # flag error
+                return False, None, None, None, None, None  # flag error
             k = min(self.n(), self.m())
             r = min(self.npt_so_far - 1, self.n(), self.m())  # current number of directions (i.e. rank of J)
             floor_val = max(s[0]/max_jac_cond, sing_val_frac * s[r-1], min_sing_val)
@@ -353,12 +389,42 @@ class Model(object):
             self.model_jac = np.dot(U, np.dot(S, Vt))  # reconstruct J from new svd
 
         interp_error = 0.0
+        unsampled_interp_error = 0.0
         if verbose:
-            for k in range(self.npt()):
-                r_pred = self.model_value(self.xpt(k), d_based_at_xopt=False, with_const_term=True)
-                interp_error += self.nsamples[k] * sumsq(self.fval_v[k, :] - r_pred)
+            if build_unsampled_model:
+                # build unsampled model
+                for m1 in range(self.m()):
+                    rhs = self.fval_v[fval_row_idx, m1]  # length (npt)
+                    try:
+                        dg = self.solve_geom_system(rhs)
+                    except LA.LinAlgError:
+                        return False, None, None, None, None, None  # flag error
+                    except ValueError:
+                        return False, None, None, None, None, None  # flag error (e.g. inf or NaN encountered)
 
-        return True, interp_error, sqrt(norm_J_error), linalg_resid, ls_interp_cond_num  # flag ok
+                    if not np.all(np.isfinite(dg)):  # another check for inf or NaN
+                        return False, None, None, None, None, None  # flag error
+
+                    self.unsampled_model_jac[m1, :] = dg[1:]
+                    self.unsampled_model_const[m1] = dg[0] - np.dot(self.unsampled_model_jac[m1, :], xopt)  # shift base to xbase
+
+                for k in range(self.npt()):
+                    # Unsampled model interpolation error
+                    unsampled_r_pred = self.unsampled_model_value(self.xpt(k), d_based_at_xopt=False, with_const_term=True)
+                    # unsampled_interp_error += self.nsamples[k] * abs(sumsq(self.fval_v[k, :]) - sumsq(unsampled_r_pred))
+                    unsampled_interp_error = max(abs(sumsq(self.fval_v[k, :]) - sumsq(unsampled_r_pred)), unsampled_interp_error)
+
+                    # Sampled model interpolation error
+                    sampled_r_pred = self.model_value(self.xpt(k), d_based_at_xopt=False, with_const_term=True)
+                    # interp_error += self.nsamples[k] * abs(sumsq(unsampled_r_pred) - sumsq(sampled_r_pred * self.sample_size() / self.m()))
+                    interp_error = max(abs(sumsq(self.fval_v[k, :]) - sumsq(sampled_r_pred)/ratio_factor), interp_error)
+            else:
+                for k in range(self.npt()):
+                    # Sampled model interpolation error compared with actual objective
+                    sampled_r_pred = self.model_value(self.xpt(k), d_based_at_xopt=False, with_const_term=True)
+                    # interp_error += self.nsamples[k] * abs(sumsq(self.fval_v[k, :]) - sumsq(sampled_r_pred * self.m()/self.sample_size()))
+                    interp_error = max(abs(sumsq(self.fval_v[k, :]) - sumsq(sampled_r_pred)/ratio_factor), interp_error)
+        return True, interp_error, unsampled_interp_error, sqrt(norm_J_error), linalg_resid, ls_interp_cond_num  # flag ok
 
     def build_full_model(self):
         # Build full least squares objective model from mini-models
@@ -369,6 +435,7 @@ class Model(object):
         # Apply scaling based on convention for objective - this code uses sumsq(rvec) not 0.5*sumsq(rvec)
         g = 2.0 * np.dot(J.T, r)  # n-vector
         hess = Hessian(self.n(), vals=2.0 * np.dot(J.T, J))
+        # print(J)
         return g, hess
 
     def lagrange_gradient(self, k, factorise_first=True):

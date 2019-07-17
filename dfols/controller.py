@@ -92,12 +92,12 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes):
+    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes, sub_sample_dim, sample_method):
         self.objfun = objfun
         self.args = args
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, xl, xu, r0_nsamples, precondition=params("interpolation.precondition"),
-                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"))
+        self.model = Model(npt, x0, r0, xl, xu, r0_nsamples, sub_sample_dim=sub_sample_dim, precondition=params("interpolation.precondition"),
+                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), sample_method=sample_method)
         self.nf = nf
         self.nx = nx
         self.rhobeg = rhobeg
@@ -489,7 +489,7 @@ class Controller(object):
         self.last_successful_iter = current_iter  # reset successful iteration check
         return
 
-    def calculate_ratio(self, current_iter, rvec_list, d, gopt, hq):
+    def calculate_ratio(self, current_iter, rvec_list, d, gopt, hq, ratio_factor):
         exit_info = None
         f = sumsq(np.mean(rvec_list, axis=0))  # estimate actual objective value
         pred_reduction = - model_value(gopt, hq, d)
@@ -500,7 +500,7 @@ class Controller(object):
         if pred_reduction < 0.0:
             exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Trust region step gave model increase")
 
-        ratio = actual_reduction / pred_reduction
+        ratio = ratio_factor * actual_reduction / pred_reduction
         return ratio, exit_info
 
     def terminate_from_slow_iterations(self, current_iter, params):

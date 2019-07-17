@@ -94,7 +94,7 @@ class OptimResults(object):
 
 
 def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
-               diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None):
+               diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None, sub_sample_dim=None, ratio_factor=1, sample_method=None):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
     if r0_avg_old is None:
@@ -142,7 +142,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
         num_samples_run = r0_nsamples_old
         nf = nf_so_far
         nx = nx_so_far
-    
+
     # On the first run, set default growing method (unless the user has already done this)
     if default_growing_method_set_by_user is not None and (not default_growing_method_set_by_user):
         # If m>=n, the default growing method (use_full_rank_interp) is best
@@ -155,7 +155,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 params('growing.delta_scale_new_dirns', new_value=0.1)
 
     # Initialise controller
-    control = Controller(objfun, args, x0, r0_avg, num_samples_run, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes)
+    control = Controller(objfun, args, x0, r0_avg, num_samples_run, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params, scaling_changes, sub_sample_dim, sample_method)
 
     # Initialise interpolation set
     number_of_samples = max(nsamples(control.delta, control.rho, 0, nruns_so_far), 1)
@@ -227,13 +227,15 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 break  # quit
 
         # Interpolate mini-models
-        interp_ok, interp_error, norm_J_error, linalg_resid, ls_interp_cond_num = \
+        interp_ok, interp_error, unsampled_interp_error, norm_J_error, linalg_resid, ls_interp_cond_num = \
             control.model.interpolate_mini_models_svd(verbose=params("logging.save_diagnostic_info"),
                 make_full_rank=params("growing.full_rank.use_full_rank_interp") and not finished_growing,
                 min_sing_val=params("growing.full_rank.min_sing_val"),
                 sing_val_frac=params("growing.full_rank.svd_scale_factor"),
                 max_jac_cond=params("growing.full_rank.svd_max_jac_cond"),
-                get_chg_J=params("restarts.use_restarts") and params("restarts.auto_detect"))
+                get_chg_J=params("restarts.use_restarts") and params("restarts.auto_detect"),
+                build_unsampled_model=params("logging.build_unsampled_model"),
+                ratio_factor=ratio_factor)
         if not interp_ok:
             if params("restarts.use_restarts") and params("restarts.use_soft_restarts"):
                 number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
@@ -265,7 +267,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
             diagnostic_info.save_info_from_control(control, nruns_so_far, current_iter,
                                                    save_poisedness=params("logging.save_poisedness"))
             # norm_J_error is square of Frobenius norm of chgJ
-            diagnostic_info.update_interpolation_information(interp_error, ls_interp_cond_num, linalg_resid,
+            diagnostic_info.update_interpolation_information(interp_error, unsampled_interp_error, ls_interp_cond_num, linalg_resid,
                                                              sqrt(norm_J_error), LA.norm(gopt), LA.norm(d))
 
         if dnorm < params("general.safety_step_thresh") * control.rho and not finished_growing and params("growing.safety.do_safety_step"):
@@ -418,11 +420,11 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                     rvec_list, f_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
                                                                                                params)
-                    
+
                     if num_samples_run > 0:
                             control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0),
                                                      num_samples_run, x_in_abs_coords=True)
-                    
+
                     if exit_info is not None:
                         nruns_so_far += 1
                         break  # quit
@@ -497,7 +499,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            ratio, exit_info = control.calculate_ratio(current_iter, rvec_list[:num_samples_run, :], d, gopt, hq)
+            ratio, exit_info = control.calculate_ratio(current_iter, rvec_list[:num_samples_run, :], d, gopt, hq, ratio_factor)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -816,7 +818,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
 
 
 def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
-          objfun_has_noise=False, scaling_within_bounds=False):
+          objfun_has_noise=False, scaling_within_bounds=False, sub_sample_dim=None, zero_residual=None, ratio_factor=1, sample_method=None):
     x0 = x0.astype(np.float)
     n = len(x0)
 
@@ -842,13 +844,21 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
         maxfun = min(100 * (n + 1), 1000)  # 100 gradients, capped at 1000
     if nsamples is None:
         nsamples = lambda delta, rho, iter, nruns: 1  # no averaging
+    if sub_sample_dim is None:
+        if zero_residual:
+            sub_sample_dim = round(1.1*n)
+        elif zero_residual == False:
+            sub_sample_dim = 2*n
+    else:
+        assert zero_residual is None, "zero_residual should not be set when sub_sample_dim is set"
 
+    # objfun.set_sampled_dim(sub_sample_dim)
     # Set parameters
     params = ParameterList(int(n), int(npt), int(maxfun), objfun_has_noise=objfun_has_noise)  # make sure int, not np.int
     if user_params is not None:
         for (key, val) in user_params.items():
             params(key, new_value=val)
-    
+
     # Default growing method depends on if m>=n or m<n - need to set this once we know m
     # But should only do this if the user hasn't forced a choice on us
     default_growing_method_set_by_user = user_params is not None and \
@@ -965,14 +975,14 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     nx = 0
     xmin, rmin, fmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
         solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                    diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user)
+                    diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user, sub_sample_dim=sub_sample_dim, ratio_factor=ratio_factor, sample_method=sample_method)
 
     # Hard restarts loop
     last_successful_run = nruns
     while params("restarts.use_restarts") and not params("restarts.use_soft_restarts") and nf < maxfun and \
             exit_info.able_to_do_restart() and nruns - last_successful_run < params("restarts.max_unsuccessful_restarts"):
         rhoend = params("restarts.rhoend_scale") * rhoend
-        
+
         if params("restarts.increase_npt"):
             npt += params("restarts.increase_npt_amt")
             npt = min(npt, params("restarts.max_npt"))
@@ -982,11 +992,11 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
         if params("restarts.hard.use_old_rk"):
             xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                            diagnostic_info, scaling_changes, r0_avg_old=rmin, r0_nsamples_old=nsamples_min)
+                            diagnostic_info, scaling_changes, r0_avg_old=rmin, r0_nsamples_old=nsamples_min, sub_sample_dim=sub_sample_dim, ratio_factor=ratio_factor, sample_method=sample_method)
         else:
             xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                           diagnostic_info, scaling_changes)
+                           diagnostic_info, scaling_changes, sub_sample_dim=sub_sample_dim, ratio_factor=ratio_factor, sample_method=sample_method)
 
         if fmin2 < fmin or np.isnan(fmin):
             logging.info("Successful run with new f = %s compared to old f = %s" % (fmin2, fmin))

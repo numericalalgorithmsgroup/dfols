@@ -58,6 +58,7 @@ class DiagnosticInfo(object):
         self.data["delta"] = []
 
         self.data["interpolation_error"] = []
+        self.data["unsampled_interpolation_error"] = []
         self.data["interpolation_condition_number"] = []
         self.data["interpolation_change_J_norm"] = []
         self.data["interpolation_total_residual"] = []
@@ -115,6 +116,7 @@ class DiagnosticInfo(object):
             self.data["poisedness"].append(0.0)
         # The other things we can't get just yet, so save a default value there for now
         self.data["interpolation_error"].append(None)
+        self.data["unsampled_interpolation_error"].append(None)
         self.data["interpolation_condition_number"].append(None)
         self.data["interpolation_change_J_norm"].append(None)
         self.data["interpolation_total_residual"].append(None)
@@ -125,9 +127,10 @@ class DiagnosticInfo(object):
         self.data["slow_iter"].append(None)
         return
 
-    def update_interpolation_information(self, interp_error, interp_cond_num, interp_total_resid, norm_change_J,
+    def update_interpolation_information(self, interp_error, unsampled_interp_error, interp_cond_num, interp_total_resid, norm_change_J,
                                          norm_gk, norm_sk):
         self.data["interpolation_error"][-1] = interp_error
+        self.data["unsampled_interpolation_error"][-1] = unsampled_interp_error
         self.data["interpolation_condition_number"][-1] = interp_cond_num
         self.data["interpolation_total_residual"][-1] = interp_total_resid
         self.data["interpolation_change_J_norm"][-1] = norm_change_J
