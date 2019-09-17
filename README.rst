@@ -18,15 +18,21 @@ DFO-LS: Derivative-Free Optimizer for Least-Squares
    :target: https://doi.org/10.5281/zenodo.2630426
    :alt: DOI:10.5281/zenodo.2630426
 
-DFO-LS is a flexible package for solving nonlinear least-squares minimization, without requiring derivatives of the objective. It is particularly useful when evaluations of the objective function are expensive and/or noisy.
+DFO-LS is a flexible package for solving nonlinear least-squares minimization, without requiring derivatives of the objective. It is particularly useful when evaluations of the objective function are expensive and/or noisy. DFO-LS is more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
 
-This is an implementation of the algorithm from our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://arxiv.org/abs/1804.00154>`_, technical report, University of Oxford, (2018). For reproducibility of all figures in this paper, please feel free to contact the authors. DFO-LS is more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
+This is an implementation of the algorithm from our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_]. For reproducibility of all figures in this paper, please feel free to contact the authors. 
 
 If you are interested in solving general optimization problems (without a least-squares structure), you may wish to try `Py-BOBYQA <https://github.com/numericalalgorithmsgroup/pybobyqa>`_, which has many of the same features as DFO-LS.
 
 Documentation
 -------------
 See manual.pdf or `here <https://numericalalgorithmsgroup.github.io/dfols/>`_.
+
+Citation
+--------
+If you use DFO-LS in a paper, please cite:
+
+Cartis, C., Fiala, J., Marteau, B. and Roberts, L., `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41.
 
 Requirements
 ------------
