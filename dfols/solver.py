@@ -817,6 +817,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
 
 def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False):
+    x0 = x0.astype(np.float)
     n = len(x0)
 
     # Set missing inputs (if not specified) to some sensible defaults
@@ -826,8 +827,8 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
         scaling_within_bounds = False
     else:
         assert len(bounds) == 2, "bounds must be a 2-tuple of (lower, upper), where both are arrays of size(x0)"
-        xl = bounds[0]
-        xu = bounds[1]
+        xl = bounds[0].astype(np.float)
+        xu = bounds[1].astype(np.float)
 
     if xl is None:
         xl = -1e20 * np.ones((n,))  # unconstrained
