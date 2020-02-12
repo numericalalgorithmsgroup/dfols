@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization &mdash; DFO-LS v1.1.1 documentation</title>
+  <title>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization &mdash; DFO-LS v1.2 documentation</title>
   
 
   
@@ -17,41 +17,36 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="DFO-LS v1.1.1 documentation" href="#"/>
-        <link rel="next" title="Installing DFO-LS" href="install.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installing DFO-LS" href="install.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -65,7 +60,7 @@
             
             
               <div class="version">
-                1.1.1
+                1.2
               </div>
             
           
@@ -108,7 +103,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="#">DFO-LS</a>
@@ -116,9 +111,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -162,14 +158,15 @@
             
   <div class="section" id="dfo-ls-derivative-free-optimizer-for-least-squares-minimization">
 <h1>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization<a class="headerlink" href="#dfo-ls-derivative-free-optimizer-for-least-squares-minimization" title="Permalink to this headline">¶</a></h1>
-<p><strong>Release:</strong> 1.1.1</p>
-<p><strong>Date:</strong> 05 April 2019</p>
+<p><strong>Release:</strong> 1.2</p>
+<p><strong>Date:</strong> 12 February 2020</p>
 <p><strong>Author:</strong> <a class="reference external" href="mailto:lindon&#46;roberts&#37;&#52;&#48;maths&#46;ox&#46;ac&#46;uk">Lindon Roberts</a></p>
 <p>DFO-LS is a flexible package for finding local solutions to nonlinear least-squares minimization problems (with optional bound constraints), without requiring any derivatives of the objective. DFO-LS stands for Derivative-Free Optimizer for Least-Squares.</p>
 <p>That is, DFO-LS solves</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
+<p>The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).</p>
 <p>Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, <a class="reference external" href="https://arxiv.org/abs/1804.00154">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, technical report, University of Oxford, (2018). DFO-LS is a more flexible version of <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfogn">DFO-GN</a>.</p>
 <p>If you are interested in solving general optimization problems (without a least-squares structure), you may wish to try <a class="reference external" href="https://github.com/numericalalgorithmsgroup/pybobyqa">Py-BOBYQA</a>, which has many of the same features as DFO-LS.</p>
 <p>DFO-LS is released under the GNU General Public License. Please <a class="reference external" href="http://www.nag.com/content/worldwide-contact-information">contact NAG</a> for alternative licensing.</p>
@@ -233,6 +230,7 @@
 <li class="toctree-l2"><a class="reference internal" href="history.html#version-1-0-2-20-jun-2018">Version 1.0.2 (20 Jun 2018)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="history.html#version-1-1-16-jan-2019">Version 1.1 (16 Jan 2019)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="history.html#version-1-1-1-5-apr-2019">Version 1.1.1 (5 Apr 2019)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="history.html#version-1-2-12-feb-2020">Version 1.2 (12 Feb 2020)</a></li>
 </ul>
 </li>
 </ul>
@@ -245,9 +243,7 @@
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -263,11 +259,11 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Lindon Roberts.
+        &copy; Copyright 2017, Lindon Roberts
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -280,37 +276,15 @@
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

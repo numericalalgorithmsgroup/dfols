@@ -24,8 +24,8 @@ Version 1.1.1 (5 Apr 2019)
 --------------------------
 * Link code to Zenodo, to create DOI - no changes to the DFO-LS algorithm.
 
-Version 1.2
------------
+Version 1.2 (12 Feb 2020)
+-------------------------
 * Use deterministic initialisation by default (so it is no longer necessary to set a random seed for reproducibility of DFO-LS results).
 * Full model Hessian stored rather than just upper triangular part - this improves the runtime of Hessian-based operations.
 * Faster trust-region and geometry subproblem solutions in Fortran using the `trustregion <https://github.com/lindonroberts/trust-region>`_ package.

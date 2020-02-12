@@ -11,7 +11,7 @@ DFO-LS is designed to solve the local optimization problem
    \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
    \text{s.t.} &\quad  a \leq x \leq b
 
-where the bound constraints :math:`a \leq x \leq b` are optional.
+where the bound constraints :math:`a \leq x \leq b` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper [CFMR2018]_.
@@ -68,7 +68,8 @@ The :code:`solve` function has several optional arguments which the user may pro
       dfols.solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, 
                   rhoend=1e-8, maxfun=None, nsamples=None, 
                   user_params=None, objfun_has_noise=False, 
-                  scaling_within_bounds=False)
+                  scaling_within_bounds=False,
+                  do_logging=True, print_progress=False)
 
 These arguments are:
 
@@ -82,6 +83,8 @@ These arguments are:
 * :code:`user_params` - a Python dictionary :code:`{'param1': val1, 'param2':val2, ...}` of optional parameters. A full list of available options is given in the next section :doc:`advanced`.
 * :code:`objfun_has_noise` - a flag to indicate whether or not :code:`objfun` has stochastic noise; i.e. will calling :code:`objfun(x)` multiple times at the same value of :code:`x` give different results? This is used to set some sensible default parameters (including using multiple restarts), all of which can be overridden by the values provided in :code:`user_params`.
 * :code:`scaling_within_bounds` - a flag to indicate whether the algorithm should internally shift and scale the entries of :code:`x` so that the bounds become :math:`0 \leq x \leq 1`. This is useful is you are setting :code:`bounds` and the bounds have different orders of magnitude. If :code:`scaling_within_bounds=True`, the values of :code:`rhobeg` and :code:`rhoend` apply to the *shifted* variables.
+* :code:`do_logging` - a flag to indicate whether logging output should be produced. This is not automatically visible unless you use the Python `logging <https://docs.python.org/3/library/logging.html>`_ module (see below for simple usage).
+* :code:`print_progress` - a flag to indicate whether to print a per-iteration progress log to terminal.
 
 In general when using optimization software, it is good practice to scale your variables so that moving each by a given amount has approximately the same impact on the objective function.
 The :code:`scaling_within_bounds` flag is designed to provide an easy way to achieve this, if you have set the bounds :code:`lower` and :code:`upper`.
@@ -116,9 +119,6 @@ A commonly-used starting point for testing purposes is :math:`x_0=(-1.2,1)`. The
       # Define the starting point
       x0 = np.array([-1.2, 1.0])
       
-      # Set random seed (for reproducibility)
-      np.random.seed(0)
-      
       # Call DFO-LS
       soln = dfols.solve(rosenbrock, x0)
       
@@ -130,12 +130,12 @@ Note that DFO-LS is a randomized algorithm: in its first phase, it builds an int
   .. code-block:: none
   
       ****** DFO-LS Results ******
-      Solution xmin = [ 1.  1.]
-      Residual vector = [ -2.22044605e-15   0.00000000e+00]
-      Objective value f(xmin) = 4.930380658e-30
-      Needed 36 objective evaluations (at 36 points)
-      Approximate Jacobian = [[ -1.98957443e+01   1.00000000e+01]
-       [ -1.00000000e+00   8.37285083e-16]]
+      Solution xmin = [1. 1.]
+      Residual vector = [0. 0.]
+      Objective value f(xmin) = 0
+      Needed 33 objective evaluations (at 33 points)
+      Approximate Jacobian = [[-2.00180000e+01  1.00000000e+01]
+       [-1.00000000e+00  8.19971362e-16]]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
@@ -160,12 +160,12 @@ DFO-LS correctly finds the solution to the constrained problem:
   .. code-block:: none
   
       ****** DFO-LS Results ******
-      Solution xmin = [ 0.9   0.81]
-      Residual vector = [ 0.   0.1]
+      Solution xmin = [0.9  0.81]
+      Residual vector = [3.10862447e-14 1.00000000e-01]
       Objective value f(xmin) = 0.01
-      Needed 65 objective evaluations (at 65 points)
-      Approximate Jacobian = [[ -1.79999998e+01   9.99999990e+00]
-       [ -9.99999998e-01  -2.53940698e-09]]
+      Needed 58 objective evaluations (at 58 points)
+      Approximate Jacobian = [[-1.79999999e+01  9.99999998e+00]
+       [-1.00000000e+00  8.62398179e-10]]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -193,12 +193,12 @@ And we can now see each evaluation of :code:`objfun`:
   .. code-block:: none
   
       Function eval 1 at point 1 has f = 39.65 at x = [-1.2   0.85]
-      Initialising (random directions)
+      Initialising (coordinate directions)
       Function eval 2 at point 2 has f = 14.337296 at x = [-1.08  0.85]
       Function eval 3 at point 3 has f = 55.25 at x = [-1.2   0.73]
       ...
-      Function eval 64 at point 64 has f = 0.0100000029949496 at x = [ 0.89999999  0.81      ]
-      Function eval 65 at point 65 has f = 0.00999999999999993 at x = [ 0.9   0.81]
+      Function eval 57 at point 57 has f = 0.010000001407575 at x = [0.89999999 0.80999999]
+      Function eval 58 at point 58 has f = 0.00999999999999997 at x = [0.9  0.81]
       Did a total of 1 run(s)
 
 If we wanted to save this output to a file, we could replace the above call to :code:`logging.basicConfig()` with
@@ -207,6 +207,20 @@ If we wanted to save this output to a file, we could replace the above call to :
   
       logging.basicConfig(filename="myfile.log", level=logging.INFO, 
                           format='%(message)s', filemode='w')
+
+If you have logging for some parts of your code and you want to deactivate all DFO-LS logging, you can use the optional argument :code:`do_logging=False` in :code:`dfols.solve()`.
+
+An alternative option available is to get DFO-LS to print to terminal progress information every iteration, by setting the optional argument :code:`print_progress=True` in :code:`dfols.solve()`. If we do this for the above example, we get
+
+  .. code-block:: none
+  
+       Run  Iter     Obj       Grad     Delta      rho     Evals 
+        1     1    1.43e+01  1.61e+02  1.20e-01  1.20e-01    3   
+        1     2    4.35e+00  3.77e+01  4.80e-01  1.20e-01    4   
+        1     3    4.35e+00  3.77e+01  6.00e-02  1.20e-02    4 
+      ...
+        1    55    1.00e-02  2.00e-01  1.50e-08  1.00e-08   56   
+        1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
 
 Example: Noisy Objective Evaluation
 -----------------------------------
@@ -269,25 +283,25 @@ The output of this is:
       objfun(x0) = [-4.39545837  2.20903317]
       
       ****** DFO-LS Results ******
-      Solution xmin = [ 1.  1.]
-      Residual vector = [  3.51006670e-08   2.00158313e-10]
-      Objective value f(xmin) = 1.232096886e-15
-      Needed 46 objective evaluations (at 46 points)
-      Approximate Jacobian = [[ -2.04330578e+01   1.00296466e+01]
-       [ -9.88260906e-01  -3.77364910e-03]]
+      Solution xmin = [1.         1.00000003]
+      Residual vector = [ 1.59634974e-07 -4.63036198e-09]
+      Objective value f(xmin) = 2.550476524e-14
+      Needed 53 objective evaluations (at 53 points)
+      Approximate Jacobian = [[-1.98196347e+01  9.90335675e+00]
+       [-1.01941978e+00  4.24991776e-05]]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
       
       
       ** SciPy results **
-      Solution xmin = [-1.2  1. ]
-      Objective value f(xmin) = 23.96809472
-      Needed 5 objective evaluations
+      Solution xmin = [-1.20000087  1.00000235]
+      Objective value f(xmin) = 23.95535774
+      Needed 6 objective evaluations
       Exit flag = 3
       `xtol` termination condition is satisfied.
 
-DFO-LS is able to find the solution with only 10 more function evaluations than in the noise-free case. However SciPy's derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.
+DFO-LS is able to find the solution with 20 more function evaluations as in the noise-free case. However SciPy's derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.
 
 As noted above, DFO-LS has an input parameter :code:`objfun_has_noise` to indicate if :code:`objfun` has noise in it, which it does in this case. Therefore we can call DFO-LS with
 
@@ -300,12 +314,12 @@ Using this setting, we find the correct solution faster:
   .. code-block:: none
   
       ****** DFO-LS Results ******
-      Solution xmin = [ 1.  1.]
-      Residual vector = [ -5.80172077e-09   2.10781076e-09]
-      Objective value f(xmin) = 3.810283004e-17
+      Solution xmin = [1. 1.]
+      Residual vector = [-4.06227943e-08  2.51525603e-10]
+      Objective value f(xmin) = 1.650274685e-15
       Needed 29 objective evaluations (at 29 points)
-      Approximate Jacobian = [[ -1.96671666e+01   9.88784341e+00]
-       [ -1.00451147e+00   1.43596001e-04]]
+      Approximate Jacobian = [[-1.99950530e+01  1.00670067e+01]
+       [-9.96161167e-01 -2.41166495e-04]]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
@@ -342,9 +356,6 @@ The code for this is:
       # Define the starting point
       x0 = np.array([100.0, -1.0])
       
-      # Set random seed (for reproducibility)
-      np.random.seed(0)
-      
       # We expect exponential decay: set upper bound x[1] <= 0
       upper = np.array([1e20, 0.0])
 
@@ -358,23 +369,22 @@ The output of this is (noting that DFO-LS moves :math:`x_0` to be far away enoug
 
   .. code-block:: none
   
-      RuntimeWarning: x0 too close to upper bound, adjusting
       ****** DFO-LS Results ******
-      Solution xmin = [  4.98830860e+02  -1.01256863e-01]
-      Residual vector = [-0.18167084  0.06098401  0.76276294  0.11962349 -0.265898   -0.59788818
-       -1.02611899 -1.51235371 -1.56145452 -1.63266662]
+      Solution xmin = [ 4.98830861e+02 -1.01256863e-01]
+      Residual vector = [-0.1816709   0.06098397  0.76276301  0.11962354 -0.26589796 -0.59788814
+       -1.02611897 -1.5123537  -1.56145452 -1.63266662]
       Objective value f(xmin) = 9.504886892
-      Needed 99 objective evaluations (at 99 points)
-      Approximate Jacobian = [[ -9.12901557e-01  -4.09843510e+02]
-       [ -8.59085471e-01  -6.42808522e+02]
-       [ -2.47253894e-01  -1.70205399e+03]
-       [ -1.34675403e-01  -1.33017159e+03]
-       [ -8.71359818e-02  -1.04752827e+03]
-       [ -5.75305576e-02  -8.09280563e+02]
-       [ -2.83185322e-02  -4.97239478e+02]
-       [ -2.22993603e-03  -6.70749492e+01]
-       [ -5.24135530e-04  -1.95045149e+01]
-       [ -2.65977795e-04  -1.07858009e+01]]
+      Needed 79 objective evaluations (at 79 points)
+      Approximate Jacobian = [[-9.12897463e-01 -4.09843514e+02]
+       [-8.59085679e-01 -6.42808544e+02]
+       [-2.47252555e-01 -1.70205419e+03]
+       [-1.34676365e-01 -1.33017181e+03]
+       [-8.71355033e-02 -1.04752848e+03]
+       [-5.75304364e-02 -8.09280752e+02]
+       [-2.83184867e-02 -4.97239623e+02]
+       [-2.22992989e-03 -6.70749826e+01]
+       [-5.24129962e-04 -1.95045269e+01]
+       [-2.65956876e-04 -1.07858081e+01]]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -438,9 +448,6 @@ The code for this is:
       #          DFO-LS returns will likely depend on x0!
       x0 = np.array([0.1, -2.0])
       
-      # Set random seed (for reproducibility)
-      np.random.seed(0)
-      
       # Call DFO-LS
       soln = dfols.solve(nonlinear_system, x0)
       
@@ -454,11 +461,11 @@ The output of this is
   
       ****** DFO-LS Results ******
       Solution xmin = [ 0.09777309 -2.32510588]
-      Residual vector = [  2.89990254e-13   3.31557004e-12]
-      Objective value f(xmin) = 1.107709904e-23
-      Needed 18 objective evaluations (at 18 points)
-      Approximate Jacobian = [[  3.32510429   0.90222738]
-       [ 10.22774647  -0.9999939 ]]
+      Residual vector = [-1.45394186e-09 -1.95108811e-08]
+      Objective value f(xmin) = 3.827884295e-16
+      Needed 13 objective evaluations (at 13 points)
+      Approximate Jacobian = [[ 3.32499552  0.90216381]
+       [10.22664908 -1.00061604]]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************

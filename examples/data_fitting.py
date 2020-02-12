@@ -26,6 +26,7 @@ soln = dfols.solve(prediction_error, x0, bounds=(None, upper))
 
 # Display output
 print(soln)
+exit()
 
 # Plot calibrated model vs. observations
 ts = np.linspace(0.0, 90.0)

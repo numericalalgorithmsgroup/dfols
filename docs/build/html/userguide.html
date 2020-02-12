@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using DFO-LS &mdash; DFO-LS v1.1.1 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.2 documentation</title>
   
 
   
@@ -17,42 +17,37 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="DFO-LS v1.1.1 documentation" href="index.html"/>
-        <link rel="next" title="Advanced Usage" href="advanced.html"/>
-        <link rel="prev" title="Overview" href="info.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced Usage" href="advanced.html" />
+    <link rel="prev" title="Overview" href="info.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                1.1.1
+                1.2
               </div>
             
           
@@ -120,7 +115,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">DFO-LS</a>
@@ -128,9 +123,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -178,95 +174,98 @@
 <div class="section" id="nonlinear-least-squares-minimization">
 <h2>Nonlinear Least-Squares Minimization<a class="headerlink" href="#nonlinear-least-squares-minimization" title="Permalink to this headline">¶</a></h2>
 <p>DFO-LS is designed to solve the local optimization problem</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
-<p>where the bound constraints <span class="math">\(a \leq x \leq b\)</span> are optional.</p>
+<p>where the bound constraints <span class="math notranslate nohighlight">\(a \leq x \leq b\)</span> are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).</p>
 <p>DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the paper <a class="reference internal" href="#cfmr2018" id="id1">[CFMR2018]</a>.</p>
+For an in-depth technical description of the algorithm see the paper <a class="reference internal" href="#cfmr2018" id="id1"><span>[CFMR2018]</span></a>.</p>
 </div>
 <div class="section" id="how-to-use-dfo-ls">
 <h2>How to use DFO-LS<a class="headerlink" href="#how-to-use-dfo-ls" title="Permalink to this headline">¶</a></h2>
-<p>The main interface to DFO-LS is via the function <code class="code docutils literal"><span class="pre">solve</span></code></p>
+<p>The main interface to DFO-LS is via the function <code class="code docutils literal notranslate"><span class="pre">solve</span></code></p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The input <code class="code docutils literal"><span class="pre">objfun</span></code> is a Python function which takes an input <span class="math">\(x\in\mathbb{R}^n\)</span> and returns the vector of residuals <span class="math">\([r_1(x)\: \cdots \: r_m(x)]\in\mathbb{R}^m\)</span>. Both the input and output of <code class="code docutils literal"><span class="pre">objfun</span></code> must be one-dimensional NumPy arrays (i.e. with <code class="code docutils literal"><span class="pre">x.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code> and <code class="code docutils literal"><span class="pre">objfun(x).shape</span> <span class="pre">==</span> <span class="pre">(m,)</span></code>).</p>
-<p>The input <code class="code docutils literal"><span class="pre">x0</span></code> is the starting point for the solver, and (where possible) should be set to be the best available estimate of the true solution <span class="math">\(x_{min}\in\mathbb{R}^n\)</span>. It should be specified as a one-dimensional NumPy array (i.e. with <code class="code docutils literal"><span class="pre">x0.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code>).
-As DFO-LS is a local solver, providing different values for <code class="code docutils literal"><span class="pre">x0</span></code> may cause it to return different solutions, with possibly different objective values.</p>
-<p>The output of <code class="code docutils literal"><span class="pre">dfols.solve</span></code> is an object containing:</p>
+<p>The input <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> is a Python function which takes an input <span class="math notranslate nohighlight">\(x\in\mathbb{R}^n\)</span> and returns the vector of residuals <span class="math notranslate nohighlight">\([r_1(x)\: \cdots \: r_m(x)]\in\mathbb{R}^m\)</span>. Both the input and output of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> must be one-dimensional NumPy arrays (i.e. with <code class="code docutils literal notranslate"><span class="pre">x.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code> and <code class="code docutils literal notranslate"><span class="pre">objfun(x).shape</span> <span class="pre">==</span> <span class="pre">(m,)</span></code>).</p>
+<p>The input <code class="code docutils literal notranslate"><span class="pre">x0</span></code> is the starting point for the solver, and (where possible) should be set to be the best available estimate of the true solution <span class="math notranslate nohighlight">\(x_{min}\in\mathbb{R}^n\)</span>. It should be specified as a one-dimensional NumPy array (i.e. with <code class="code docutils literal notranslate"><span class="pre">x0.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code>).
+As DFO-LS is a local solver, providing different values for <code class="code docutils literal notranslate"><span class="pre">x0</span></code> may cause it to return different solutions, with possibly different objective values.</p>
+<p>The output of <code class="code docutils literal notranslate"><span class="pre">dfols.solve</span></code> is an object containing:</p>
 <ul class="simple">
-<li><code class="code docutils literal"><span class="pre">soln.x</span></code> - an estimate of the solution, <span class="math">\(x_{min}\in\mathbb{R}^n\)</span>, a one-dimensional NumPy array.</li>
-<li><code class="code docutils literal"><span class="pre">soln.resid</span></code> - the vector of residuals at the calculated solution, <span class="math">\([r_1(x_{min})\:\cdots\: r_m(x_{min})]\)</span>, a one-dimensional NumPy array.</li>
-<li><code class="code docutils literal"><span class="pre">soln.f</span></code> - the objective value at the calculated solution, <span class="math">\(f(x_{min})\)</span>, a Float.</li>
-<li><code class="code docutils literal"><span class="pre">soln.jacobian</span></code> - an estimate of the Jacobian matrix of first derivatives of the residuals, <span class="math">\(J_{i,j} \approx \partial r_i(x_{min})/\partial x_j\)</span>, a NumPy array of size <span class="math">\(m\times n\)</span>.</li>
-<li><code class="code docutils literal"><span class="pre">soln.nf</span></code> - the number of evaluations of <code class="code docutils literal"><span class="pre">objfun</span></code> that the algorithm needed, an Integer.</li>
-<li><code class="code docutils literal"><span class="pre">soln.nx</span></code> - the number of points <span class="math">\(x\)</span> at which <code class="code docutils literal"><span class="pre">objfun</span></code> was evaluated, an Integer. This may be different to <code class="code docutils literal"><span class="pre">soln.nf</span></code> if sample averaging is used.</li>
-<li><code class="code docutils literal"><span class="pre">soln.nruns</span></code> - the number of runs performed by DFO-LS (more than 1 if using multiple restarts), an Integer.</li>
-<li><code class="code docutils literal"><span class="pre">soln.flag</span></code> - an exit flag, which can take one of several values (listed below), an Integer.</li>
-<li><code class="code docutils literal"><span class="pre">soln.msg</span></code> - a description of why the algorithm finished, a String.</li>
-<li><code class="code docutils literal"><span class="pre">soln.diagnostic_info</span></code> - a table of diagnostic information showing the progress of the solver, a Pandas DataFrame.</li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.x</span></code> - an estimate of the solution, <span class="math notranslate nohighlight">\(x_{min}\in\mathbb{R}^n\)</span>, a one-dimensional NumPy array.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.resid</span></code> - the vector of residuals at the calculated solution, <span class="math notranslate nohighlight">\([r_1(x_{min})\:\cdots\: r_m(x_{min})]\)</span>, a one-dimensional NumPy array.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.f</span></code> - the objective value at the calculated solution, <span class="math notranslate nohighlight">\(f(x_{min})\)</span>, a Float.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.jacobian</span></code> - an estimate of the Jacobian matrix of first derivatives of the residuals, <span class="math notranslate nohighlight">\(J_{i,j} \approx \partial r_i(x_{min})/\partial x_j\)</span>, a NumPy array of size <span class="math notranslate nohighlight">\(m\times n\)</span>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.nf</span></code> - the number of evaluations of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> that the algorithm needed, an Integer.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.nx</span></code> - the number of points <span class="math notranslate nohighlight">\(x\)</span> at which <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> was evaluated, an Integer. This may be different to <code class="code docutils literal notranslate"><span class="pre">soln.nf</span></code> if sample averaging is used.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.nruns</span></code> - the number of runs performed by DFO-LS (more than 1 if using multiple restarts), an Integer.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.flag</span></code> - an exit flag, which can take one of several values (listed below), an Integer.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.msg</span></code> - a description of why the algorithm finished, a String.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.diagnostic_info</span></code> - a table of diagnostic information showing the progress of the solver, a Pandas DataFrame.</p></li>
 </ul>
-<p>The possible values of <code class="code docutils literal"><span class="pre">soln.flag</span></code> are defined by the following variables:</p>
+<p>The possible values of <code class="code docutils literal notranslate"><span class="pre">soln.flag</span></code> are defined by the following variables:</p>
 <ul class="simple">
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_SUCCESS</span></code> - DFO-LS terminated successfully (the objective value or trust region radius are sufficiently small).</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_MAXFUN_WARNING</span></code> - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_SLOW_WARNING</span></code> - maximum number of slow iterations reached.</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_FALSE_SUCCESS_WARNING</span></code> - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_INPUT_ERROR</span></code> - error in the inputs.</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_TR_INCREASE_ERROR</span></code> - error occurred when solving the trust region subproblem.</li>
-<li><code class="code docutils literal"><span class="pre">soln.EXIT_LINALG_ERROR</span></code> - linear algebra error, e.g. the interpolation points produced a singular linear system.</li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_SUCCESS</span></code> - DFO-LS terminated successfully (the objective value or trust region radius are sufficiently small).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_MAXFUN_WARNING</span></code> - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_SLOW_WARNING</span></code> - maximum number of slow iterations reached.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_FALSE_SUCCESS_WARNING</span></code> - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_INPUT_ERROR</span></code> - error in the inputs.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_TR_INCREASE_ERROR</span></code> - error occurred when solving the trust region subproblem.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_LINALG_ERROR</span></code> - linear algebra error, e.g. the interpolation points produced a singular linear system.</p></li>
 </ul>
-<p>These variables are defined in the <code class="code docutils literal"><span class="pre">soln</span></code> object, so can be accessed with, for example</p>
+<p>These variables are defined in the <code class="code docutils literal notranslate"><span class="pre">soln</span></code> object, so can be accessed with, for example</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">soln</span><span class="o">.</span><span class="n">flag</span> <span class="o">==</span> <span class="n">soln</span><span class="o">.</span><span class="n">EXIT_SUCCESS</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Success!&quot;</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">soln</span><span class="o">.</span><span class="n">flag</span> <span class="o">==</span> <span class="n">soln</span><span class="o">.</span><span class="n">EXIT_SUCCESS</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Success!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 </div>
 <div class="section" id="optional-arguments">
 <h2>Optional Arguments<a class="headerlink" href="#optional-arguments" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="code docutils literal"><span class="pre">solve</span></code> function has several optional arguments which the user may provide:</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">solve</span></code> function has several optional arguments which the user may provide:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">npt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rhobeg</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">rhoend</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nsamples</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">user_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">objfun_has_noise</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-            <span class="n">scaling_within_bounds</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">npt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhobeg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">rhoend</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">user_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">objfun_has_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">scaling_within_bounds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">do_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">print_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>These arguments are:</p>
 <ul class="simple">
-<li><code class="code docutils literal"><span class="pre">args</span></code> - a tuple of extra arguments passed to the objective function.</li>
-<li><code class="code docutils literal"><span class="pre">bounds</span></code> - a tuple <code class="code docutils literal"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> with the vectors <span class="math">\(a\)</span> and <span class="math">\(b\)</span> of lower and upper bounds on <span class="math">\(x\)</span> (default is <span class="math">\(a_i=-10^{20}\)</span> and <span class="math">\(b_i=10^{20}\)</span>). To set bounds for either <code class="code docutils literal"><span class="pre">lower</span></code> or <code class="code docutils literal"><span class="pre">upper</span></code>, but not both, pass a tuple <code class="code docutils literal"><span class="pre">(lower,</span> <span class="pre">None)</span></code> or <code class="code docutils literal"><span class="pre">(None,</span> <span class="pre">upper)</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">npt</span></code> - the number of interpolation points to use (default is <code class="code docutils literal"><span class="pre">len(x0)+1</span></code>). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in <code class="code docutils literal"><span class="pre">user_params</span></code>).</li>
-<li><code class="code docutils literal"><span class="pre">rhobeg</span></code> - the initial value of the trust region radius (default is <span class="math">\(0.1\max(\|x_0\|_{\infty}, 1)\)</span>, or 0.1 if <code class="code docutils literal"><span class="pre">scaling_within_bounds</span></code>).</li>
-<li><code class="code docutils literal"><span class="pre">rhoend</span></code> - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is <span class="math">\(10^{-8}\)</span>).</li>
-<li><code class="code docutils literal"><span class="pre">maxfun</span></code> - the maximum number of objective evaluations the algorithm may request (default is <span class="math">\(\min(100(n+1),1000)\)</span>).</li>
-<li><code class="code docutils literal"><span class="pre">nsamples</span></code> - a Python function <code class="code docutils literal"><span class="pre">nsamples(delta,</span> <span class="pre">rho,</span> <span class="pre">iter,</span> <span class="pre">nrestarts)</span></code> which returns the number of times to evaluate <code class="code docutils literal"><span class="pre">objfun</span></code> at a given point. This is only applicable for objectives with stochastic noise, when averaging multiple evaluations at the same point produces a more accurate value. The input parameters are the trust region radius (<code class="code docutils literal"><span class="pre">delta</span></code>), the lower bound on the trust region radius (<code class="code docutils literal"><span class="pre">rho</span></code>), how many iterations the algorithm has been running for (<code class="code docutils literal"><span class="pre">iter</span></code>), and how many restarts have been performed (<code class="code docutils literal"><span class="pre">nrestarts</span></code>). Default is no averaging (i.e. <code class="code docutils literal"><span class="pre">nsamples(delta,</span> <span class="pre">rho,</span> <span class="pre">iter,</span> <span class="pre">nrestarts)=1</span></code>).</li>
-<li><code class="code docutils literal"><span class="pre">user_params</span></code> - a Python dictionary <code class="code docutils literal"><span class="pre">{'param1':</span> <span class="pre">val1,</span> <span class="pre">'param2':val2,</span> <span class="pre">...}</span></code> of optional parameters. A full list of available options is given in the next section <a class="reference internal" href="advanced.html"><span class="doc">Advanced Usage</span></a>.</li>
-<li><code class="code docutils literal"><span class="pre">objfun_has_noise</span></code> - a flag to indicate whether or not <code class="code docutils literal"><span class="pre">objfun</span></code> has stochastic noise; i.e. will calling <code class="code docutils literal"><span class="pre">objfun(x)</span></code> multiple times at the same value of <code class="code docutils literal"><span class="pre">x</span></code> give different results? This is used to set some sensible default parameters (including using multiple restarts), all of which can be overridden by the values provided in <code class="code docutils literal"><span class="pre">user_params</span></code>.</li>
-<li><code class="code docutils literal"><span class="pre">scaling_within_bounds</span></code> - a flag to indicate whether the algorithm should internally shift and scale the entries of <code class="code docutils literal"><span class="pre">x</span></code> so that the bounds become <span class="math">\(0 \leq x \leq 1\)</span>. This is useful is you are setting <code class="code docutils literal"><span class="pre">bounds</span></code> and the bounds have different orders of magnitude. If <code class="code docutils literal"><span class="pre">scaling_within_bounds=True</span></code>, the values of <code class="code docutils literal"><span class="pre">rhobeg</span></code> and <code class="code docutils literal"><span class="pre">rhoend</span></code> apply to the <em>shifted</em> variables.</li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">args</span></code> - a tuple of extra arguments passed to the objective function.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">bounds</span></code> - a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> with the vectors <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> of lower and upper bounds on <span class="math notranslate nohighlight">\(x\)</span> (default is <span class="math notranslate nohighlight">\(a_i=-10^{20}\)</span> and <span class="math notranslate nohighlight">\(b_i=10^{20}\)</span>). To set bounds for either <code class="code docutils literal notranslate"><span class="pre">lower</span></code> or <code class="code docutils literal notranslate"><span class="pre">upper</span></code>, but not both, pass a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">None)</span></code> or <code class="code docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">upper)</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">npt</span></code> - the number of interpolation points to use (default is <code class="code docutils literal notranslate"><span class="pre">len(x0)+1</span></code>). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in <code class="code docutils literal notranslate"><span class="pre">user_params</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">rhobeg</span></code> - the initial value of the trust region radius (default is <span class="math notranslate nohighlight">\(0.1\max(\|x_0\|_{\infty}, 1)\)</span>, or 0.1 if <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">rhoend</span></code> - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is <span class="math notranslate nohighlight">\(10^{-8}\)</span>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">maxfun</span></code> - the maximum number of objective evaluations the algorithm may request (default is <span class="math notranslate nohighlight">\(\min(100(n+1),1000)\)</span>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">nsamples</span></code> - a Python function <code class="code docutils literal notranslate"><span class="pre">nsamples(delta,</span> <span class="pre">rho,</span> <span class="pre">iter,</span> <span class="pre">nrestarts)</span></code> which returns the number of times to evaluate <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> at a given point. This is only applicable for objectives with stochastic noise, when averaging multiple evaluations at the same point produces a more accurate value. The input parameters are the trust region radius (<code class="code docutils literal notranslate"><span class="pre">delta</span></code>), the lower bound on the trust region radius (<code class="code docutils literal notranslate"><span class="pre">rho</span></code>), how many iterations the algorithm has been running for (<code class="code docutils literal notranslate"><span class="pre">iter</span></code>), and how many restarts have been performed (<code class="code docutils literal notranslate"><span class="pre">nrestarts</span></code>). Default is no averaging (i.e. <code class="code docutils literal notranslate"><span class="pre">nsamples(delta,</span> <span class="pre">rho,</span> <span class="pre">iter,</span> <span class="pre">nrestarts)=1</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">user_params</span></code> - a Python dictionary <code class="code docutils literal notranslate"><span class="pre">{'param1':</span> <span class="pre">val1,</span> <span class="pre">'param2':val2,</span> <span class="pre">...}</span></code> of optional parameters. A full list of available options is given in the next section <a class="reference internal" href="advanced.html"><span class="doc">Advanced Usage</span></a>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">objfun_has_noise</span></code> - a flag to indicate whether or not <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> has stochastic noise; i.e. will calling <code class="code docutils literal notranslate"><span class="pre">objfun(x)</span></code> multiple times at the same value of <code class="code docutils literal notranslate"><span class="pre">x</span></code> give different results? This is used to set some sensible default parameters (including using multiple restarts), all of which can be overridden by the values provided in <code class="code docutils literal notranslate"><span class="pre">user_params</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code> - a flag to indicate whether the algorithm should internally shift and scale the entries of <code class="code docutils literal notranslate"><span class="pre">x</span></code> so that the bounds become <span class="math notranslate nohighlight">\(0 \leq x \leq 1\)</span>. This is useful is you are setting <code class="code docutils literal notranslate"><span class="pre">bounds</span></code> and the bounds have different orders of magnitude. If <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds=True</span></code>, the values of <code class="code docutils literal notranslate"><span class="pre">rhobeg</span></code> and <code class="code docutils literal notranslate"><span class="pre">rhoend</span></code> apply to the <em>shifted</em> variables.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">do_logging</span></code> - a flag to indicate whether logging output should be produced. This is not automatically visible unless you use the Python <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging</a> module (see below for simple usage).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">print_progress</span></code> - a flag to indicate whether to print a per-iteration progress log to terminal.</p></li>
 </ul>
 <p>In general when using optimization software, it is good practice to scale your variables so that moving each by a given amount has approximately the same impact on the objective function.
-The <code class="code docutils literal"><span class="pre">scaling_within_bounds</span></code> flag is designed to provide an easy way to achieve this, if you have set the bounds <code class="code docutils literal"><span class="pre">lower</span></code> and <code class="code docutils literal"><span class="pre">upper</span></code>.</p>
+The <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code> flag is designed to provide an easy way to achieve this, if you have set the bounds <code class="code docutils literal notranslate"><span class="pre">lower</span></code> and <code class="code docutils literal notranslate"><span class="pre">upper</span></code>.</p>
 </div>
 <div class="section" id="a-simple-example">
 <h2>A Simple Example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h2>
 <p>Suppose we wish to minimize the <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock test function</a>:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\min_{(x_1,x_2)\in\mathbb{R}^2}  &amp;\quad  100(x_2-x_1^2)^2 + (1-x_1)^2 \\\end{split}\]</div>
-<p>This function has exactly one local minimum <span class="math">\(f(x_{min})=0\)</span> at <span class="math">\(x_{min}=(1,1)\)</span>. We can write this as a least-squares problem as:</p>
-<div class="math">
+<p>This function has exactly one local minimum <span class="math notranslate nohighlight">\(f(x_{min})=0\)</span> at <span class="math notranslate nohighlight">\(x_{min}=(1,1)\)</span>. We can write this as a least-squares problem as:</p>
+<div class="math notranslate nohighlight">
 \[\begin{split}\min_{(x_1,x_2)\in\mathbb{R}^2}  &amp;\quad  [10(x_2-x_1^2)]^2 + [1-x_1]^2 \\\end{split}\]</div>
-<p>A commonly-used starting point for testing purposes is <span class="math">\(x_0=(-1.2,1)\)</span>. The following script shows how to solve this problem using DFO-LS:</p>
+<p>A commonly-used starting point for testing purposes is <span class="math notranslate nohighlight">\(x_0=(-1.2,1)\)</span>. The following script shows how to solve this problem using DFO-LS:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the Rosenbrock function</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the Rosenbrock function</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
@@ -276,26 +275,23 @@ The <code class="code docutils literal"><span class="pre">scaling_within_bounds<
 <span class="c1"># Define the starting point</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
 
-<span class="c1"># Set random seed (for reproducibility)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
 <span class="c1"># Call DFO-LS</span>
 <span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 
 <span class="c1"># Display output</span>
-<span class="k">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Note that DFO-LS is a randomized algorithm: in its first phase, it builds an internal approximation to the objective function by sampling it along random directions. In the code above, we set NumPy’s random seed for reproducibility over multiple runs, but this is not required. The output of this script, showing that DFO-LS finds the correct solution, is</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
-Solution xmin = [ 1.  1.]
-Residual vector = [ -2.22044605e-15   0.00000000e+00]
-Objective value f(xmin) = 4.930380658e-30
-Needed 36 objective evaluations (at 36 points)
-Approximate Jacobian = [[ -1.98957443e+01   1.00000000e+01]
- [ -1.00000000e+00   8.37285083e-16]]
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [1. 1.]
+Residual vector = [0. 0.]
+Objective value f(xmin) = 0
+Needed 33 objective evaluations (at 33 points)
+Approximate Jacobian = [[-2.00180000e+01  1.00000000e+01]
+ [-1.00000000e+00  8.19971362e-16]]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -308,7 +304,7 @@ Success: Objective is sufficiently small
 <h2>Adding Bounds and More Output<a class="headerlink" href="#adding-bounds-and-more-output" title="Permalink to this headline">¶</a></h2>
 <p>We can extend the above script to add constraints. To do this, we can add the lines</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Define bound constraints (lower &lt;= x &lt;= upper)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define bound constraints (lower &lt;= x &lt;= upper)</span>
 <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">])</span>
 <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">])</span>
 
@@ -319,13 +315,13 @@ Success: Objective is sufficiently small
 </div></blockquote>
 <p>DFO-LS correctly finds the solution to the constrained problem:</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
-Solution xmin = [ 0.9   0.81]
-Residual vector = [ 0.   0.1]
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [0.9  0.81]
+Residual vector = [3.10862447e-14 1.00000000e-01]
 Objective value f(xmin) = 0.01
-Needed 65 objective evaluations (at 65 points)
-Approximate Jacobian = [[ -1.79999998e+01   9.99999990e+00]
- [ -9.99999998e-01  -2.53940698e-09]]
+Needed 58 objective evaluations (at 58 points)
+Approximate Jacobian = [[-1.79999999e+01  9.99999998e+00]
+ [-1.00000000e+00  8.62398179e-10]]
 Exit flag = 0
 Success: rho has reached rhoend
 ****************************
@@ -334,48 +330,61 @@ Success: rho has reached rhoend
 </div></blockquote>
 <p>However, we also get a warning that our starting point was outside of the bounds:</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>RuntimeWarning: x0 above upper bound, adjusting
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>RuntimeWarning: x0 above upper bound, adjusting
 </pre></div>
 </div>
 </div></blockquote>
-<p>DFO-LS automatically fixes this, and moves <span class="math">\(x_0\)</span> to a point within the bounds, in this case <span class="math">\(x_0=(-1.2,0.85)\)</span>.</p>
+<p>DFO-LS automatically fixes this, and moves <span class="math notranslate nohighlight">\(x_0\)</span> to a point within the bounds, in this case <span class="math notranslate nohighlight">\(x_0=(-1.2,0.85)\)</span>.</p>
 <p>We can also get DFO-LS to print out more detailed information about its progress using the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging</a> module. To do this, we need to add the following lines:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <span class="c1"># ... (call dfols.solve)</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>And we can now see each evaluation of <code class="code docutils literal"><span class="pre">objfun</span></code>:</p>
+<p>And we can now see each evaluation of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>:</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>Function eval 1 at point 1 has f = 39.65 at x = [-1.2   0.85]
-Initialising (random directions)
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Function eval 1 at point 1 has f = 39.65 at x = [-1.2   0.85]
+Initialising (coordinate directions)
 Function eval 2 at point 2 has f = 14.337296 at x = [-1.08  0.85]
 Function eval 3 at point 3 has f = 55.25 at x = [-1.2   0.73]
 ...
-Function eval 64 at point 64 has f = 0.0100000029949496 at x = [ 0.89999999  0.81      ]
-Function eval 65 at point 65 has f = 0.00999999999999993 at x = [ 0.9   0.81]
+Function eval 57 at point 57 has f = 0.010000001407575 at x = [0.89999999 0.80999999]
+Function eval 58 at point 58 has f = 0.00999999999999997 at x = [0.9  0.81]
 Did a total of 1 run(s)
 </pre></div>
 </div>
 </div></blockquote>
-<p>If we wanted to save this output to a file, we could replace the above call to <code class="code docutils literal"><span class="pre">logging.basicConfig()</span></code> with</p>
+<p>If we wanted to save this output to a file, we could replace the above call to <code class="code docutils literal notranslate"><span class="pre">logging.basicConfig()</span></code> with</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;myfile.log&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
-                    <span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;myfile.log&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>If you have logging for some parts of your code and you want to deactivate all DFO-LS logging, you can use the optional argument <code class="code docutils literal notranslate"><span class="pre">do_logging=False</span></code> in <code class="code docutils literal notranslate"><span class="pre">dfols.solve()</span></code>.</p>
+<p>An alternative option available is to get DFO-LS to print to terminal progress information every iteration, by setting the optional argument <code class="code docutils literal notranslate"><span class="pre">print_progress=True</span></code> in <code class="code docutils literal notranslate"><span class="pre">dfols.solve()</span></code>. If we do this for the above example, we get</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span> Run  Iter     Obj       Grad     Delta      rho     Evals
+  1     1    1.43e+01  1.61e+02  1.20e-01  1.20e-01    3
+  1     2    4.35e+00  3.77e+01  4.80e-01  1.20e-01    4
+  1     3    4.35e+00  3.77e+01  6.00e-02  1.20e-02    4
+...
+  1    55    1.00e-02  2.00e-01  1.50e-08  1.00e-08   56
+  1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
 </pre></div>
 </div>
 </div></blockquote>
 </div>
 <div class="section" id="example-noisy-objective-evaluation">
 <h2>Example: Noisy Objective Evaluation<a class="headerlink" href="#example-noisy-objective-evaluation" title="Permalink to this headline">¶</a></h2>
-<p>As described in <a class="reference internal" href="info.html"><span class="doc">Overview</span></a>, derivative-free algorithms such as DFO-LS are particularly useful when <code class="code docutils literal"><span class="pre">objfun</span></code> has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to a derivative-based solver:</p>
+<p>As described in <a class="reference internal" href="info.html"><span class="doc">Overview</span></a>, derivative-free algorithms such as DFO-LS are particularly useful when <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to a derivative-based solver:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the noisy Rosenbrock function</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the noisy Rosenbrock function</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
@@ -392,34 +401,34 @@ Did a total of 1 run(s)
 <span class="c1"># Set random seed (for reproducibility)</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Demonstrate noise in function evaluation:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Demonstrate noise in function evaluation:&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;objfun(x0) = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">(</span><span class="n">x0</span><span class="p">)))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;objfun(x0) = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">(</span><span class="n">x0</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
 <span class="c1"># Call DFO-LS</span>
 <span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 
 <span class="c1"># Display output</span>
-<span class="k">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 
 <span class="c1"># Compare with a derivative-based solver</span>
-<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="kn">as</span> <span class="nn">opt</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
 <span class="n">soln</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">least_squares</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;** SciPy results **&quot;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Solution xmin = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Objective value f(xmin) = </span><span class="si">%.10g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">soln</span><span class="o">.</span><span class="n">cost</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Needed </span><span class="si">%g</span><span class="s2"> objective evaluations&quot;</span> <span class="o">%</span> <span class="n">soln</span><span class="o">.</span><span class="n">nfev</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Exit flag = </span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">soln</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;** SciPy results **&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Solution xmin = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Objective value f(xmin) = </span><span class="si">%.10g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">soln</span><span class="o">.</span><span class="n">cost</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Needed </span><span class="si">%g</span><span class="s2"> objective evaluations&quot;</span> <span class="o">%</span> <span class="n">soln</span><span class="o">.</span><span class="n">nfev</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exit flag = </span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">soln</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>The output of this is:</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>Demonstrate noise in function evaluation:
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Demonstrate noise in function evaluation:
 objfun(x0) = [-4.4776183   2.20880346]
 objfun(x0) = [-4.44306447  2.24929965]
 objfun(x0) = [-4.48217255  2.17849989]
@@ -427,42 +436,42 @@ objfun(x0) = [-4.44180389  2.19667014]
 objfun(x0) = [-4.39545837  2.20903317]
 
 ****** DFO-LS Results ******
-Solution xmin = [ 1.  1.]
-Residual vector = [  3.51006670e-08   2.00158313e-10]
-Objective value f(xmin) = 1.232096886e-15
-Needed 46 objective evaluations (at 46 points)
-Approximate Jacobian = [[ -2.04330578e+01   1.00296466e+01]
- [ -9.88260906e-01  -3.77364910e-03]]
+Solution xmin = [1.         1.00000003]
+Residual vector = [ 1.59634974e-07 -4.63036198e-09]
+Objective value f(xmin) = 2.550476524e-14
+Needed 53 objective evaluations (at 53 points)
+Approximate Jacobian = [[-1.98196347e+01  9.90335675e+00]
+ [-1.01941978e+00  4.24991776e-05]]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
 
 
 ** SciPy results **
-Solution xmin = [-1.2  1. ]
-Objective value f(xmin) = 23.96809472
-Needed 5 objective evaluations
+Solution xmin = [-1.20000087  1.00000235]
+Objective value f(xmin) = 23.95535774
+Needed 6 objective evaluations
 Exit flag = 3
 `xtol` termination condition is satisfied.
 </pre></div>
 </div>
 </div></blockquote>
-<p>DFO-LS is able to find the solution with only 10 more function evaluations than in the noise-free case. However SciPy’s derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.</p>
-<p>As noted above, DFO-LS has an input parameter <code class="code docutils literal"><span class="pre">objfun_has_noise</span></code> to indicate if <code class="code docutils literal"><span class="pre">objfun</span></code> has noise in it, which it does in this case. Therefore we can call DFO-LS with</p>
+<p>DFO-LS is able to find the solution with 20 more function evaluations as in the noise-free case. However SciPy’s derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.</p>
+<p>As noted above, DFO-LS has an input parameter <code class="code docutils literal notranslate"><span class="pre">objfun_has_noise</span></code> to indicate if <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> has noise in it, which it does in this case. Therefore we can call DFO-LS with</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">objfun_has_noise</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">objfun_has_noise</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Using this setting, we find the correct solution faster:</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
-Solution xmin = [ 1.  1.]
-Residual vector = [ -5.80172077e-09   2.10781076e-09]
-Objective value f(xmin) = 3.810283004e-17
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [1. 1.]
+Residual vector = [-4.06227943e-08  2.51525603e-10]
+Objective value f(xmin) = 1.650274685e-15
 Needed 29 objective evaluations (at 29 points)
-Approximate Jacobian = [[ -1.96671666e+01   9.88784341e+00]
- [ -1.00451147e+00   1.43596001e-04]]
+Approximate Jacobian = [[-1.99950530e+01  1.00670067e+01]
+ [-9.96161167e-01 -2.41166495e-04]]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -472,16 +481,16 @@ Success: Objective is sufficiently small
 </div>
 <div class="section" id="example-parameter-estimation-data-fitting">
 <h2>Example: Parameter Estimation/Data Fitting<a class="headerlink" href="#example-parameter-estimation-data-fitting" title="Permalink to this headline">¶</a></h2>
-<p>Next, we show a short example of using DFO-LS to solve a parameter estimation problem (taken from <a class="reference external" href="https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html#examples">here</a>). Given some observations <span class="math">\((t_i,y_i)\)</span>, we wish to calibrate parameters <span class="math">\(x=(x_1,x_2)\)</span> in the exponential decay model</p>
-<div class="math">
+<p>Next, we show a short example of using DFO-LS to solve a parameter estimation problem (taken from <a class="reference external" href="https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html#examples">here</a>). Given some observations <span class="math notranslate nohighlight">\((t_i,y_i)\)</span>, we wish to calibrate parameters <span class="math notranslate nohighlight">\(x=(x_1,x_2)\)</span> in the exponential decay model</p>
+<div class="math notranslate nohighlight">
 \[y(t) = x_1 \exp(x_2 t)\]</div>
 <p>The code for this is:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: data fitting problem</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: data fitting problem</span>
 <span class="c1"># Originally from:</span>
 <span class="c1"># https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">dfols</span>
 
 <span class="c1"># Observations</span>
@@ -497,39 +506,35 @@ Success: Objective is sufficiently small
 <span class="c1"># Define the starting point</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">])</span>
 
-<span class="c1"># Set random seed (for reproducibility)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
 <span class="c1"># We expect exponential decay: set upper bound x[1] &lt;= 0</span>
 <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1e20</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
 
 <span class="c1"># Call DFO-LS</span>
-<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">prediction_error</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">upper</span><span class="p">))</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">prediction_error</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="p">))</span>
 
 <span class="c1"># Display output</span>
-<span class="k">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The output of this is (noting that DFO-LS moves <span class="math">\(x_0\)</span> to be far away enough from the upper bound)</p>
+<p>The output of this is (noting that DFO-LS moves <span class="math notranslate nohighlight">\(x_0\)</span> to be far away enough from the upper bound)</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>RuntimeWarning: x0 too close to upper bound, adjusting
-****** DFO-LS Results ******
-Solution xmin = [  4.98830860e+02  -1.01256863e-01]
-Residual vector = [-0.18167084  0.06098401  0.76276294  0.11962349 -0.265898   -0.59788818
- -1.02611899 -1.51235371 -1.56145452 -1.63266662]
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [ 4.98830861e+02 -1.01256863e-01]
+Residual vector = [-0.1816709   0.06098397  0.76276301  0.11962354 -0.26589796 -0.59788814
+ -1.02611897 -1.5123537  -1.56145452 -1.63266662]
 Objective value f(xmin) = 9.504886892
-Needed 99 objective evaluations (at 99 points)
-Approximate Jacobian = [[ -9.12901557e-01  -4.09843510e+02]
- [ -8.59085471e-01  -6.42808522e+02]
- [ -2.47253894e-01  -1.70205399e+03]
- [ -1.34675403e-01  -1.33017159e+03]
- [ -8.71359818e-02  -1.04752827e+03]
- [ -5.75305576e-02  -8.09280563e+02]
- [ -2.83185322e-02  -4.97239478e+02]
- [ -2.22993603e-03  -6.70749492e+01]
- [ -5.24135530e-04  -1.95045149e+01]
- [ -2.65977795e-04  -1.07858009e+01]]
+Needed 79 objective evaluations (at 79 points)
+Approximate Jacobian = [[-9.12897463e-01 -4.09843514e+02]
+ [-8.59085679e-01 -6.42808544e+02]
+ [-2.47252555e-01 -1.70205419e+03]
+ [-1.34676365e-01 -1.33017181e+03]
+ [-8.71355033e-02 -1.04752848e+03]
+ [-5.75304364e-02 -8.09280752e+02]
+ [-2.83184867e-02 -4.97239623e+02]
+ [-2.22992989e-03 -6.70749826e+01]
+ [-5.24129962e-04 -1.95045269e+01]
+ [-2.65956876e-04 -1.07858081e+01]]
 Exit flag = 0
 Success: rho has reached rhoend
 ****************************
@@ -540,11 +545,11 @@ Success: rho has reached rhoend
 <a class="reference internal image-reference" href="_images/data_fitting.png"><img alt="Data Fitting Results" class="align-center" src="_images/data_fitting.png" style="width: 75%;" /></a>
 <p>To generate this plot, run:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Plot calibrated model vs. observations</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot calibrated model vs. observations</span>
 <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">)</span>
 <span class="n">ys</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ts</span><span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># current axes</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Model&#39;</span><span class="p">)</span>
@@ -561,18 +566,18 @@ Success: rho has reached rhoend
 <div class="section" id="example-solving-a-nonlinear-system-of-equations">
 <h2>Example: Solving a Nonlinear System of Equations<a class="headerlink" href="#example-solving-a-nonlinear-system-of-equations" title="Permalink to this headline">¶</a></h2>
 <p>Lastly, we give an example of using DFO-LS to solve a nonlinear system of equations (taken from <a class="reference external" href="http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm#imlug_genstatexpls_sect004.htm">here</a>). We wish to solve the following set of equations</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}x_1 + x_2 - x_1 x_2 + 2 &amp;= 0, \\
 x_1 \exp(-x_2) - 1 &amp;= 0.\end{split}\]</div>
 <p>The code for this is:</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: Solving a nonlinear system of equations</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: Solving a nonlinear system of equations</span>
 <span class="c1"># Originally from:</span>
 <span class="c1"># http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm#imlug_genstatexpls_sect004.htm</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">dfols</span>
 
 <span class="c1"># Want to solve:</span>
@@ -586,26 +591,23 @@ x_1 \exp(-x_2) - 1 &amp;= 0.\end{split}\]</div>
 <span class="c1">#          DFO-LS returns will likely depend on x0!</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">])</span>
 
-<span class="c1"># Set random seed (for reproducibility)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
 <span class="c1"># Call DFO-LS</span>
 <span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">nonlinear_system</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 
 <span class="c1"># Display output</span>
-<span class="k">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>The output of this is</p>
 <blockquote>
-<div><div class="highlight-none"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
 Solution xmin = [ 0.09777309 -2.32510588]
-Residual vector = [  2.89990254e-13   3.31557004e-12]
-Objective value f(xmin) = 1.107709904e-23
-Needed 18 objective evaluations (at 18 points)
-Approximate Jacobian = [[  3.32510429   0.90222738]
- [ 10.22774647  -0.9999939 ]]
+Residual vector = [-1.45394186e-09 -1.95108811e-08]
+Objective value f(xmin) = 3.827884295e-16
+Needed 13 objective evaluations (at 13 points)
+Approximate Jacobian = [[ 3.32499552  0.90216381]
+ [10.22664908 -1.00061604]]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -616,23 +618,19 @@ Success: Objective is sufficiently small
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<table class="docutils citation" frame="void" id="cfmr2018" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[CFMR2018]</a></td><td><ol class="first last upperalpha simple" start="3">
-<li>Cartis, J. Fiala, B. Marteau and L. Roberts, <a class="reference external" href="https://arxiv.org/abs/1804.00154">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, technical report, University of Oxford, (2018).</li>
+<dl class="citation">
+<dt class="label" id="cfmr2018"><span class="brackets"><a class="fn-backref" href="#id1">CFMR2018</a></span></dt>
+<dd><ol class="upperalpha simple" start="3">
+<li><p>Cartis, J. Fiala, B. Marteau and L. Roberts, <a class="reference external" href="https://arxiv.org/abs/1804.00154">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, technical report, University of Oxford, (2018).</p></li>
 </ol>
-</td></tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -641,7 +639,7 @@ Success: Objective is sufficiently small
         <a href="advanced.html" class="btn btn-neutral float-right" title="Advanced Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="info.html" class="btn btn-neutral" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="info.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -650,11 +648,11 @@ Success: Objective is sufficiently small
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Lindon Roberts.
+        &copy; Copyright 2017, Lindon Roberts
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -667,37 +665,15 @@ Success: Objective is sufficiently small
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>
