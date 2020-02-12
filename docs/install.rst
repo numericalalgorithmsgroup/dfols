@@ -13,6 +13,9 @@ Additionally, the following python packages should be installed (these will be i
 * NumPy 1.11 or higher (http://www.numpy.org/)
 * SciPy 0.18 or higher (http://www.scipy.org/)
 * Pandas 0.17 or higher (http://pandas.pydata.org/)
+* trustregion 1.1 or higher (https://github.com/lindonroberts/trust-region)
+
+**Warning:** the trustregion package requires NumPy to already be installed. Please install NumPy before following the installation instructions below. This applies to DFO-LS versions 1.2 and higher.
 
 Installation using pip
 ----------------------

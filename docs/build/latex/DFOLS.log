@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2019.4.24)  12 FEB 2020 22:56
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2019.4.24)  12 FEB 2020 23:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1158,13 +1158,13 @@ LaTeX Font Info:    Try loading font information for TS1+ptm on input line 121.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-LaTeX Font Info:    Try loading font information for T1+pcr on input line 147.
+LaTeX Font Info:    Try loading font information for T1+pcr on input line 152.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 ) [3]
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 216.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 221.
  [4]
 Chapter 2.
 [5
@@ -1175,24 +1175,24 @@ Chapter 2.
 Chapter 3.
 [9]
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <9> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 426.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 431.
  [10]
 LaTeX Font Info:    Try loading font information for TS1+pcr on input line 1.
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1pcr.fd
 File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
 ) [11]
 [12] [13]
-Overfull \vbox (2.68167pt too high) detected at line 717
+Overfull \vbox (2.68167pt too high) detected at line 722
  []
 
-[14] [15] <data_fitting.png, id=388, 524.6802pt x 403.2666pt>
+[14] [15] <data_fitting.png, id=389, 524.6802pt x 403.2666pt>
 File: data_fitting.png Graphic file (type png)
 
 <use data_fitting.png>
-Package pdftex.def Info: data_fitting.png used on input line 817.
+Package pdftex.def Info: data_fitting.png used on input line 822.
 (pdftex.def)             Requested size: 352.31625pt x 270.79639pt.
  [16]
-Overfull \vbox (2.92438pt too high) detected at line 877
+Overfull \vbox (2.92438pt too high) detected at line 882
  []
 
 [17 <./data_fitting.png>] [18]
@@ -1200,19 +1200,19 @@ Chapter 4.
 [19
 
 ] [20]
-Underfull \hbox (badness 10000) in paragraph at lines 1042--1043
+Underfull \hbox (badness 10000) in paragraph at lines 1047--1048
 []\T1/pcr/m/n/10 regression.increase_num_extra_steps_with_restart \T1/ptm/m/n/1
 0 - The amount to in-crease
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1077--1078
+Underfull \hbox (badness 10000) in paragraph at lines 1082--1083
 []\T1/pcr/m/n/10 restarts.hard.increase_ndirs_initial_amt \T1/ptm/m/n/10 - Amou
 nt to in-crease \T1/pcr/m/n/10 growing.
  []
 
 [21]
-Underfull \hbox (badness 8000) in paragraph at lines 1112--1113
+Underfull \hbox (badness 8000) in paragraph at lines 1117--1118
 \T1/ptm/m/n/10 De-fault is \T1/pcr/m/n/10 False \T1/ptm/m/n/10 if $\OML/cmm/m/i
 t/10 m \OMS/cmsy/m/n/10 ^^U \OML/cmm/m/it/10 n$ \T1/ptm/m/n/10 and \T1/pcr/m/n/
 10 True \T1/ptm/m/n/10 oth-er-wise (op-po-site to \T1/pcr/m/n/10 growing.full_r
@@ -1234,14 +1234,14 @@ Chapter 7.
 ] [30
 
 ] (./DFOLS.ind)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1386.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1391.
  [31
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1386.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1391.
  (./DFOLS.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1386.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1386.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1391.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1391.
 
 Package rerunfilecheck Info: File `DFOLS.out' has not changed.
 (rerunfilecheck)             Checksum: 79AD965942E227C1E9BC996405ECE3B5;8394.
@@ -1273,10 +1273,10 @@ lvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvbo
 8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on DFOLS.pdf (35 pages, 299620 bytes).
+Output written on DFOLS.pdf (35 pages, 299805 bytes).
 PDF statistics:
- 566 PDF objects out of 1000 (max. 8388607)
- 497 compressed objects within 5 object streams
+ 567 PDF objects out of 1000 (max. 8388607)
+ 498 compressed objects within 5 object streams
  92 named destinations out of 1000 (max. 500000)
  426 words of extra memory for PDF output out of 10000 (max. 10000000)
 
