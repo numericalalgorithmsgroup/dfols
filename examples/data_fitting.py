@@ -18,9 +18,6 @@ def prediction_error(x):
 # Define the starting point
 x0 = np.array([100.0, -1.0])
 
-# Set random seed (for reproducibility)
-np.random.seed(0)
-
 # We expect exponential decay: set upper bound x[1] <= 0
 upper = np.array([1e20, 0.0])
 

@@ -941,20 +941,10 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
         return results
 
     # Enforce lower & upper bounds on x0
-    idx = (xl < x0) & (x0 <= xl + rhobeg)
-    if np.any(idx):
-        warnings.warn("x0 too close to lower bound, adjusting", RuntimeWarning)
-    x0[idx] = xl[idx] + rhobeg
-
     idx = (x0 <= xl)
     if np.any(idx):
         warnings.warn("x0 below lower bound, adjusting", RuntimeWarning)
     x0[idx] = xl[idx]
-
-    idx = (xu - rhobeg <= x0) & (x0 < xu)
-    if np.any(idx):
-        warnings.warn("x0 too close to upper bound, adjusting", RuntimeWarning)
-    x0[idx] = xu[idx] - rhobeg
 
     idx = (x0 >= xu)
     if np.any(idx):

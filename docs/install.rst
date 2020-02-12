@@ -6,6 +6,7 @@ Requirements
 DFO-LS requires the following software to be installed:
 
 * Python 2.7 or Python 3 (http://www.python.org/)
+* Fortran compiler (e.g. gfortran)
 
 Additionally, the following python packages should be installed (these will be installed automatically if using *pip*, see `Installation using pip`_):
 

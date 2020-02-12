@@ -18,9 +18,6 @@ def nonlinear_system(x):
 #          DFO-LS returns will likely depend on x0!
 x0 = np.array([0.1, -2.0])
 
-# Set random seed (for reproducibility)
-np.random.seed(0)
-
 # Call DFO-LS
 soln = dfols.solve(nonlinear_system, x0)
 

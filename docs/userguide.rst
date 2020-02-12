@@ -11,7 +11,7 @@ DFO-LS is designed to solve the local optimization problem
    \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
    \text{s.t.} &\quad  a \leq x \leq b
 
-where the bound constraints :math:`a \leq x \leq b` are optional.
+where the bound constraints :math:`a \leq x \leq b` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper [CFMR2018]_.
