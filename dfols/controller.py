@@ -326,9 +326,9 @@ class Controller(object):
 
     def trust_region_step(self):
         # Build model for full least squares objectives
-        gopt, hq = self.model.build_full_model()
-        d, gnew, crvmin = trsbox(self.model.xopt(), gopt, hq, self.model.sl, self.model.su, self.delta)
-        return d, gopt, hq, gnew, crvmin
+        gopt, H = self.model.build_full_model()
+        d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+        return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
         logging.debug("Running geometry-fixing step")
@@ -336,12 +336,15 @@ class Controller(object):
             c, g = self.model.lagrange_gradient(knew)
             # c = 1.0 if knew == self.model.kopt else 0.0  # based at xopt, just like d
             # Solve problem: bounds are sl <= xnew <= su, and ||xnew-xopt|| <= adelt
-            xnew = trsbox_geometry(self.model.xopt(), c, g, self.model.sl, self.model.su, adelt)
+            logging.debug("xopt = %s" % str(self.model.xopt()))
+            logging.debug("sl = %s" % str(self.model.sl))
+            logging.debug("su = %s" % str(self.model.su))
+            xnew = trsbox_geometry(self.model.xopt(), c, g, np.minimum(self.model.sl, 0.0), np.maximum(self.model.su, 0.0), adelt)
         except LA.LinAlgError:
             exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix encountered in geometry step")
             return exit_info  # didn't fix geometry - return & quit
 
-        gopt, hq = self.model.build_full_model()  # save here, to calculate predicted value from geometry step
+        gopt, H = self.model.build_full_model()  # save here, to calculate predicted value from geometry step
         fopt = self.model.fopt()  # again, evaluate now, before model.change_point()
         d = xnew - self.model.xopt()
         x = self.model.as_absolute_coordinates(xnew)
@@ -362,8 +365,8 @@ class Controller(object):
         # Estimate actual reduction to add to diffs vector
         f = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0))  # estimate actual objective value
 
-        # pred_reduction = - calculate_model_value(gopt, hq, d)
-        pred_reduction = - model_value(gopt, hq, d)
+        # pred_reduction = - calculate_model_value(gopt, H, d)
+        pred_reduction = - model_value(gopt, H, d)
         actual_reduction = fopt - f
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
@@ -424,16 +427,19 @@ class Controller(object):
         knew = None  # may knew never be set here?
         exit_info = None
 
+        try:
+            cs, gs = self.model.lagrange_gradient(k=None)  # find all Lagrange polynomials for k in range(self.model.npt())
+        except LA.LinAlgError:
+            exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix when choosing point to replace")
+            return knew, exit_info
+
         for k in range(self.model.npt()):
             if skip_kopt and k == self.model.kopt:
                 continue  # skip this k
 
-            # Build Lagrange polynomial
-            try:
-                c, g = self.model.lagrange_gradient(k)
-            except LA.LinAlgError:
-                exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix when choosing point to replace")
-                break  # end & quit
+            # Extract Lagrange polynomial (based at xopt)
+            c = cs[k]
+            g = gs[:, k]
 
             den = c + np.dot(g, d)
 
@@ -445,9 +451,9 @@ class Controller(object):
 
         return knew, exit_info
 
-    def done_with_current_rho(self, xnew, gnew, crvmin, hq, current_iter):
+    def done_with_current_rho(self, xnew, gnew, crvmin, H, current_iter):
         # (xnew, gnew, crvmin) come from trust region step
-        # hq is Hessian of model for the full objective
+        # H is Hessian of model for the full objective
 
         # Wait at least 3 iterations between reductions of rho
         if current_iter <= self.last_successful_iter + 2:
@@ -466,7 +472,7 @@ class Controller(object):
             if xnew[j] == self.model.su[j]:
                 bdtest = -gnew[j]
             if bdtest < bdtol:
-                curv = hq.get_element(j, j)  # curv = Hessian(j, j)
+                curv = H[j,j]
                 bdtest += 0.5 * curv * self.rho
                 if bdtest < bdtol:
                     return False
@@ -489,10 +495,10 @@ class Controller(object):
         self.last_successful_iter = current_iter  # reset successful iteration check
         return
 
-    def calculate_ratio(self, current_iter, rvec_list, d, gopt, hq):
+    def calculate_ratio(self, current_iter, rvec_list, d, gopt, H):
         exit_info = None
         f = sumsq(np.mean(rvec_list, axis=0))  # estimate actual objective value
-        pred_reduction = - model_value(gopt, hq, d)
+        pred_reduction = - model_value(gopt, H, d)
         actual_reduction = self.model.fopt() - f
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!

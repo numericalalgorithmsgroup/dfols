@@ -3,9 +3,9 @@ Trust Region Subproblem Solver
 ====
 
 Specifically, the call
-    d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, delta)
+    d, gnew, crvmin = trsbox(xopt, g, H, sl, su, delta)
 produces a new vector d which (approximately) solves the trust region subproblem:
-    min_{d}  g'*d + 0.5*d'*hess*d
+    min_{d}  g'*d + 0.5*d'*H*d
     s.t.    ||d|| <= delta
             sl <= xopt + d <= su
 The other outputs: gnew is the gradient of the model at d, and crvmin has
@@ -57,6 +57,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 from math import sqrt
 import numpy as np
+try:
+    import trustregion
+    USE_FORTRAN = True
+except ImportError:
+    # Fall back to Python implementation
+    USE_FORTRAN = False
 
 
 from .util import sumsq
@@ -67,15 +73,25 @@ __all__ = ['trsbox', 'trsbox_geometry']
 ZERO_THRESH = 1e-14
 
 
-def trsbox(xopt, g, hess, sl, su, delta):
+def trsbox(xopt, g, H, sl, su, delta, use_fortran=USE_FORTRAN):
+    if use_fortran:
+        return trustregion.solve(g, H, delta,
+                                 sl=np.minimum(sl - xopt, -ZERO_THRESH),
+                                 su=np.maximum(su - xopt, ZERO_THRESH),
+                                 verbose_output=True)
+
     n = xopt.size
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
-    assert hess.dim() == n, "hess and xopt have incompatible sizes"
+    assert len(H.shape) == 2, "H must be a matrix"
+    assert H.shape == (n,n), "H and xopt have incompatible sizes"
+    assert np.allclose(H, H.T), "H must be symmetric"
     assert sl.shape == (n,), "sl and xopt have incompatible sizes"
     assert su.shape == (n,), "su and xopt have incompatible sizes"
+    assert np.all(sl <= xopt), "xopt violates lower bound sl"
+    assert np.all(xopt <= su), "xopt violates upper bound su"
     assert delta > 0.0, "delta must be strictly positive"
-    # Assume g and hess have full quadratic model for objective
+    # Assume g and H have full quadratic model for objective
     # i.e. skip straight to label 8 in DFBOLS version
 
     # The sign of G(I) gives the sign of the change to the I-th variable
@@ -132,7 +148,7 @@ def trsbox(xopt, g, hess, sl, su, delta):
         # the length of the the step to the trust region boundary and STPLEN to
         # the steplength, ignoring the simple bounds.
 
-        hs = hess.vec_mul(s)
+        hs = H.dot(s)
 
         # label 50
         ds = np.dot(s[xbdi == 0], d[xbdi == 0])
@@ -204,14 +220,14 @@ def trsbox(xopt, g, hess, sl, su, delta):
     # either done or need to take and alternative step
     if need_alt_trust_step:
         crvmin = 0.0
-        d, gnew = alt_trust_step(n, xopt, hess, sl, su, d, xbdi, nact, gnew, qred)
+        d, gnew = alt_trust_step(n, xopt, H, sl, su, d, xbdi, nact, gnew, qred)
         return d, gnew, crvmin
     else:
         return d_within_bounds(d, xopt, sl, su, xbdi), gnew, crvmin
 
 
 # Alternative Trust Region Step (label 100 of TRSBOX in BOBYQA, where crvmin=0)
-def alt_trust_step(n, xopt, hess, sl, su, d, xbdi, nact, gnew, qred):
+def alt_trust_step(n, xopt, H, sl, su, d, xbdi, nact, gnew, qred):
     MAX_LOOP_ITERS = 100 * n ** 2  # avoid infinite loops
     # while True:  # label 100 here
     for ii in range(MAX_LOOP_ITERS):
@@ -228,7 +244,7 @@ def alt_trust_step(n, xopt, hess, sl, su, d, xbdi, nact, gnew, qred):
         gredsq = sumsq(gnew[xbdi == 0])
 
         # Label 210 (crvmin = 0, itcsav = iterc)
-        hs = hess.vec_mul(s)
+        hs = H.dot(s)
 
         hred = hs.copy()
         # quit 210 by goto 120
@@ -289,7 +305,7 @@ def alt_trust_step(n, xopt, hess, sl, su, d, xbdi, nact, gnew, qred):
                 break  # quit inner label 120 loop and restart alt iteration loop (label 100)
 
             # Label 210 (crvmin = 0, itcsav < iterc since iterc+=1 earlier)
-            hs = hess.vec_mul(s)
+            hs = H.dot(s)
 
             # Label 150
             # Calculate HHD and some curvatures for the alternative iteration.
@@ -393,12 +409,19 @@ def ball_step(x0, g, Delta):
         return (sqrt(gdotx0**2 + gsqnorm*(Delta**2 - x0sqnorm)) - gdotx0) / gsqnorm
 
 
-def trsbox_linear(g, a, b, Delta):
+def trsbox_linear(g, a_in, b_in, Delta, use_fortran=USE_FORTRAN):
     # Solve the convex program:
     #   min_x   g' * x
     #   s.t.   a <= x <= b
     #           ||x||^2 <= Delta^2
     # using an active-set type approach
+    a = np.minimum(a_in, -ZERO_THRESH)
+    b = np.maximum(b_in, ZERO_THRESH)
+    if use_fortran:
+        return trustregion.solve(g, None, Delta,
+                                 sl=a,
+                                 su=b,
+                                 verbose_output=False)
 
     n = g.size
     x = np.zeros((n,))
@@ -445,7 +468,7 @@ def trsbox_linear(g, a, b, Delta):
     return x
 
 
-def trsbox_geometry(xbase, c, g, lower, upper, Delta):
+def trsbox_geometry(xbase, c, g, lower, upper, Delta, use_fortran=USE_FORTRAN):
     # Given a Lagrange polynomial defined by: L(x) = c + g' * (x - xbase)
     # Maximise |L(x)| in a box + trust region - that is, solve:
     #   max_x  abs(c + g' * (x - xbase))
@@ -455,8 +478,10 @@ def trsbox_geometry(xbase, c, g, lower, upper, Delta):
     #   max_s  abs(c + g' * s)
     #   s.t.   lower - xbase <= s <= upper - xbase
     #          ||s|| <= Delta
-    smin = trsbox_linear(g, lower - xbase, upper - xbase, Delta)  # minimise g' * s
-    smax = trsbox_linear(-g, lower - xbase, upper - xbase, Delta)  # maximise g' * s
+    assert np.all(lower <= xbase + ZERO_THRESH), "xbase violates lower bound"
+    assert np.all(xbase - ZERO_THRESH <= upper), "xbase violates upper bound"
+    smin = trsbox_linear(g, lower - xbase, upper - xbase, Delta, use_fortran=use_fortran)  # minimise g' * s
+    smax = trsbox_linear(-g, lower - xbase, upper - xbase, Delta, use_fortran=use_fortran)  # maximise g' * s
     if abs(c + np.dot(g, smin)) >= abs(c + np.dot(g, smax)):  # choose the one with largest absolute value
         return xbase + smin
     else:

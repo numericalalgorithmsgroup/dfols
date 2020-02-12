@@ -35,7 +35,6 @@ from math import sqrt
 import numpy as np
 import scipy.linalg as LA
 
-from .hessian import Hessian
 from .trust_region import trsbox_geometry
 from .util import sumsq
 
@@ -119,7 +118,7 @@ class Model(object):
     def xpt(self, k, abs_coordinates=False):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         if not abs_coordinates:
-            return self.points[k, :].copy()
+            return np.minimum(np.maximum(self.sl, self.points[k, :].copy()), self.su)
         else:
             # Apply bounds and convert back to absolute coordinates
             return self.xbase + np.minimum(np.maximum(self.sl, self.points[k, :]), self.su)
@@ -285,20 +284,23 @@ class Model(object):
         return
 
     def solve_geom_system(self, rhs):
+        # To do preconditioning below, we will need to scale each column of A elementwise by the entries of some vector
+        col_scale = lambda A, scale: (A.T*scale).T  # Uses the trick that A*x scales the 0th column of A by x[0], etc.
+
         if self.factorisation_current:
             if self.qr_of_transpose:
                 # Growing case: solve underdetermined system W*x=rhs with W.T = Q*R
                 # Golub & Van Loan (3rd edn), Algorithm 5.7.2
-                Rb = LA.solve_triangular(self.R, rhs * self.left_scaling, trans='T')  # R.T \ rhs
-                return np.dot(self.Q, Rb) * self.right_scaling  # minimal norm solution
+                Rb = LA.solve_triangular(self.R, col_scale(rhs, self.left_scaling), trans='T')  # R.T \ rhs
+                return col_scale(np.dot(self.Q, Rb), self.right_scaling)  # minimal norm solution
             else:
                 # Normal case: solve overdetermined system W*x=rhs with W=Q*R
-                Qb = np.dot(self.Q.T, rhs * self.left_scaling)
-                return LA.solve_triangular(self.R, Qb) * self.right_scaling
+                Qb = np.dot(self.Q.T, col_scale(rhs, self.left_scaling))
+                return col_scale(LA.solve_triangular(self.R, Qb), self.right_scaling)
         else:
             logging.warning("model.solve_geom_system not using factorisation")
             W, left_scaling, right_scaling = self.interpolation_matrix()
-            return LA.lstsq(W, rhs * left_scaling)[0] * right_scaling
+            return col_scale(LA.lstsq(W, col_scale(rhs * left_scaling))[0], right_scaling)
 
     def interpolate_mini_models_svd(self, verbose=False, make_full_rank=False, min_sing_val=1e-6, sing_val_frac=1.0, max_jac_cond=1e8,
                                     get_chg_J=False):
@@ -314,31 +316,26 @@ class Model(object):
         norm_J_error = 0.0
         linalg_resid = 0.0
 
-
         if make_full_rank:
             # Remove old full-rank components of Jacobian
             Y = self.xpt_directions(include_kopt=False).T
             Qy, Ry = LA.qr(Y, mode='full')  # Qy is (n,n), Ry is (n,npt-1)=(n,p)
             Qhat = Qy[:, :Y.shape[1]]
             self.model_jac = np.dot(self.model_jac, np.dot(Qhat, Qhat.T))
-        for m1 in range(self.m()):
-            g_old = self.model_jac[m1, :].copy()
-            rhs = self.fval_v[fval_row_idx, m1]  # length (npt)
-            try:
-                dg = self.solve_geom_system(rhs)
-            except LA.LinAlgError:
-                return False, None, None, None, None  # flag error
-            except ValueError:
-                return False, None, None, None, None  # flag error (e.g. inf or NaN encountered)
 
-            if not np.all(np.isfinite(dg)):  # another check for inf or NaN
-                return False, None, None, None, None  # flag error
-
-            self.model_jac[m1, :] = dg[1:]
-            self.model_const[m1] = dg[0] - np.dot(self.model_jac[m1, :], xopt)  # shift base to xbase
-            if verbose or get_chg_J:
-                norm_J_error += sumsq(dg[1:] - g_old)
-                linalg_resid += sumsq(np.dot(W, dg) - rhs)
+        rhs = self.fval_v[fval_row_idx, :]  # size npt * m
+        try:
+            dg = self.solve_geom_system(rhs)  # size (n+1)*m
+        except LA.LinAlgError:
+            return False, None, None, None, None  # flag error
+        except ValueError:
+            return False, None, None, None, None  # flag error (e.g. inf or NaN encountered)
+        J_old = self.model_jac.copy()
+        self.model_jac = dg[1:,:].T
+        self.model_const = dg[0,:] - np.dot(self.model_jac, xopt)  # shift base to xbase
+        if verbose or get_chg_J:
+            norm_J_error = np.linalg.norm(self.model_jac - J_old, ord='fro')**2
+            linalg_resid = np.linalg.norm(W.dot(dg) - rhs)**2
 
         if make_full_rank:
             try:
@@ -368,20 +365,29 @@ class Model(object):
 
         # Apply scaling based on convention for objective - this code uses sumsq(rvec) not 0.5*sumsq(rvec)
         g = 2.0 * np.dot(J.T, r)  # n-vector
-        hess = Hessian(self.n(), vals=2.0 * np.dot(J.T, J))
-        return g, hess
+        H = 2.0 * np.dot(J.T, J)
+        return g, H
 
-    def lagrange_gradient(self, k, factorise_first=True):
-        assert 0 <= k < self.npt(), "Invalid index %g" % k
+    def lagrange_gradient(self, k=None, factorise_first=True):
         if factorise_first:
             self.factorise_geom_system()
 
-        rhs = np.zeros((self.npt(),))
-        rhs[k] = 1.0
+        if k is not None:
+            assert 0 <= k < self.npt(), "Invalid index %g" % k
+            rhs = np.zeros((self.npt(),))
+            rhs[k] = 1.0
+        else:
+            rhs = np.eye(self.npt())  # find all Lagrange polynomials
         soln = self.solve_geom_system(rhs)
-        c = soln[0]
-        g = soln[1:]
-        return c, g  # constant, gradient [all based at xopt]
+
+        if k is not None:
+            c = soln[0]
+            g = soln[1:]
+            return c, g  # constant, gradient [all based at xopt]
+        else:
+            cs = soln[0, :]
+            gs = soln[1:, :]
+            return cs, gs  # constant terms in each entry and gradient terms in each col [all based at xopt]
 
     def poisedness_constant(self, delta, xbase=None, xbase_in_abs_coords=True):
         # Calculate the poisedness constant of the current interpolation set in B(xbase, delta)
@@ -391,8 +397,13 @@ class Model(object):
             xbase = self.xopt()
         elif xbase_in_abs_coords:
             xbase = xbase - self.xbase  # shift to correct position
+        # Calculate all Lagrange polynomials at once
+        self.factorise_geom_system()
+        rhs = np.eye(self.npt())  # values to interpolate
+        soln = self.solve_geom_system(rhs)
         for k in range(self.npt()):
-            c, g = self.lagrange_gradient(k, factorise_first=True)
+            # Extract Lagrange poly from soln matrix (based at xopt)
+            c = soln[0,k]; g = soln[1:, k]
             newc = c + np.dot(g, xbase - self.xopt())  # based at xbase
             # Solve problem: bounds are sl <= x <= su, and ||x-xopt|| <= delta
             xmax = trsbox_geometry(xbase, newc, g, self.sl, self.su, delta)

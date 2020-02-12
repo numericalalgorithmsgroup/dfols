@@ -27,30 +27,29 @@ from math import sqrt
 import numpy as np
 import unittest
 
-from dfols.hessian import Hessian
 from dfols.trust_region import trsbox, trsbox_geometry
 from dfols.util import model_value
 
 
-def cauchy_pt(g, hess, delta):
+def cauchy_pt(g, H, delta):
     # General expression for the Cauchy point
-    crv = np.dot(g, hess.vec_mul(g))
+    crv = np.dot(g, H.dot(g))
     gnorm = np.linalg.norm(g)
     if crv <= 0.0:
         alpha = delta / gnorm
     else:
         alpha = min(delta / gnorm, gnorm**2 / crv)
     s = -alpha * g
-    red = model_value(g, hess, s)
-    crvmin = np.dot(s, hess.vec_mul(s)) / np.dot(s, s)
+    red = model_value(g, H, s)
+    crvmin = np.dot(s, H.dot(s)) / np.dot(s, s)
     if crvmin < 0.0:
         crvmin = -1.0
     return s, red, crvmin
 
 
-def cauchy_pt_box(g, hess, delta, lower, upper):
+def cauchy_pt_box(g, H, delta, lower, upper):
     # General expression for the Cauchy point, lower <= s <= upper
-    crv = np.dot(g, hess.vec_mul(g))
+    crv = np.dot(g, H.dot(g))
     gnorm = np.linalg.norm(g)
     if crv <= 0.0:
         alpha = delta / gnorm
@@ -65,8 +64,8 @@ def cauchy_pt_box(g, hess, delta, lower, upper):
             alpha = min(alpha, -upper[i] / g[i])
         # print("alpha = %g after i=%g" % (alpha, i))
     s = -alpha * g
-    red = model_value(g, hess, s)
-    crvmin = np.dot(s, hess.vec_mul(s)) / np.dot(s, s)
+    red = model_value(g, H, s)
+    crvmin = np.dot(s, H.dot(s)) / np.dot(s, s)
     if crvmin < 0.0:
         crvmin = -1.0
     return s, red, crvmin
@@ -78,20 +77,19 @@ class TestUncInternal(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 2.0
-        hess = Hessian(n, vals=H)
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         sl = -1e20 * np.ones((n,))
         su = 1e20 * np.ones((n,))
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([-1.0, 0.0, -0.5])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer for internal minimum?
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, hess, Delta)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, H, Delta)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         print(crvmin)
         self.assertAlmostEqual(crvmin, 1.2, 'Wrong crvmin')
 
@@ -102,20 +100,19 @@ class TestUncBdry(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 5.0 / 12.0
-        hess = Hessian(n, vals=H)
         xopt = np.zeros((n,))
         sl = -1e20 * np.ones((n,))
         su = 1e20 * np.ones((n,))
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([-1.0 / 3.0, 0.0, -0.25])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, hess, Delta)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, H, Delta)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         self.assertAlmostEqual(crvmin, 0.0, 'Wrong crvmin')
 
 
@@ -125,20 +122,19 @@ class TestUncBdry2(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         Delta = 5.0 / 12.0
-        hess = Hessian(n, vals=H)
         xopt = np.zeros((n,))
         sl = -1e20 * np.ones((n,))
         su = 1e20 * np.ones((n,))
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([-1.0 / 3.0, 0.0, -0.25])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, hess, Delta)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, H, Delta)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         self.assertAlmostEqual(crvmin, 0.0, 'Wrong crvmin')
 
 
@@ -148,20 +144,19 @@ class TestUncBdry3(unittest.TestCase):
         g = np.array([0.0, 0.0, 1.0])
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         Delta = 0.5
-        hess = Hessian(n, vals=H)
         xopt = np.zeros((n,))
         sl = -1e20 * np.ones((n,))
         su = 1e20 * np.ones((n,))
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([0.0, 0.0, -0.5])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, hess, Delta)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, H, Delta)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         self.assertAlmostEqual(crvmin, 0.0, 'Wrong crvmin')
         # self.assertAlmostEqual(crvmin, crvmin_cauchy, 'Wrong crvmin')
 
@@ -172,20 +167,19 @@ class TestUncHard(unittest.TestCase):
         g = np.array([0.0, 0.0, 1.0])
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         Delta = sqrt(2.0)
-        hess = Hessian(n, vals=H)
         xopt = np.zeros((n,))
         sl = -1e20 * np.ones((n,))
         su = 1e20 * np.ones((n,))
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([1.0, 0.0, -1.0])  # non-unique solution
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, hess, Delta)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt(g, H, Delta)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         self.assertAlmostEqual(crvmin, 0.0, 'Wrong crvmin')
 
 
@@ -195,22 +189,21 @@ class TestConInternal(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 2.0
-        hess = Hessian(n, vals=H)
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         sl = xopt + np.array([-0.5, -10.0, -10.0])
         su = xopt + np.array([10.0, 10.0, 10.0])
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([-1.0, 0.0, -0.5])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer for internal minimum?
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt_box(g, hess, Delta, sl-xopt, su-xopt)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt_box(g, H, Delta, sl-xopt, su-xopt)
         # print(s_cauchy)
         # print(d)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.all(gnew == g + hess.vec_mul(d)), 'Wrong gnew')
+        self.assertTrue(np.all(gnew == g + H.dot(d)), 'Wrong gnew')
         print(crvmin)
         self.assertAlmostEqual(crvmin, -1.0, 'Wrong crvmin')
 
@@ -221,20 +214,19 @@ class TestConBdry(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 5.0 / 12.0
-        hess = Hessian(n, vals=H)
         xopt = np.zeros((n,))
         sl = xopt + np.array([-0.3, -0.01, -0.1])
         su = xopt + np.array([10.0, 1.0, 10.0])
-        d, gnew, crvmin = trsbox(xopt, g, hess, sl, su, Delta)
+        d, gnew, crvmin = trsbox(xopt, g, H, sl, su, Delta)
         true_d = np.array([-1.0 / 3.0, 0.0, -0.25])
-        est_min = model_value(g, hess, d)
-        true_min = model_value(g, hess, true_d)
+        est_min = model_value(g, H, d)
+        true_min = model_value(g, H, true_d)
         # Hope to get actual correct answer
         # self.assertTrue(np.all(d == true_d), 'Wrong answer')
         # self.assertAlmostEqual(est_min, true_min, 'Wrong min value')
-        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt_box(g, hess, Delta, sl - xopt, su - xopt)
+        s_cauchy, red_cauchy, crvmin_cauchy = cauchy_pt_box(g, H, Delta, sl - xopt, su - xopt)
         self.assertTrue(est_min <= red_cauchy, 'Cauchy reduction not achieved')
-        self.assertTrue(np.max(np.abs(gnew - g - hess.vec_mul(d))) < 1e-10, 'Wrong gnew')
+        self.assertTrue(np.max(np.abs(gnew - g - H.dot(d))) < 1e-10, 'Wrong gnew')
         print(crvmin)
         self.assertAlmostEqual(crvmin, -1.0, 'Wrong crvmin')
         # self.assertAlmostEqual(crvmin, crvmin_cauchy, 'Wrong crvmin')

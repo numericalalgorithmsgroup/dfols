@@ -34,9 +34,9 @@ class TestAccess(unittest.TestCase):
         npt = n + 1
         maxfun = 50 * (n + 1)
         p = ParameterList(n, npt, maxfun)
-        self.assertTrue(p("init.random_initial_directions"), 'Bad init dirns/access')
-        p("init.random_initial_directions", False)  # set to False
         self.assertFalse(p("init.random_initial_directions"), 'Bad init dirns/access')
+        p("init.random_initial_directions", True)  # set to True
+        self.assertTrue(p("init.random_initial_directions"), 'Bad init dirns/access')
 
 
 class TestFail(unittest.TestCase):

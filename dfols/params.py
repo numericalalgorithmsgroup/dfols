@@ -39,7 +39,7 @@ class ParameterList(object):
         self.params["general.safety_step_thresh"] = 0.5  # safety step called if ||d|| <= thresh * rho
         self.params["general.check_objfun_for_overflow"] = True
         # Initialisation
-        self.params["init.random_initial_directions"] = True
+        self.params["init.random_initial_directions"] = True if npt > (n+1)*(n+2)//2 else False  # only if needed
         self.params["init.run_in_parallel"] = False  # only available for random directions at the moment
         self.params["init.random_directions_make_orthogonal"] = True  # although random > orthogonal, avoid for init
         # Interpolation

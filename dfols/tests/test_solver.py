@@ -87,7 +87,7 @@ class TestRosenbrockBounds2(unittest.TestCase):
         print(soln.x)
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
         self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")
-        self.assertTrue(array_compare(soln.jacobian, jacmin, thresh=1e-3), "Wrong jacobian")
+        self.assertTrue(array_compare(soln.jacobian, jacmin, thresh=2e-2), "Wrong jacobian")
 
 
 class TestLinear(unittest.TestCase):
@@ -98,7 +98,7 @@ class TestLinear(unittest.TestCase):
         A = np.random.rand(m, n)
         b = np.random.rand(m)
         objfun = lambda x: np.dot(A, x) - b
-        xmin = np.linalg.lstsq(A, b)[0]
+        xmin = np.linalg.lstsq(A, b, rcond=None)[0]
         fmin = np.dot(objfun(xmin), objfun(xmin))
         x0 = np.zeros((n,))
         soln = dfols.solve(objfun, x0)

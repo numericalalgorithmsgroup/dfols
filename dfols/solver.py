@@ -256,7 +256,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
 
 
         # Trust region step
-        d, gopt, hq, gnew, crvmin = control.trust_region_step()
+        d, gopt, H, gnew, crvmin = control.trust_region_step()
         logging.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
         dnorm = min(LA.norm(d), control.delta)
@@ -353,7 +353,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 diagnostic_info.update_iter_type(ITER_SAFETY)
                 diagnostic_info.update_slow_iter(-1)
 
-            if not control.done_with_current_rho(xnew, gnew, crvmin, hq, current_iter):
+            if not control.done_with_current_rho(xnew, gnew, crvmin, H, current_iter):
                 distsq = (10.0 * control.rho) ** 2
                 number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                 update_delta = True  # we do reduce delta for safety steps
@@ -497,7 +497,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            ratio, exit_info = control.calculate_ratio(current_iter, rvec_list[:num_samples_run, :], d, gopt, hq)
+            ratio, exit_info = control.calculate_ratio(current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -824,11 +824,14 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     if bounds is None:
         xl = None
         xu = None
-        scaling_within_bounds = False
     else:
         assert len(bounds) == 2, "bounds must be a 2-tuple of (lower, upper), where both are arrays of size(x0)"
-        xl = bounds[0].astype(np.float)
-        xu = bounds[1].astype(np.float)
+        xl = bounds[0].astype(np.float) if bounds[0] is not None else None
+        xu = bounds[1].astype(np.float) if bounds[1] is not None else None
+
+    if (xl is None or xu is None) and scaling_within_bounds:
+        scaling_within_bounds = False
+        warnings.warn("Ignoring scaling_within_bounds=True for unconstrained problem/1-sided bounds", RuntimeWarning)
 
     if xl is None:
         xl = -1e20 * np.ones((n,))  # unconstrained

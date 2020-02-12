@@ -280,11 +280,11 @@ class TestInterpMatrixSVD(unittest.TestCase):
                                       rosenbrock(x2)-rosenbrock(model.xbase), thresh=1e-10), 'Wrong x2 (no constant)')
         self.assertTrue(array_compare(model.model_value(x2 - model.xbase, d_based_at_xopt=False, with_const_term=False),
                                 rosenbrock(x2) - rosenbrock(model.xbase), thresh=1e-10), 'Wrong x2 (no constant v2)')
-        g, hess = model.build_full_model()
+        g, H = model.build_full_model()
         r = rosenbrock(x1)
         J = model.model_jac
         self.assertTrue(array_compare(g, 2.0*np.dot(J.T, r), thresh=1e-10), 'Bad gradient')
-        self.assertTrue(array_compare(hess.as_full(), 2.0*np.dot(J.T, J)), 'Bad Hessian')
+        self.assertTrue(array_compare(H, 2.0*np.dot(J.T, J)), 'Bad Hessian')
 
 
 class TestGeomSystem(unittest.TestCase):
@@ -426,7 +426,7 @@ class TestRegression(unittest.TestCase):
         self.assertTrue(array_compare(A_for_interp, A_after_scaling), 'Interp matrix 1')
         # For reference: model based around model.xbase
         interp_ok, interp_error, norm_J_error, linalg_resid, ls_interp_cond_num = model.interpolate_mini_models_svd()
-        J_true = np.linalg.lstsq(A_for_interp, b)[0]
+        J_true = np.linalg.lstsq(A_for_interp, b, rcond=None)[0]
         self.assertTrue(interp_ok, 'Interpolation failed')
         # print(model.model_const, model.model_jac)
         # print(J_true[0] - np.dot(J_true[1:], model.xopt()), J_true[1:])
@@ -468,7 +468,7 @@ class TestUnderdetermined(unittest.TestCase):
         # For reference: model based around model.xbase
         interp_ok, interp_error, norm_J_error, linalg_resid, ls_interp_cond_num = model.interpolate_mini_models_svd()
         self.assertTrue(interp_ok, 'Interpolation failed')
-        J_true = np.linalg.lstsq(A_for_interp, b)[0]
+        J_true = np.linalg.lstsq(A_for_interp, b, rcond=None)[0]
         g = J_true[1:]
         c = J_true[0] - np.dot(g, model.xopt())  # centred at xbase
         self.assertTrue(array_compare(model.model_const, np.array([c])), 'Wrong constant term')
