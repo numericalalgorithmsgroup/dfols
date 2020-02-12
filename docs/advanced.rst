@@ -22,7 +22,7 @@ Logging and Output
 
 Initialization of Points
 ------------------------
-* :code:`init.random_initial_directions` - Build the initial interpolation set using random directions (as opposed to coordinate directions). Default is :code:`True`.
+* :code:`init.random_initial_directions` - Build the initial interpolation set using random directions (as opposed to coordinate directions). Default as of version 1.2 is :code:`False`.
 * :code:`init.random_directions_make_orthogonal` - If building initial interpolation set with random directions, whether or not these should be orthogonalized. Default is :code:`True`.
 * :code:`init.run_in_parallel` - If using random directions, whether or not to ask for all :code:`objfun` to be evaluated at all points without any intermediate processing. Default is :code:`False`.
 

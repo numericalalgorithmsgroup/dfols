@@ -31,4 +31,5 @@ Version 1.2
 * Faster trust-region and geometry subproblem solutions in Fortran using the `trustregion <https://github.com/lindonroberts/trust-region>`_ package.
 * Faster interpolation solution for multiple right-hand sides.
 * Don't adjust starting point if it is close to the bounds (as long as it is feasible).
-* Bugfix: correctly handle 1-sided bounds as inputs.
+* Option to stop default logging behavior and/or enable per-iteration printing.
+* Bugfix: correctly handle 1-sided bounds as inputs, avoid divide-by-zero warnings when auto-detecting restarts.

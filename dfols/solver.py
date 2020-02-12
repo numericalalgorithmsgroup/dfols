@@ -95,7 +95,7 @@ class OptimResults(object):
 
 def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
                diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
-               do_logging=True):
+               do_logging=True, print_progress=False):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
     if r0_avg_old is None:
@@ -196,6 +196,8 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
     current_iter = -1
     if do_logging:
         logging.info("Beginning main loop")
+    if print_progress:
+        print("{:^5}{:^7}{:^10}{:^10}{:^10}{:^10}{:^7}".format("Run", "Iter", "Obj", "Grad", "Delta", "rho", "Evals"))
     while True:
         current_iter += 1
 
@@ -273,6 +275,9 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
             logging.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
         dnorm = min(LA.norm(d), control.delta)
+
+        if print_progress:
+            print("{:^5}{:^7}{:^10.2e}{:^10.2e}{:^10.2e}{:^10.2e}{:^7}".format(nruns_so_far+1, current_iter+1, control.model.fopt(), np.linalg.norm(gopt), control.delta, control.rho, control.nf))
 
         if params("logging.save_diagnostic_info"):
             diagnostic_info.save_info_from_control(control, nruns_so_far, current_iter,
@@ -719,9 +724,9 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                     # no very successful iterations, and twice as many unsuccessful than moderately successful iterations
 
                     # If delta criteria met, check chgJ criteria
-                    # Fit line to k vs. log(||chgJ||_F)
+                    # Fit line to k vs. log(||chgJ||_F), but floor ||chgJ||_F away from zero
                     slope, intercept, r_value, p_value, std_err = STAT.linregress(np.arange(len(restart_auto_detect_chgJ)),
-                                                                                np.log(restart_auto_detect_chgJ))
+                                                                                np.log(np.maximum(restart_auto_detect_chgJ, 1e-15)))
 
                     if do_logging:
                         logging.debug("Iter %g: (slope, intercept, r_value) = (%g, %g, %g)" % (current_iter, slope, intercept, r_value))
@@ -846,7 +851,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
 
 
 def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
-          objfun_has_noise=False, scaling_within_bounds=False, do_logging=True):
+          objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
     x0 = x0.astype(np.float)
     n = len(x0)
 
@@ -989,7 +994,7 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
     xmin, rmin, fmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
         solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                     diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user,
-                   do_logging=do_logging)
+                   do_logging=do_logging, print_progress=print_progress)
 
     # Hard restarts loop
     last_successful_run = nruns
@@ -1008,11 +1013,11 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
             xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                             diagnostic_info, scaling_changes, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
-                           do_logging=do_logging)
+                           do_logging=do_logging, print_progress=print_progress)
         else:
             xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                           diagnostic_info, scaling_changes, do_logging=do_logging)
+                           diagnostic_info, scaling_changes, do_logging=do_logging, print_progress=print_progress)
 
         if fmin2 < fmin or np.isnan(fmin):
             if do_logging:
