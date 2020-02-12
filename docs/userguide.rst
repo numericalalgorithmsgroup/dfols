@@ -68,7 +68,7 @@ The :code:`solve` function has several optional arguments which the user may pro
       dfols.solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, 
                   rhoend=1e-8, maxfun=None, nsamples=None, 
                   user_params=None, objfun_has_noise=False, 
-                  scaling_within_bounds=False)
+                  scaling_within_bounds=False, do_logging=True)
 
 These arguments are:
 
@@ -82,6 +82,7 @@ These arguments are:
 * :code:`user_params` - a Python dictionary :code:`{'param1': val1, 'param2':val2, ...}` of optional parameters. A full list of available options is given in the next section :doc:`advanced`.
 * :code:`objfun_has_noise` - a flag to indicate whether or not :code:`objfun` has stochastic noise; i.e. will calling :code:`objfun(x)` multiple times at the same value of :code:`x` give different results? This is used to set some sensible default parameters (including using multiple restarts), all of which can be overridden by the values provided in :code:`user_params`.
 * :code:`scaling_within_bounds` - a flag to indicate whether the algorithm should internally shift and scale the entries of :code:`x` so that the bounds become :math:`0 \leq x \leq 1`. This is useful is you are setting :code:`bounds` and the bounds have different orders of magnitude. If :code:`scaling_within_bounds=True`, the values of :code:`rhobeg` and :code:`rhoend` apply to the *shifted* variables.
+* :code:`do_logging` - a flag to indicate whether logging output should be produced. This is not automatically visible unless you use the Python `logging <https://docs.python.org/3/library/logging.html>`_ module (see below for simple usage).
 
 In general when using optimization software, it is good practice to scale your variables so that moving each by a given amount has approximately the same impact on the objective function.
 The :code:`scaling_within_bounds` flag is designed to provide an easy way to achieve this, if you have set the bounds :code:`lower` and :code:`upper`.
@@ -207,6 +208,8 @@ If we wanted to save this output to a file, we could replace the above call to :
   
       logging.basicConfig(filename="myfile.log", level=logging.INFO, 
                           format='%(message)s', filemode='w')
+
+If you have logging for some parts of your code and you want to deactivate all DFO-LS logging, you can use the optional argument :code:`do_logging=False` in :code:`dfols.solve()`.
 
 Example: Noisy Objective Evaluation
 -----------------------------------

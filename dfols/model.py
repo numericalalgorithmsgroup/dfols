@@ -41,7 +41,8 @@ from .util import sumsq
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, npt, x0, r0, xl, xu, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True):
+    def __init__(self, npt, x0, r0, xl, xu, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
+                 do_logging=True):
         if n is None:
             n = len(x0)
         if m is None:
@@ -51,6 +52,7 @@ class Model(object):
         assert xl.shape == (n,), "xl has wrong shape (got %s, expect (%g,))" % (str(xl.shape), n)
         assert xu.shape == (n,), "xu has wrong shape (got %s, expect (%g,))" % (str(xu.shape), n)
         assert r0.shape == (m,), "r0 has wrong shape (got %s, expect (%g,))" % (str(r0.shape), m)
+        self.do_logging = do_logging
         self.dim = n
         self.resid_dim = m
         self.num_pts = npt
@@ -298,7 +300,8 @@ class Model(object):
                 Qb = np.dot(self.Q.T, col_scale(rhs, self.left_scaling))
                 return col_scale(LA.solve_triangular(self.R, Qb), self.right_scaling)
         else:
-            logging.warning("model.solve_geom_system not using factorisation")
+            if self.do_logging:
+                logging.warning("model.solve_geom_system not using factorisation")
             W, left_scaling, right_scaling = self.interpolation_matrix()
             return col_scale(LA.lstsq(W, col_scale(rhs * left_scaling))[0], right_scaling)
 

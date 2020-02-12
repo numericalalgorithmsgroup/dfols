@@ -54,7 +54,6 @@ alternative licensing.
 # Ensure compatibility with Python 2
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
 from math import sqrt
 import numpy as np
 try:
