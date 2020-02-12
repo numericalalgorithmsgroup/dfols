@@ -39,16 +39,14 @@ Requirements
 DFO-LS requires the following software to be installed:
 
 * Python 2.7 or Python 3 (http://www.python.org/)
-* Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_), required by the `trustregion <https://github.com/lindonroberts/trust-region>`_ package.
 
 Additionally, the following python packages should be installed (these will be installed automatically if using *pip*, see `Installation using pip`_):
 
 * NumPy 1.11 or higher (http://www.numpy.org/)
 * SciPy 0.18 or higher (http://www.scipy.org/)
 * Pandas 0.17 or higher (http://pandas.pydata.org/)
-* trustregion 1.1 or higher (https://github.com/lindonroberts/trust-region)
 
-**Warning:** the trustregion package requires NumPy to already be installed. Please install NumPy before following the installation instructions below. This applies to DFO-LS versions 1.2 and higher.
+**Optional package:** DFO-LS versions 1.2 and higher also support the `trustregion <https://github.com/lindonroberts/trust-region>`_ package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_) and NumPy installed, then run :code:`pip install trustregion`. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.
 
 Installation using pip
 ----------------------

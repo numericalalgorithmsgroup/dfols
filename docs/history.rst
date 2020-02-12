@@ -33,3 +33,8 @@ Version 1.2 (12 Feb 2020)
 * Don't adjust starting point if it is close to the bounds (as long as it is feasible).
 * Option to stop default logging behavior and/or enable per-iteration printing.
 * Bugfix: correctly handle 1-sided bounds as inputs, avoid divide-by-zero warnings when auto-detecting restarts.
+
+Version 1.2.1 (13 Feb 2020)
+---------------------------
+* Make the use of the `trustregion <https://github.com/lindonroberts/trust-region>`_ package optional, not installed by default.
+

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installing DFO-LS &mdash; DFO-LS v1.2 documentation</title>
+  <title>Installing DFO-LS &mdash; DFO-LS v1.2.1 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.2
+                1.2.1
               </div>
             
           
@@ -171,16 +171,14 @@
 <p>DFO-LS requires the following software to be installed:</p>
 <ul class="simple">
 <li><p>Python 2.7 or Python 3 (<a class="reference external" href="http://www.python.org/">http://www.python.org/</a>)</p></li>
-<li><p>Fortran compiler (e.g. <a class="reference external" href="https://gcc.gnu.org/wiki/GFortran">gfortran</a>), required by the <a class="reference external" href="https://github.com/lindonroberts/trust-region">trustregion</a> package.</p></li>
 </ul>
 <p>Additionally, the following python packages should be installed (these will be installed automatically if using <em>pip</em>, see <a class="reference internal" href="#installation-using-pip">Installation using pip</a>):</p>
 <ul class="simple">
 <li><p>NumPy 1.11 or higher (<a class="reference external" href="http://www.numpy.org/">http://www.numpy.org/</a>)</p></li>
 <li><p>SciPy 0.18 or higher (<a class="reference external" href="http://www.scipy.org/">http://www.scipy.org/</a>)</p></li>
 <li><p>Pandas 0.17 or higher (<a class="reference external" href="http://pandas.pydata.org/">http://pandas.pydata.org/</a>)</p></li>
-<li><p>trustregion 1.1 or higher (<a class="reference external" href="https://github.com/lindonroberts/trust-region">https://github.com/lindonroberts/trust-region</a>)</p></li>
 </ul>
-<p><strong>Warning:</strong> the trustregion package requires NumPy to already be installed. Please install NumPy before following the installation instructions below. This applies to DFO-LS versions 1.2 and higher.</p>
+<p><strong>Optional package:</strong> DFO-LS versions 1.2 and higher also support the <a class="reference external" href="https://github.com/lindonroberts/trust-region">trustregion</a> package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. <a class="reference external" href="https://gcc.gnu.org/wiki/GFortran">gfortran</a>) and NumPy installed, then run <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">trustregion</span></code>. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.</p>
 </div>
 <div class="section" id="installation-using-pip">
 <h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Permalink to this headline">¶</a></h2>

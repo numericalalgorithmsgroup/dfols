@@ -73,8 +73,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{12 February 2020}
-\release{1.2}
+\date{13 February 2020}
+\release{1.2.1}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -89,11 +89,11 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
-\sphinxstylestrong{Release:} 1.2
+\sphinxstylestrong{Release:} 1.2.1
 
-\sphinxstylestrong{Date:} 12 February 2020
+\sphinxstylestrong{Date:} 13 February 2020
 
-\sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@maths.ox.ac.uk}{Lindon Roberts}
+\sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@anu.edu.au}{Lindon Roberts}
 
 DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional bound constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
 
@@ -121,9 +121,6 @@ DFO\sphinxhyphen{}LS requires the following software to be installed:
 \item {} 
 Python 2.7 or Python 3 (\sphinxurl{http://www.python.org/})
 
-\item {} 
-Fortran compiler (e.g. \sphinxhref{https://gcc.gnu.org/wiki/GFortran}{gfortran}), required by the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package.
-
 \end{itemize}
 
 Additionally, the following python packages should be installed (these will be installed automatically if using \sphinxstyleemphasis{pip}, see {\hyperref[\detokenize{install:installation-using-pip}]{\sphinxcrossref{Installation using pip}}}):
@@ -137,12 +134,9 @@ SciPy 0.18 or higher (\sphinxurl{http://www.scipy.org/})
 \item {} 
 Pandas 0.17 or higher (\sphinxurl{http://pandas.pydata.org/})
 
-\item {} 
-trustregion 1.1 or higher (\sphinxurl{https://github.com/lindonroberts/trust-region})
-
 \end{itemize}
 
-\sphinxstylestrong{Warning:} the trustregion package requires NumPy to already be installed. Please install NumPy before following the installation instructions below. This applies to DFO\sphinxhyphen{}LS versions 1.2 and higher.
+\sphinxstylestrong{Optional package:} DFO\sphinxhyphen{}LS versions 1.2 and higher also support the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package for fast trust\sphinxhyphen{}region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. \sphinxhref{https://gcc.gnu.org/wiki/GFortran}{gfortran}) and NumPy installed, then run \sphinxcode{\sphinxupquote{pip install trustregion}}. You do not have to have trustregion installed for DFO\sphinxhyphen{}LS to work, and it is not installed by default.
 
 
 \section{Installation using pip}
@@ -1352,6 +1346,14 @@ Option to stop default logging behavior and/or enable per\sphinxhyphen{}iteratio
 
 \item {} 
 Bugfix: correctly handle 1\sphinxhyphen{}sided bounds as inputs, avoid divide\sphinxhyphen{}by\sphinxhyphen{}zero warnings when auto\sphinxhyphen{}detecting restarts.
+
+\end{itemize}
+
+
+\section{Version 1.2.1 (13 Feb 2020)}
+\label{\detokenize{history:version-1-2-1-13-feb-2020}}\begin{itemize}
+\item {} 
+Make the use of the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package optional, not installed by default.
 
 \end{itemize}
 
