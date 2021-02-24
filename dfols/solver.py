@@ -852,7 +852,7 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
 
 def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
-    x0 = x0.astype(np.float)
+    x0 = x0.astype(np.float64)
     n = len(x0)
 
     # Set missing inputs (if not specified) to some sensible defaults
@@ -861,8 +861,8 @@ def solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, rhoend=1e-8, 
         xu = None
     else:
         assert len(bounds) == 2, "bounds must be a 2-tuple of (lower, upper), where both are arrays of size(x0)"
-        xl = bounds[0].astype(np.float) if bounds[0] is not None else None
-        xu = bounds[1].astype(np.float) if bounds[1] is not None else None
+        xl = bounds[0].astype(np.float64) if bounds[0] is not None else None
+        xu = bounds[1].astype(np.float64) if bounds[1] is not None else None
 
     if (xl is None or xu is None) and scaling_within_bounds:
         scaling_within_bounds = False
