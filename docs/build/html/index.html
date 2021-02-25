@@ -159,7 +159,7 @@
   <div class="section" id="dfo-ls-derivative-free-optimizer-for-least-squares-minimization">
 <h1>DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization<a class="headerlink" href="#dfo-ls-derivative-free-optimizer-for-least-squares-minimization" title="Permalink to this headline">¶</a></h1>
 <p><strong>Release:</strong> 1.2.1</p>
-<p><strong>Date:</strong> 13 February 2020</p>
+<p><strong>Date:</strong> 25 February 2021</p>
 <p><strong>Author:</strong> <a class="reference external" href="mailto:lindon&#46;roberts&#37;&#52;&#48;anu&#46;edu&#46;au">Lindon Roberts</a></p>
 <p>DFO-LS is a flexible package for finding local solutions to nonlinear least-squares minimization problems (with optional bound constraints), without requiring any derivatives of the objective. DFO-LS stands for Derivative-Free Optimizer for Least-Squares.</p>
 <p>That is, DFO-LS solves</p>
@@ -167,7 +167,7 @@
 \[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
 <p>The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).</p>
-<p>Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, <a class="reference external" href="https://arxiv.org/abs/1804.00154">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, technical report, University of Oxford, (2018). DFO-LS is a more flexible version of <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfogn">DFO-GN</a>.</p>
+<p>Full details of the DFO-LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, <a class="reference external" href="https://doi.org/10.1145/3338517">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, <em>ACM Transactions on Mathematical Software</em>, 45:3 (2019), pp. 32:1-32:41 [<a class="reference external" href="https://arxiv.org/abs/1804.00154">preprint</a>] . DFO-LS is a more flexible version of <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfogn">DFO-GN</a>.</p>
 <p>If you are interested in solving general optimization problems (without a least-squares structure), you may wish to try <a class="reference external" href="https://github.com/numericalalgorithmsgroup/pybobyqa">Py-BOBYQA</a>, which has many of the same features as DFO-LS.</p>
 <p>DFO-LS is released under the GNU General Public License. Please <a class="reference external" href="http://www.nag.com/content/worldwide-contact-information">contact NAG</a> for alternative licensing.</p>
 <div class="toctree-wrapper compound">
