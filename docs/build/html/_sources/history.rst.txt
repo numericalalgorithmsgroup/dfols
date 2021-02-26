@@ -38,3 +38,6 @@ Version 1.2.1 (13 Feb 2020)
 ---------------------------
 * Make the use of the `trustregion <https://github.com/lindonroberts/trust-region>`_ package optional, not installed by default.
 
+Version 1.2.2 (26 Feb 2021)
+---------------------------
+* Minor update to remove NumPy deprecation warnings - no changes to the DFO-LS algorithm.
