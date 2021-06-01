@@ -44,6 +44,7 @@ class ParameterList(object):
         self.params["init.random_directions_make_orthogonal"] = True  # although random > orthogonal, avoid for init
         # Interpolation
         self.params["interpolation.precondition"] = True
+        self.params["interpolation.throw_error_on_nans"] = False  # throw numpy.linalg.LinAlgError if interpolating to nan data?
         # Logging
         self.params["logging.n_to_print_whole_x_vector"] = 6
         self.params["logging.save_diagnostic_info"] = False
@@ -141,6 +142,8 @@ class ParameterList(object):
         elif key == "init.random_directions_make_orthogonal":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
         elif key == "interpolation.precondition":
+            type_str, nonetype_ok, lower, upper = 'bool', False, None, None
+        elif key == "interpolation.throw_error_on_nans":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
         elif key == "logging.n_to_print_whole_x_vector":
             type_str, nonetype_ok, lower, upper = 'int', False, 0, None

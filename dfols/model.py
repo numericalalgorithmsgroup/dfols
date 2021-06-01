@@ -306,7 +306,7 @@ class Model(object):
             return col_scale(LA.lstsq(W, col_scale(rhs * left_scaling))[0], right_scaling)
 
     def interpolate_mini_models_svd(self, verbose=False, make_full_rank=False, min_sing_val=1e-6, sing_val_frac=1.0, max_jac_cond=1e8,
-                                    get_chg_J=False):
+                                    get_chg_J=False, throw_error_on_nans=False):
         W, left_scaling, right_scaling = self.interpolation_matrix()
         self.factorise_geom_system()
         ls_interp_cond_num = np.linalg.cond(W) if verbose else 0.0  # scipy.linalg does not have condition number!
@@ -327,12 +327,18 @@ class Model(object):
             self.model_jac = np.dot(self.model_jac, np.dot(Qhat, Qhat.T))
 
         rhs = self.fval_v[fval_row_idx, :]  # size npt * m
+        if np.any(np.isnan(rhs)) and throw_error_on_nans:
+            if self.do_logging:
+                logging.warning("model.interpolate_mini_models_svd: NaNs encountered in objective evaluations, raising error")
+            raise np.linalg.LinAlgError("NaN encountered in objective evaluations")
         try:
             dg = self.solve_geom_system(rhs)  # size (n+1)*m
         except LA.LinAlgError:
             return False, None, None, None, None  # flag error
         except ValueError:
             return False, None, None, None, None  # flag error (e.g. inf or NaN encountered)
+        if not np.all(np.isfinite(dg)):  # another check for inf or NaN
+            return False, None, None, None, None
         J_old = self.model_jac.copy()
         self.model_jac = dg[1:,:].T
         self.model_const = dg[0,:] - np.dot(self.model_jac, xopt)  # shift base to xbase

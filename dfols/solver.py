@@ -247,7 +247,8 @@ def solve_main(objfun, x0, args, xl, xu, npt, rhobeg, rhoend, maxfun, nruns_so_f
                 min_sing_val=params("growing.full_rank.min_sing_val"),
                 sing_val_frac=params("growing.full_rank.svd_scale_factor"),
                 max_jac_cond=params("growing.full_rank.svd_max_jac_cond"),
-                get_chg_J=params("restarts.use_restarts") and params("restarts.auto_detect"))
+                get_chg_J=params("restarts.use_restarts") and params("restarts.auto_detect"),
+                throw_error_on_nans=params("interpolation.throw_error_on_nans"))
         if not interp_ok:
             if params("restarts.use_restarts") and params("restarts.use_soft_restarts"):
                 number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)

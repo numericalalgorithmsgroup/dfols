@@ -41,6 +41,20 @@ def rosenbrock_jacobian(x):
     return np.array([[-20.0*x[0], 10.0], [-1.0, 0.0]])
 
 
+class TestNans(unittest.TestCase):
+    # Generic objective that only returns NaNs (like optclim code)
+    # Verify get a sensible termination
+    def runTest(self):
+        x0 = np.array([-1.2, 1.0])
+        r_error = lambda x: np.array([np.nan, np.nan, np.nan])
+        # First attempt: exit gracefully
+        soln = dfols.solve(r_error, x0)
+        self.assertEqual(soln.flag, soln.EXIT_LINALG_ERROR, "Wrong error message")
+        # Second attempt: throw error when trying to interpolate
+        with self.assertRaises(np.linalg.LinAlgError):
+            soln = dfols.solve(r_error, x0, user_params={"interpolation.throw_error_on_nans": True})
+
+
 class TestRosenbrockGeneric(unittest.TestCase):
     # Minimise the (2d) Rosenbrock function
     def runTest(self):
