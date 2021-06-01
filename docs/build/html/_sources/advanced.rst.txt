@@ -57,6 +57,7 @@ Stochastic Noise Information
 Interpolation Management
 --------------------------------
 * :code:`interpolation.precondition` - whether or not to scale the interpolation linear system to improve conditioning. Default is :code:`True`.
+* :code:`interpolation.throw_error_on_nans` - whether or not to throw :code:`numpy.linalg.LinAlgError` if trying to interpolate to NaN objective values. If :code:`False`, DFO-LS should terminate gracefully with an error flag. Default is :code:`False`.
 
 Regression Model Management
 ---------------------------

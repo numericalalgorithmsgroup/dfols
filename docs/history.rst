@@ -41,3 +41,7 @@ Version 1.2.1 (13 Feb 2020)
 Version 1.2.2 (26 Feb 2021)
 ---------------------------
 * Minor update to remove NumPy deprecation warnings - no changes to the DFO-LS algorithm.
+
+Version 1.2.3 (1 Jun 2021)
+---------------------------
+* Minor update to customise handling of NaNs in objective evaluations - no changes to the DFO-LS algorithm.

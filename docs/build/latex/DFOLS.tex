@@ -73,8 +73,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{26 February 2021}
-\release{1.2.2}
+\date{01 June 2021}
+\release{1.2.3}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -89,9 +89,9 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
-\sphinxstylestrong{Release:} 1.2.2
+\sphinxstylestrong{Release:} 1.2.3
 
-\sphinxstylestrong{Date:} 26 February 2021
+\sphinxstylestrong{Date:} 01 June 2021
 
 \sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@anu.edu.au}{Lindon Roberts}
 
@@ -1029,6 +1029,9 @@ The default values, used if no override is given, in some cases vary depending o
 \item {} 
 \sphinxcode{\sphinxupquote{interpolation.precondition}} \sphinxhyphen{} whether or not to scale the interpolation linear system to improve conditioning. Default is \sphinxcode{\sphinxupquote{True}}.
 
+\item {} 
+\sphinxcode{\sphinxupquote{interpolation.throw\_error\_on\_nans}} \sphinxhyphen{} whether or not to throw \sphinxcode{\sphinxupquote{numpy.linalg.LinAlgError}} if trying to interpolate to NaN objective values. If \sphinxcode{\sphinxupquote{False}}, DFO\sphinxhyphen{}LS should terminate gracefully with an error flag. Default is \sphinxcode{\sphinxupquote{False}}.
+
 \end{itemize}
 
 
@@ -1362,6 +1365,14 @@ Make the use of the \sphinxhref{https://github.com/lindonroberts/trust-region}{t
 \label{\detokenize{history:version-1-2-2-26-feb-2021}}\begin{itemize}
 \item {} 
 Minor update to remove NumPy deprecation warnings \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
+
+\end{itemize}
+
+
+\section{Version 1.2.3 (1 Jun 2021)}
+\label{\detokenize{history:version-1-2-3-1-jun-2021}}\begin{itemize}
+\item {} 
+Minor update to customise handling of NaNs in objective evaluations \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
 
 \end{itemize}
 

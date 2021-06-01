@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Advanced Usage &mdash; DFO-LS v1.2.2 documentation</title>
+  <title>Advanced Usage &mdash; DFO-LS v1.2.3 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.2.2
+                1.2.3
               </div>
             
           
@@ -242,6 +242,7 @@
 <h2>Interpolation Management<a class="headerlink" href="#interpolation-management" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">interpolation.precondition</span></code> - whether or not to scale the interpolation linear system to improve conditioning. Default is <code class="code docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">interpolation.throw_error_on_nans</span></code> - whether or not to throw <code class="code docutils literal notranslate"><span class="pre">numpy.linalg.LinAlgError</span></code> if trying to interpolate to NaN objective values. If <code class="code docutils literal notranslate"><span class="pre">False</span></code>, DFO-LS should terminate gracefully with an error flag. Default is <code class="code docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
 </div>
 <div class="section" id="regression-model-management">
