@@ -871,7 +871,7 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
 
     if projections and scaling_within_bounds:
         scaling_within_bounds = False
-        warnings.warn("Ignoring scaling_within_bounds=True for black-box constrained problem", RuntimeWarning)
+        warnings.warn("Ignoring scaling_within_bounds=True for problem with arbitrary constraints", RuntimeWarning)
 
     if xl is None:
         xl = -1e20 * np.ones((n,))  # unconstrained
