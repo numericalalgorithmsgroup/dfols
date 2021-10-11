@@ -92,13 +92,13 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, npt, rhobeg, rhoend, nf, nx, maxfun, params,
+    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
                  scaling_changes, do_logging):
         self.do_logging = do_logging
         self.objfun = objfun
         self.args = args
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, xl, xu, r0_nsamples, precondition=params("interpolation.precondition"),
+        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
         self.nf = nf
         self.nx = nx
@@ -137,6 +137,107 @@ class Controller(object):
         assert self.model.num_pts <= (self.n() + 1) * (self.n() + 2) // 2, "prelim: must have npt <= (n+1)(n+2)/2"
         assert 1 <= num_directions < self.model.num_pts, "Initialisation: must have 1 <= ndirs_initial < npt"
 
+
+        if self.model.projections:
+            D = np.zeros((self.n(),self.n()))
+            k = 0
+            while k < self.n():
+                ek = np.zeros(self.n())
+                ek[k] = 1
+                p = np.dot(ek,self.delta)
+                yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
+                D[k,:] = yk - self.model.xbase
+
+                k += 1 # move on to next point
+
+            # Have at least one L.D. vector, try negative direction on bad one first
+            k = 0
+            mr_tol = params("matrix_rank.r_tol")
+            D_rank, diag = qr_rank(D,tol=mr_tol)
+            while D_rank != num_directions and k < self.n():
+                if diag[k] < mr_tol:
+                    ek = np.zeros(self.n())
+                    ek[k] = 1
+                    p = -np.dot(ek,self.delta)
+                    yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
+                    dk = D[k,:].copy()
+                    D[k,:] = yk - self.model.xbase
+                    D_rank2, _diag2 = qr_rank(D,tol=params("matrix_rank.r_tol"))
+                    if D_rank2 <= D_rank:
+                        # Did not improve rank, revert change
+                        D[k,:] = dk
+                    # rank was improved, update D_rank for next comparison
+                    D_rank = D_rank2
+                k += 1
+
+            # Try random combination of negatives...
+            k = 0
+            slctr = np.random.randint(0, 1+1, self.n()) # generate rand binary "selector" array
+            D_rank, diag = qr_rank(D,tol=params("matrix_rank.r_tol"))
+            while D_rank != num_directions and k < 100*self.n():
+                if slctr[k%self.n()] == 1: # if selector says make -ve, make -ve
+                    ek = np.zeros(self.n())
+                    ek[k%self.n()] = 1
+                    p = -np.dot(ek,self.delta)
+                    yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
+                    dk = D[k%self.n(),:].copy()
+                    D[k%self.n(),:] = yk - self.model.xbase
+                    D_rank2, _diag2 = qr_rank(D,tol=params("matrix_rank.r_tol"))
+                    if D_rank2 <= D_rank:
+                        # Did not improve rank, revert change
+                        D[k%self.n(),:] = dk
+                    # rank was improved, update D_rank for next comparison
+                    D_rank = D_rank2
+
+                # Go again
+                slctr = np.random.randint(0, 1+1, self.n())
+                k += 1
+
+            # Set still not L.I? Try random directions
+            i = 0
+            D_rank, diag = qr_rank(D,tol=params("matrix_rank.r_tol"))
+            while D_rank != num_directions and i <= 100*num_directions:
+                k = 0
+                while k < self.n():
+                    if diag[k] < mr_tol:
+                        p = np.random.normal(size=self.n())
+                        p = p/np.linalg.norm(p)
+                        p = np.dot(p,self.delta)
+                        yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
+                        dk = D[k,:].copy()
+                        D[k,:] = yk - self.model.xbase
+                        D_rank2, _diag2 = qr_rank(D,tol=params("matrix_rank.r_tol"))
+                        if D_rank2 <= D_rank:
+                            # Did not improve rank, revert change
+                            D[k,:] = dk
+                        # rank was improved, update D_rank for next comparison
+                        D_rank = D_rank2
+                    k += 1
+                i += 1
+
+            if D_rank != num_directions:
+                raise RuntimeError("Unable to generate suitable initial directions")
+
+            # we have a L.I set of interpolation points
+            for k in range(0,self.n()):
+                # Evaluate objective at this new point
+                x = self.model.as_absolute_coordinates(D[k, :])
+                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+
+                # Handle exit conditions (f < min obj value or maxfun reached)
+                if exit_info is not None:
+                    if num_samples_run > 0:
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                                              x_in_abs_coords=True)
+                    return exit_info  # return & quit
+
+                # Otherwise, add new results (increments model.npt_so_far)
+                self.model.change_point(k+1, x - self.model.xbase, rvec_list[0, :])  # expect step, not absolute x
+                for i in range(1, num_samples_run):
+                    self.model.add_new_sample(k+1, rvec_extra=rvec_list[i, :])
+            
+            return None   # return & continue
+
         at_lower_boundary = (self.model.sl > -0.01 * self.delta)  # sl = xl - x0, should be -ve, actually < -rhobeg
         at_upper_boundary = (self.model.su < 0.01 * self.delta)  # su = xu - x0, should be +ve, actually > rhobeg
 
@@ -147,17 +248,19 @@ class Controller(object):
             # k = 2n+1, ..., (n+1)(n+2)/2 --> off-diagonal directions
             if 1 <= k < self.n() + 1:  # first step along coord directions
                 dirn = k - 1  # direction to move in (0,...,n-1)
-                stepa = self.delta if not at_upper_boundary[dirn] else -self.delta
+                stepa = self.delta if not at_upper_boundary[dirn] else -self.delta # take a +delta step if at lower, -delta if at upper
                 stepb = None
-                xpts_added[k, dirn] = stepa
+                xpts_added[k, dirn] = stepa # set new (relative) point to the step since we haven't done any moving, so relative point is all zeros.
 
             elif self.n() + 1 <= k < 2 * self.n() + 1:  # second step along coord directions
                 dirn = k - self.n() - 1  # direction to move in (0,...,n-1)
-                stepa = xpts_added[k - self.n(), dirn]
-                stepb = -self.delta
+                stepa = xpts_added[k - self.n(), dirn] # previous step
+                stepb = -self.delta # new step
                 if at_lower_boundary[dirn]:
+                    # if at lower boundary, set the second step to be +ve
                     stepb = min(2.0 * self.delta, self.model.su[dirn])  # su = xu - x0, should be +ve
                 if at_upper_boundary[dirn]:
+                    # if at upper boundary, set the second step to be -ve
                     stepb = max(-2.0 * self.delta, self.model.sl[dirn])  # sl = xl - x0, should be -ve
                 xpts_added[k, dirn] = stepb
 
@@ -325,10 +428,13 @@ class Controller(object):
 
         return dirn * (step_length / LA.norm(dirn))
 
-    def trust_region_step(self):
+    def trust_region_step(self, params):
         # Build model for full least squares objectives
         gopt, H = self.model.build_full_model()
-        d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+        if self.model.projections:
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+        else:
+            d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -337,8 +443,13 @@ class Controller(object):
         try:
             c, g = self.model.lagrange_gradient(knew)
             # c = 1.0 if knew == self.model.kopt else 0.0  # based at xopt, just like d
-            # Solve problem: bounds are sl <= xnew <= su, and ||xnew-xopt|| <= adelt
-            xnew = trsbox_geometry(self.model.xopt(), c, g, np.minimum(self.model.sl, 0.0), np.maximum(self.model.su, 0.0), adelt)
+            if self.model.projections:
+                # Solve problem: use projection onto arbitrary constraints, and ||xnew-xopt|| <= adelt
+                step = ctrsbox_geometry(self.model.xopt(abs_coordinates=True), c, g, self.model.projections, adelt, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                xnew = self.model.xopt() + step
+            else:
+                # Solve problem: bounds are sl <= xnew <= su, and ||xnew-xopt|| <= adelt
+                xnew = trsbox_geometry(self.model.xopt(), c, g, np.minimum(self.model.sl, 0.0), np.maximum(self.model.su, 0.0), adelt)
         except LA.LinAlgError:
             exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix encountered in geometry step")
             return exit_info  # didn't fix geometry - return & quit
@@ -499,7 +610,7 @@ class Controller(object):
     def calculate_ratio(self, current_iter, rvec_list, d, gopt, H):
         exit_info = None
         f = sumsq(np.mean(rvec_list, axis=0))  # estimate actual objective value
-        pred_reduction = - model_value(gopt, H, d)
+        pred_reduction = - model_value(gopt, H, d) # negative of m since m(0) = 0
         actual_reduction = self.model.fopt() - f
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!

@@ -7,8 +7,7 @@ nonlinear least-squares solver which only requires function values.
 
 It solves the nonlinear least-squares problem:
     min_{x}  f(x) = r1(x)**2 + ... + rm(x)**2,
-subject to the (optional) bounds
-    lb <= x <= ub,
+(optionally) subject to finitely many convex constraints,
 where each function ri(x) is differentiable, possibly nonconvex.
 Since the derivatives of ri(x) are never required or approximated,
 the solver works when the evaluation of ri(x) is noisy.
