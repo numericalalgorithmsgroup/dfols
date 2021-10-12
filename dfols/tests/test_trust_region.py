@@ -30,8 +30,6 @@ import unittest
 from dfols.trust_region import ctrsbox, ctrsbox_geometry, trsbox, trsbox_geometry
 from dfols.util import model_value
 
-import pdb
-
 
 def cauchy_pt(g, H, delta):
     # General expression for the Cauchy point
