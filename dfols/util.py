@@ -30,8 +30,6 @@ import numpy as np
 import scipy.linalg as LA
 import sys
 
-import pdb
-
 
 __all__ = ['sumsq', 'eval_least_squares_objective', 'model_value', 'random_orthog_directions_within_bounds',
            'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank']
@@ -211,7 +209,7 @@ def remove_scaling(x_scaled, scaling_changes):
     return shift + x_scaled * scale
 
 
-def dykstra(P,x0,max_iter=100,tol=1.0e-10):
+def dykstra(P,x0,max_iter=100,tol=1e-10):
     x = x0.copy()
     p = len(P)
     y = np.zeros((p,x0.shape[0]))
@@ -226,7 +224,6 @@ def dykstra(P,x0,max_iter=100,tol=1.0e-10):
             x = P[i](prev_x - y[i,:])
 
             # Update increment
-            #  pdb.set_trace()
             prev_y = y[i,:].copy()
             y[i,:] = x - (prev_x - prev_y)
 
@@ -251,7 +248,7 @@ We use the fact that the rank of a square matrix A
 can be given by the number of nonzero diagonal elements of
 R in the QR factorization of A.
 '''
-def qr_rank(A,tol=1e-25):
+def qr_rank(A,tol=1e-15):
     m,n = A.shape
     assert m == n, "Input matrix must be square"
     Q,R = LA.qr(A)
