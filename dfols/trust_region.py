@@ -133,7 +133,7 @@ def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fo
         gnew += H.dot(s)
 
         # update CRVMIN
-        crv = s.dot(H).dot(s)/sumsq(s)
+        crv = s.dot(H).dot(s)/sumsq(s) if sumsq(s) >= ZERO_THRESH else crvmin
         crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
 
         # exit condition
