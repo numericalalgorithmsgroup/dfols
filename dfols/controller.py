@@ -144,7 +144,7 @@ class Controller(object):
             while k < self.n():
                 ek = np.zeros(self.n())
                 ek[k] = 1
-                p = np.dot(ek,self.delta)
+                p = np.dot(ek,min(1,self.delta))
                 yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
                 D[k,:] = yk - self.model.xbase
 
@@ -158,7 +158,7 @@ class Controller(object):
                 if diag[k] < mr_tol:
                     ek = np.zeros(self.n())
                     ek[k] = 1
-                    p = -np.dot(ek,self.delta)
+                    p = -np.dot(ek,min(1,self.delta))
                     yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
                     dk = D[k,:].copy()
                     D[k,:] = yk - self.model.xbase
@@ -178,7 +178,7 @@ class Controller(object):
                 if slctr[k%self.n()] == 1: # if selector says make -ve, make -ve
                     ek = np.zeros(self.n())
                     ek[k%self.n()] = 1
-                    p = -np.dot(ek,self.delta)
+                    p = -np.dot(ek,min(1,self.delta))
                     yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
                     dk = D[k%self.n(),:].copy()
                     D[k%self.n(),:] = yk - self.model.xbase
@@ -202,7 +202,7 @@ class Controller(object):
                     if diag[k] < mr_tol:
                         p = np.random.normal(size=self.n())
                         p = p/np.linalg.norm(p)
-                        p = np.dot(p,self.delta)
+                        p = np.dot(p,min(1,self.delta))
                         yk = dykstra(self.model.projections, self.model.xbase + p, max_iter=params("dykstra.max_iters"), tol=params("dykstra.d_tol"))
                         dk = D[k,:].copy()
                         D[k,:] = yk - self.model.xbase
