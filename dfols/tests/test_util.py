@@ -170,7 +170,7 @@ class TestRandomNotOrthogBox(unittest.TestCase):
 # Trivial case of full rank
 class TestMatrixRankQR1(unittest.TestCase):
     def runTest(self):
-        mr_tol = 1e-15
+        mr_tol = 1e-18
         A = np.array([
             [1,0,0,0],
             [0,1,0,0],
@@ -183,7 +183,7 @@ class TestMatrixRankQR1(unittest.TestCase):
 # Full rank but QR has negative entries for diag(R)
 class TestMatrixRankQR2(unittest.TestCase):
     def runTest(self):
-        mr_tol = 1e-15
+        mr_tol = 1e-18
         A = np.array([
             [1,2,3,4],
             [0,6,7,8],
@@ -194,15 +194,15 @@ class TestMatrixRankQR2(unittest.TestCase):
         self.assertTrue(rank == 4, "Incorrect rank output")
 
 
-# Full rank but QR has negative entries for diag(R)
+# Not full rank
 class TestMatrixRankQR3(unittest.TestCase):
     def runTest(self):
-        mr_tol = 1e-15
+        mr_tol = 1e-18
         A = np.array([
             [1,2,3,4],
             [2,6,4,8],
-            [-1,-2,-3,-4],
-            [1,3,2,4]])
+            [0,0,0,0],
+            [0,0,0,0]])
         rank, D = qr_rank(A,mr_tol)
         self.assertTrue(np.all(D[0:2] > mr_tol), "Incorrect diagonal matrix output (rows 1,2)")
         self.assertTrue(np.all(D[2:4] <= mr_tol), "Incorrect diagonal matrix output (rows 3,4)")

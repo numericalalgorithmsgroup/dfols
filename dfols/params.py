@@ -113,7 +113,7 @@ class ParameterList(object):
         self.params["dykstra.d_tol"] = 1e-10
         self.params["dykstra.max_iters"] = 100
         # Matrix rank algorithm
-        self.params["matrix_rank.r_tol"] = 1e-15
+        self.params["matrix_rank.r_tol"] = 1e-18
 
         self.params_changed = {}
         for p in self.params:

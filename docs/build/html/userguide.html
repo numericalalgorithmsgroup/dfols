@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using DFO-LS &mdash; DFO-LS v1.2.3 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.3.0 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.2.3
+                1.3.0
               </div>
             
           
@@ -94,7 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-to-use-dfo-ls">How to use DFO-LS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#optional-arguments">Optional Arguments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-simple-example">A Simple Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#adding-bounds-and-more-output">Adding Bounds and More Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-constraints-and-more-output">Adding Constraints and More Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-noisy-objective-evaluation">Example: Noisy Objective Evaluation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-parameter-estimation-data-fitting">Example: Parameter Estimation/Data Fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-solving-a-nonlinear-system-of-equations">Example: Solving a Nonlinear System of Equations</a></li>
@@ -176,8 +176,8 @@
 <p>DFO-LS is designed to solve the local optimization problem</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
-<p>where the bound constraints <span class="math notranslate nohighlight">\(a \leq x \leq b\)</span> are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).</p>
+\text{s.t.} &amp;\quad x \in C\end{split}\]</div>
+<p>where the set <span class="math notranslate nohighlight">\(C\)</span> is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).</p>
 <p>DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper <a class="reference internal" href="#cfmr2018" id="id1"><span>[CFMR2018]</span></a>.</p>
 </div>
@@ -239,6 +239,7 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">args</span></code> - a tuple of extra arguments passed to the objective function.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">bounds</span></code> - a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> with the vectors <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> of lower and upper bounds on <span class="math notranslate nohighlight">\(x\)</span> (default is <span class="math notranslate nohighlight">\(a_i=-10^{20}\)</span> and <span class="math notranslate nohighlight">\(b_i=10^{20}\)</span>). To set bounds for either <code class="code docutils literal notranslate"><span class="pre">lower</span></code> or <code class="code docutils literal notranslate"><span class="pre">upper</span></code>, but not both, pass a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">None)</span></code> or <code class="code docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">upper)</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">projections</span></code> - a list <code class="code docutils literal notranslate"><span class="pre">[f1,f2,...,fn]</span></code> of functions that each take as input a point <code class="code docutils literal notranslate"><span class="pre">x</span></code> and return a new point <code class="code docutils literal notranslate"><span class="pre">y</span></code>. The new point <code class="code docutils literal notranslate"><span class="pre">y</span></code> should be given by the projection of <code class="code docutils literal notranslate"><span class="pre">x</span></code> onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">npt</span></code> - the number of interpolation points to use (default is <code class="code docutils literal notranslate"><span class="pre">len(x0)+1</span></code>). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in <code class="code docutils literal notranslate"><span class="pre">user_params</span></code>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">rhobeg</span></code> - the initial value of the trust region radius (default is <span class="math notranslate nohighlight">\(0.1\max(\|x_0\|_{\infty}, 1)\)</span>, or 0.1 if <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">rhoend</span></code> - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is <span class="math notranslate nohighlight">\(10^{-8}\)</span>).</p></li>
@@ -300,9 +301,9 @@ Success: Objective is sufficiently small
 </div></blockquote>
 <p>This and all following problems can be found in the <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples">examples</a> directory on the DFO-LS Github page.</p>
 </div>
-<div class="section" id="adding-bounds-and-more-output">
-<h2>Adding Bounds and More Output<a class="headerlink" href="#adding-bounds-and-more-output" title="Permalink to this headline">¶</a></h2>
-<p>We can extend the above script to add constraints. To do this, we can add the lines</p>
+<div class="section" id="adding-constraints-and-more-output">
+<h2>Adding Constraints and More Output<a class="headerlink" href="#adding-constraints-and-more-output" title="Permalink to this headline">¶</a></h2>
+<p>We can extend the above script to add constraints. To add bound constraints alone, we can add the lines</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define bound constraints (lower &lt;= x &lt;= upper)</span>
 <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">])</span>
@@ -335,6 +336,39 @@ Success: rho has reached rhoend
 </div>
 </div></blockquote>
 <p>DFO-LS automatically fixes this, and moves <span class="math notranslate nohighlight">\(x_0\)</span> to a point within the bounds, in this case <span class="math notranslate nohighlight">\(x_0=(-1.2,0.85)\)</span>.</p>
+<p>If we want more complex constraints, we can instead write</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the projection functions</span>
+<span class="k">def</span> <span class="nf">pball</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">1.5</span><span class="p">])</span> <span class="c1"># ball centre</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="c1"># ball radius</span>
+    <span class="k">return</span> <span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">),</span><span class="n">r</span><span class="p">]))</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">pbox</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span> <span class="c1"># lower bound</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c1"># upper bound</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">l</span><span class="p">),</span> <span class="n">u</span><span class="p">)</span>
+
+<span class="c1"># Call DFO-LS (with box and ball constraints)</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">projections</span><span class="o">=</span><span class="p">[</span><span class="n">pball</span><span class="p">,</span><span class="n">pbox</span><span class="p">])</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>DFO-LS correctly finds the solution to this constrained problem too:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [0.9        1.15358984]
+Residual vector = [3.43589838 0.1       ]
+Objective value f(xmin) = 11.81539771
+Needed 10 objective evaluations (at 10 points)
+Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
+ [-1.00000000e+00  6.81262102e-15]]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+</pre></div>
+</div>
+</div></blockquote>
 <p>We can also get DFO-LS to print out more detailed information about its progress using the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging</a> module. To do this, we need to add the following lines:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
@@ -344,7 +378,7 @@ Success: rho has reached rhoend
 </pre></div>
 </div>
 </div></blockquote>
-<p>And we can now see each evaluation of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>:</p>
+<p>And for the simple bounds example we can now see each evaluation of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>:</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Function eval 1 at point 1 has f = 39.65 at x = [-1.2   0.85]
 Initialising (coordinate directions)

@@ -10,6 +10,7 @@ def rosenbrock(x):
 # Define the starting point
 x0 = np.array([-1.2, 1])
 
+# Define the projection functions
 def pball(x):
     c = np.array([0.7,1.5]) # ball centre
     r = 0.4 # ball radius
@@ -25,7 +26,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 # Call DFO-LS
-soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
+soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox], user_params={'dykstra.d_tol': 1e-50})
 
 # Display output
 print(soln)

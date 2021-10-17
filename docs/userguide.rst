@@ -9,9 +9,9 @@ DFO-LS is designed to solve the local optimization problem
 .. math::
 
    \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad  a \leq x \leq b
+   \text{s.t.} &\quad x \in C
 
-where the bound constraints :math:`a \leq x \leq b` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).
+where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper [CFMR2018]_.
@@ -75,6 +75,7 @@ These arguments are:
 
 * :code:`args` - a tuple of extra arguments passed to the objective function. 
 * :code:`bounds` - a tuple :code:`(lower, upper)` with the vectors :math:`a` and :math:`b` of lower and upper bounds on :math:`x` (default is :math:`a_i=-10^{20}` and :math:`b_i=10^{20}`). To set bounds for either :code:`lower` or :code:`upper`, but not both, pass a tuple :code:`(lower, None)` or :code:`(None, upper)`.
+* :code:`projections` - a list :code:`[f1,f2,...,fn]` of functions that each take as input a point :code:`x` and return a new point :code:`y`. The new point :code:`y` should be given by the projection of :code:`x` onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.
 * :code:`npt` - the number of interpolation points to use (default is :code:`len(x0)+1`). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in :code:`user_params`).
 * :code:`rhobeg` - the initial value of the trust region radius (default is :math:`0.1\max(\|x_0\|_{\infty}, 1)`, or 0.1 if :code:`scaling_within_bounds`).
 * :code:`rhoend` - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is :math:`10^{-8}`).
@@ -142,9 +143,9 @@ Note that DFO-LS is a randomized algorithm: in its first phase, it builds an int
 
 This and all following problems can be found in the `examples <https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples>`_ directory on the DFO-LS Github page.
 
-Adding Bounds and More Output
+Adding Constraints and More Output
 -----------------------------
-We can extend the above script to add constraints. To do this, we can add the lines
+We can extend the above script to add constraints. To add bound constraints alone, we can add the lines
 
   .. code-block:: python
   
@@ -179,6 +180,40 @@ However, we also get a warning that our starting point was outside of the bounds
 
 DFO-LS automatically fixes this, and moves :math:`x_0` to a point within the bounds, in this case :math:`x_0=(-1.2,0.85)`.
 
+If we want more complex constraints, we can instead write
+
+  .. code-block:: python
+  
+      # Define the projection functions
+      def pball(x):
+          c = np.array([0.7,1.5]) # ball centre
+          r = 0.4 # ball radius
+          return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
+
+      def pbox(x):
+          l = np.array([-2, 1.1]) # lower bound
+          u = np.array([0.9, 3]) # upper bound
+          return np.minimum(np.maximum(x,l), u)
+
+      # Call DFO-LS (with box and ball constraints)
+      soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
+
+DFO-LS correctly finds the solution to this constrained problem too:
+
+  .. code-block:: none
+  
+      ****** DFO-LS Results ******
+      Solution xmin = [0.9        1.15358984]
+      Residual vector = [3.43589838 0.1       ]
+      Objective value f(xmin) = 11.81539771
+      Needed 10 objective evaluations (at 10 points)
+      Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
+       [-1.00000000e+00  6.81262102e-15]]
+      Exit flag = 0
+      Success: rho has reached rhoend
+      ****************************
+
+
 We can also get DFO-LS to print out more detailed information about its progress using the `logging <https://docs.python.org/3/library/logging.html>`_ module. To do this, we need to add the following lines:
 
   .. code-block:: python
@@ -188,7 +223,7 @@ We can also get DFO-LS to print out more detailed information about its progress
       
       # ... (call dfols.solve)
 
-And we can now see each evaluation of :code:`objfun`:
+And for the simple bounds example we can now see each evaluation of :code:`objfun`:
 
   .. code-block:: none
   

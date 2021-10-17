@@ -73,8 +73,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{01 June 2021}
-\release{1.2.3}
+\date{16 October 2021}
+\release{1.3.0}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -89,20 +89,20 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
-\sphinxstylestrong{Release:} 1.2.3
+\sphinxstylestrong{Release:} 1.3.0
 
-\sphinxstylestrong{Date:} 01 June 2021
+\sphinxstylestrong{Date:} 16 October 2021
 
 \sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@anu.edu.au}{Lindon Roberts}
 
-DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional bound constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
+DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional convex constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
 
 That is, DFO\sphinxhyphen{}LS solves
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad  a \leq x \leq b\end{split}
+\text{s.t.} &\quad x \in C\end{split}
 \end{equation*}
-The upper and lower bounds on the variables are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point outside the bounds).
+The constraint set \(C\) is assumed to be non\sphinxhyphen{}empty, closed and convex. Moreover, the constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
 Full details of the DFO\sphinxhyphen{}LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]} . DFO\sphinxhyphen{}LS is a more flexible version of \sphinxhref{https://github.com/numericalalgorithmsgroup/dfogn}{DFO\sphinxhyphen{}GN}.
 
@@ -248,12 +248,13 @@ If DFO\sphinxhyphen{}LS was installed manually you have to remove the installed 
 
 \section{When to use DFO\sphinxhyphen{}LS}
 \label{\detokenize{info:when-to-use-dfo-ls}}
-DFO\sphinxhyphen{}LS is designed to solve the nonlinear least\sphinxhyphen{}squares minimization problem (with optional bound constraints)
+DFO\sphinxhyphen{}LS is designed to solve the nonlinear least\sphinxhyphen{}squares minimization problem (with optional convex constraints).
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad  a \leq x \leq b\end{split}
+\text{s.t.} &\quad x \in C\end{split}
 \end{equation*}
 We call \(f(x)\) the objective function and \(r_i(x)\) the residual functions (or simply residuals).
+Here \(C\) is a non\sphinxhyphen{}empty and closed convex set.
 
 DFO\sphinxhyphen{}LS is a \sphinxstyleemphasis{derivative\sphinxhyphen{}free} optimization algorithm, which means it does not require the user to provide the derivatives of \(f(x)\) or \(r_i(x)\), nor does it attempt to estimate them internally (by using finite differencing, for instance).
 
@@ -320,7 +321,7 @@ At each step, we compute a trial step \(s_k\) designed to make our approximation
 
 In DFO\sphinxhyphen{}LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well\sphinxhyphen{}spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our paper \sphinxcite{userguide:cfmr2018}.
+A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our paper \sphinxcite{info:cfmr2018}.
 
 
 \section{References}
@@ -336,12 +337,12 @@ This section describes the main interface to DFO\sphinxhyphen{}LS and how to use
 DFO\sphinxhyphen{}LS is designed to solve the local optimization problem
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad  a \leq x \leq b\end{split}
+\text{s.t.} &\quad x \in C\end{split}
 \end{equation*}
-where the bound constraints \(a \leq x \leq b\) are optional. The upper and lower bounds on the variables are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point outside the bounds).
+where the set \(C\) is an optional non\sphinxhyphen{}empty, closed and convex constraint set. The constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
 DFO\sphinxhyphen{}LS iteratively constructs an interpolation\sphinxhyphen{}based model for the objective, and determines a step using a trust\sphinxhyphen{}region framework.
-For an in\sphinxhyphen{}depth technical description of the algorithm see the paper \sphinxcite{userguide:cfmr2018}.
+For an in\sphinxhyphen{}depth technical description of the algorithm see the paper \sphinxcite{info:cfmr2018}.
 
 
 \section{How to use DFO\sphinxhyphen{}LS}
@@ -451,6 +452,9 @@ These arguments are:
 \sphinxcode{\sphinxupquote{bounds}} \sphinxhyphen{} a tuple \sphinxcode{\sphinxupquote{(lower, upper)}} with the vectors \(a\) and \(b\) of lower and upper bounds on \(x\) (default is \(a_i=-10^{20}\) and \(b_i=10^{20}\)). To set bounds for either \sphinxcode{\sphinxupquote{lower}} or \sphinxcode{\sphinxupquote{upper}}, but not both, pass a tuple \sphinxcode{\sphinxupquote{(lower, None)}} or \sphinxcode{\sphinxupquote{(None, upper)}}.
 
 \item {} 
+\sphinxcode{\sphinxupquote{projections}} \sphinxhyphen{} a list \sphinxcode{\sphinxupquote{{[}f1,f2,...,fn{]}}} of functions that each take as input a point \sphinxcode{\sphinxupquote{x}} and return a new point \sphinxcode{\sphinxupquote{y}}. The new point \sphinxcode{\sphinxupquote{y}} should be given by the projection of \sphinxcode{\sphinxupquote{x}} onto a closed convex set. The intersection of all sets corresponding to a function must be non\sphinxhyphen{}empty.
+
+\item {} 
 \sphinxcode{\sphinxupquote{npt}} \sphinxhyphen{} the number of interpolation points to use (default is \sphinxcode{\sphinxupquote{len(x0)+1}}). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in \sphinxcode{\sphinxupquote{user\_params}}).
 
 \item {} 
@@ -540,9 +544,9 @@ Success: Objective is sufficiently small
 This and all following problems can be found in the \sphinxhref{https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples}{examples} directory on the DFO\sphinxhyphen{}LS Github page.
 
 
-\section{Adding Bounds and More Output}
-\label{\detokenize{userguide:adding-bounds-and-more-output}}
-We can extend the above script to add constraints. To do this, we can add the lines
+\section{Adding Constraints and More Output}
+\label{\detokenize{userguide:adding-constraints-and-more-output}}
+We can extend the above script to add constraints. To add bound constraints alone, we can add the lines
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -582,6 +586,43 @@ RuntimeWarning: x0 above upper bound, adjusting
 
 DFO\sphinxhyphen{}LS automatically fixes this, and moves \(x_0\) to a point within the bounds, in this case \(x_0=(-1.2,0.85)\).
 
+If we want more complex constraints, we can instead write
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Define the projection functions}
+\PYG{k}{def} \PYG{n+nf}{pball}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.7}\PYG{p}{,}\PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} ball centre}
+    \PYG{n}{r} \PYG{o}{=} \PYG{l+m+mf}{0.4} \PYG{c+c1}{\PYGZsh{} ball radius}
+    \PYG{k}{return} \PYG{n}{c} \PYG{o}{+} \PYG{p}{(}\PYG{n}{r}\PYG{o}{/}\PYG{n}{np}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}\PYG{p}{,}\PYG{n}{r}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}
+
+\PYG{k}{def} \PYG{n+nf}{pbox}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{l} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mf}{1.1}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} lower bound}
+    \PYG{n}{u} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} upper bound}
+    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{minimum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{maximum}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{l}\PYG{p}{)}\PYG{p}{,} \PYG{n}{u}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS (with box and ball constraints)}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{rosenbrock}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{n}{pball}\PYG{p}{,}\PYG{n}{pbox}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too:
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+****** DFO\PYGZhy{}LS Results ******
+Solution xmin = [0.9        1.15358984]
+Residual vector = [3.43589838 0.1       ]
+Objective value f(xmin) = 11.81539771
+Needed 10 objective evaluations (at 10 points)
+Approximate Jacobian = [[\PYGZhy{}1.79826221e+01  1.00004412e+01]
+ [\PYGZhy{}1.00000000e+00  6.81262102e\PYGZhy{}15]]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+\end{sphinxVerbatim}
+\end{quote}
+
 We can also get DFO\sphinxhyphen{}LS to print out more detailed information about its progress using the \sphinxhref{https://docs.python.org/3/library/logging.html}{logging} module. To do this, we need to add the following lines:
 \begin{quote}
 
@@ -593,7 +634,7 @@ We can also get DFO\sphinxhyphen{}LS to print out more detailed information abou
 \end{sphinxVerbatim}
 \end{quote}
 
-And we can now see each evaluation of \sphinxcode{\sphinxupquote{objfun}}:
+And for the simple bounds example we can now see each evaluation of \sphinxcode{\sphinxupquote{objfun}}:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -903,7 +944,7 @@ Here, we see that both entries of the residual vector are very small, so both eq
 \label{\detokenize{advanced:advanced-usage}}\label{\detokenize{advanced::doc}}
 This section describes different optional user parameters available in DFO\sphinxhyphen{}LS.
 
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \sphinxcite{userguide:cfmr2018}.
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \sphinxcite{info:cfmr2018}.
 
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; that is, whether evaluating \sphinxcode{\sphinxupquote{objfun(x)}} several times at the same \sphinxcode{\sphinxupquote{x}} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{\sphinxupquote{objfun\_has\_noise}} input to \sphinxcode{\sphinxupquote{dfols.solve()}} (and not by inspecting \sphinxcode{\sphinxupquote{objfun}}, for instance).
 
@@ -1155,6 +1196,25 @@ The default values, used if no override is given, in some cases vary depending o
 \end{itemize}
 
 
+\section{Dykstra’s Algorithm}
+\label{\detokenize{advanced:dykstra-s-algorithm}}\begin{itemize}
+\item {} 
+\sphinxcode{\sphinxupquote{dykstra.d\_tol}} \sphinxhyphen{} Tolerance on the stopping conditions of Dykstra’s algorithm. Default is \(10^{-10}\).
+
+\item {} 
+\sphinxcode{\sphinxupquote{dykstra.max\_iters}} \sphinxhyphen{} The maximum number of iterations Dykstra’s algorithm is allowed to take before stopping. Default is \(100\).
+
+\end{itemize}
+
+
+\section{Checking Matrix Rank}
+\label{\detokenize{advanced:checking-matrix-rank}}\begin{itemize}
+\item {} 
+\sphinxcode{\sphinxupquote{matrix\_rank.r\_tol}} \sphinxhyphen{} Tolerance on what is the smallest posisble diagonal entry value in the QR factorization before being considered zero. Default is \(10^{-18}\).
+
+\end{itemize}
+
+
 \section{References}
 \label{\detokenize{advanced:references}}
 
@@ -1373,6 +1433,14 @@ Minor update to remove NumPy deprecation warnings \sphinxhyphen{} no changes to 
 \label{\detokenize{history:version-1-2-3-1-jun-2021}}\begin{itemize}
 \item {} 
 Minor update to customise handling of NaNs in objective evaluations \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
+
+\end{itemize}
+
+
+\section{Version 1.3.0 (16 Oct 2021)}
+\label{\detokenize{history:version-1-3-0-16-oct-2021}}\begin{itemize}
+\item {} 
+Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
 
 \end{itemize}
 

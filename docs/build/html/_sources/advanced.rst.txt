@@ -103,6 +103,15 @@ Dynamically Growing Initial Set
 * :code:`growing.gamma_dec` - Trust region decrease parameter during the growing phase. Default is :code:`tr_radius.gamma_dec`.
 * :code:`growing.num_new_dirns_each_iter` - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 0, as this approach is not recommended. 
 
+Dykstra's Algorithm
+-------------------------------
+* :code:`dykstra.d_tol` - Tolerance on the stopping conditions of Dykstra's algorithm. Default is :math:`10^{-10}`. 
+* :code:`dykstra.max_iters` - The maximum number of iterations Dykstra's algorithm is allowed to take before stopping. Default is :math:`100`. 
+
+Checking Matrix Rank
+-------------------------------
+* :code:`matrix_rank.r_tol` - Tolerance on what is the smallest posisble diagonal entry value in the QR factorization before being considered zero. Default is :math:`10^{-18}`. 
+
 
 References
 ----------
