@@ -26,7 +26,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 # Call DFO-LS
-soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox], user_params={'dykstra.d_tol': 1e-50})
+soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
 
 # Display output
 print(soln)
