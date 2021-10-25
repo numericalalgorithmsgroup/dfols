@@ -73,7 +73,7 @@
 
 
 \title{DFO-LS Documentation}
-\date{16 October 2021}
+\date{25 October 2021}
 \release{1.3.0}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -321,7 +321,7 @@ At each step, we compute a trial step \(s_k\) designed to make our approximation
 
 In DFO\sphinxhyphen{}LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well\sphinxhyphen{}spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our paper \sphinxcite{info:cfmr2018}.
+A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our paper \sphinxcite{userguide:cfmr2018}.
 
 
 \section{References}
@@ -342,7 +342,7 @@ DFO\sphinxhyphen{}LS is designed to solve the local optimization problem
 where the set \(C\) is an optional non\sphinxhyphen{}empty, closed and convex constraint set. The constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
 DFO\sphinxhyphen{}LS iteratively constructs an interpolation\sphinxhyphen{}based model for the objective, and determines a step using a trust\sphinxhyphen{}region framework.
-For an in\sphinxhyphen{}depth technical description of the algorithm see the paper \sphinxcite{info:cfmr2018}.
+For an in\sphinxhyphen{}depth technical description of the algorithm see the paper \sphinxcite{userguide:cfmr2018}.
 
 
 \section{How to use DFO\sphinxhyphen{}LS}
@@ -407,6 +407,9 @@ The possible values of \sphinxcode{\sphinxupquote{soln.flag}} are defined by the
 
 \item {} 
 \sphinxcode{\sphinxupquote{soln.EXIT\_FALSE\_SUCCESS\_WARNING}} \sphinxhyphen{} DFO\sphinxhyphen{}LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.
+
+\item {} 
+\sphinxcode{\sphinxupquote{soln.EXIT\_TR\_INCREASE\_WARNING}} \sphinxhyphen{} model increase when solving the trust region subproblem with multiple arbitrary constraints.
 
 \item {} 
 \sphinxcode{\sphinxupquote{soln.EXIT\_INPUT\_ERROR}} \sphinxhyphen{} error in the inputs.
@@ -586,7 +589,7 @@ RuntimeWarning: x0 above upper bound, adjusting
 
 DFO\sphinxhyphen{}LS automatically fixes this, and moves \(x_0\) to a point within the bounds, in this case \(x_0=(-1.2,0.85)\).
 
-If we want more complex constraints, we can instead write
+If we want more complex constraints, we can instead write something like the following:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -606,19 +609,20 @@ If we want more complex constraints, we can instead write
 \end{sphinxVerbatim}
 \end{quote}
 
-DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too:
+DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 ****** DFO\PYGZhy{}LS Results ******
-Solution xmin = [0.9        1.15358984]
-Residual vector = [3.43589838 0.1       ]
-Objective value f(xmin) = 11.81539771
+Solution xmin = [0.9        1.15359245]
+Residual vector = [3.43592448 0.1       ]
+Objective value f(xmin) = 11.81557703
 Needed 10 objective evaluations (at 10 points)
 Approximate Jacobian = [[\PYGZhy{}1.79826221e+01  1.00004412e+01]
- [\PYGZhy{}1.00000000e+00  6.81262102e\PYGZhy{}15]]
-Exit flag = 0
-Success: rho has reached rhoend
+ [\PYGZhy{}1.00000000e+00 \PYGZhy{}1.81976605e\PYGZhy{}15]]
+Exit flag = 5
+Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
 ****************************
 \end{sphinxVerbatim}
 \end{quote}
@@ -944,7 +948,7 @@ Here, we see that both entries of the residual vector are very small, so both eq
 \label{\detokenize{advanced:advanced-usage}}\label{\detokenize{advanced::doc}}
 This section describes different optional user parameters available in DFO\sphinxhyphen{}LS.
 
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \sphinxcite{info:cfmr2018}.
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper \sphinxcite{userguide:cfmr2018}.
 
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; that is, whether evaluating \sphinxcode{\sphinxupquote{objfun(x)}} several times at the same \sphinxcode{\sphinxupquote{x}} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{\sphinxupquote{objfun\_has\_noise}} input to \sphinxcode{\sphinxupquote{dfols.solve()}} (and not by inspecting \sphinxcode{\sphinxupquote{objfun}}, for instance).
 

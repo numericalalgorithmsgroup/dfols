@@ -43,6 +43,7 @@ __all__ = ['Controller', 'ExitInformation', 'EXIT_SLOW_WARNING', 'EXIT_MAXFUN_WA
            'EXIT_INPUT_ERROR', 'EXIT_TR_INCREASE_ERROR', 'EXIT_LINALG_ERROR', 'EXIT_FALSE_SUCCESS_WARNING',
            'EXIT_AUTO_DETECT_RESTART_WARNING']
 
+EXIT_TR_INCREASE_WARNING = 5  # warning, TR increase in proj constrained case - likely due to multiple active constraints
 EXIT_AUTO_DETECT_RESTART_WARNING = 4  # warning, auto-detected restart criteria
 EXIT_FALSE_SUCCESS_WARNING = 3  # warning, maximum fake successful steps reached
 EXIT_SLOW_WARNING = 2  # warning, maximum number of slow (successful) iterations reached
@@ -70,6 +71,8 @@ class ExitInformation(object):
             return "Warning (slow progress): " + self.msg
         elif self.flag == EXIT_MAXFUN_WARNING:
             return "Warning (max evals): " + self.msg
+        elif self.flag == EXIT_TR_INCREASE_WARNING:
+            return "Warning (trust region increase): " + self.msg
         elif self.flag == EXIT_INPUT_ERROR:
             return "Error (bad input): " + self.msg
         elif self.flag == EXIT_TR_INCREASE_ERROR:
@@ -82,7 +85,7 @@ class ExitInformation(object):
             return "Unknown exit flag: " + self.msg
 
     def able_to_do_restart(self):
-        if self.flag in [EXIT_TR_INCREASE_ERROR, EXIT_LINALG_ERROR, EXIT_SLOW_WARNING, EXIT_AUTO_DETECT_RESTART_WARNING]:
+        if self.flag in [EXIT_TR_INCREASE_ERROR, EXIT_TR_INCREASE_WARNING, EXIT_LINALG_ERROR, EXIT_SLOW_WARNING, EXIT_AUTO_DETECT_RESTART_WARNING]:
             return True
         elif self.flag in [EXIT_MAXFUN_WARNING, EXIT_INPUT_ERROR]:
             return False
@@ -616,7 +619,10 @@ class Controller(object):
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!
             self.last_successful_iter = current_iter
         if pred_reduction < 0.0:
-            exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Trust region step gave model increase")
+            if len(self.model.projections) > 1: # if we are using multiple projections, only warn since likely due to constraint intersection
+                exit_info = ExitInformation(EXIT_TR_INCREASE_WARNING, "Either multiple constraints are active or trust region step gave model increase")
+            else:
+                exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Either rust region step gave model increase")
 
         ratio = actual_reduction / pred_reduction
         return ratio, exit_info

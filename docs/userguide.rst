@@ -48,6 +48,7 @@ The possible values of :code:`soln.flag` are defined by the following variables:
 * :code:`soln.EXIT_MAXFUN_WARNING` - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.
 * :code:`soln.EXIT_SLOW_WARNING` - maximum number of slow iterations reached.
 * :code:`soln.EXIT_FALSE_SUCCESS_WARNING` - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.
+* :code:`soln.EXIT_TR_INCREASE_WARNING` - model increase when solving the trust region subproblem with multiple arbitrary constraints.
 * :code:`soln.EXIT_INPUT_ERROR` - error in the inputs.
 * :code:`soln.EXIT_TR_INCREASE_ERROR` - error occurred when solving the trust region subproblem.
 * :code:`soln.EXIT_LINALG_ERROR` - linear algebra error, e.g. the interpolation points produced a singular linear system.
@@ -180,7 +181,7 @@ However, we also get a warning that our starting point was outside of the bounds
 
 DFO-LS automatically fixes this, and moves :math:`x_0` to a point within the bounds, in this case :math:`x_0=(-1.2,0.85)`.
 
-If we want more complex constraints, we can instead write
+If we want more complex constraints, we can instead write something like the following:
 
   .. code-block:: python
   
@@ -198,19 +199,20 @@ If we want more complex constraints, we can instead write
       # Call DFO-LS (with box and ball constraints)
       soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
 
-DFO-LS correctly finds the solution to this constrained problem too:
+DFO-LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
 
   .. code-block:: none
-  
+
       ****** DFO-LS Results ******
-      Solution xmin = [0.9        1.15358984]
-      Residual vector = [3.43589838 0.1       ]
-      Objective value f(xmin) = 11.81539771
+      Solution xmin = [0.9        1.15359245]
+      Residual vector = [3.43592448 0.1       ]
+      Objective value f(xmin) = 11.81557703
       Needed 10 objective evaluations (at 10 points)
       Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
-       [-1.00000000e+00  6.81262102e-15]]
-      Exit flag = 0
-      Success: rho has reached rhoend
+       [-1.00000000e+00 -1.81976605e-15]]
+      Exit flag = 5
+      Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
       ****************************
 
 

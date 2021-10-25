@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2021.6.21)  16 OCT 2021 23:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2021.6.21)  25 OCT 2021 12:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -698,15 +698,15 @@ File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
 
 Package textcomp Warning: Symbol \textasciigrave not provided by
 (textcomp)                font family pcr in TS1 encoding.
-(textcomp)                Default family used instead on input line 756.
+(textcomp)                Default family used instead on input line 760.
 
 LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 7
-56.
+60.
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
 LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 
-756.
+760.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmtt.fd
 File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
@@ -714,36 +714,32 @@ File: ts1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 
 Package textcomp Warning: Symbol \textasciigrave not provided by
 (textcomp)                font family pcr in TS1 encoding.
-(textcomp)                Default family used instead on input line 756.
-
-
-Overfull \vbox (0.68164pt too high) detected at line 784
- []
+(textcomp)                Default family used instead on input line 760.
 
 [15] [16]
 <data_fitting.png, id=424, 524.6802pt x 403.2666pt>
 File: data_fitting.png Graphic file (type png)
 <use data_fitting.png>
-Package pdftex.def Info: data_fitting.png  used on input line 857.
+Package pdftex.def Info: data_fitting.png  used on input line 861.
 (pdftex.def)             Requested size: 352.31625pt x 270.79639pt.
  [17 <./data_fitting.png>] [18] [19] [20
 
 ]
 Chapter 4.
 [21] [22]
-Underfull \hbox (badness 10000) in paragraph at lines 1085--1086
+Underfull \hbox (badness 10000) in paragraph at lines 1089--1090
 []\T1/pcr/m/n/10 regression.increase_num_extra_steps_with_restart \T1/ptm/m/n/1
 0 - The amount to in-crease
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1120--1121
+Underfull \hbox (badness 10000) in paragraph at lines 1124--1125
 []\T1/pcr/m/n/10 restarts.hard.increase_ndirs_initial_amt \T1/ptm/m/n/10 - Amou
 nt to in-crease \T1/pcr/m/n/10 growing.
  []
 
 [23]
-Underfull \hbox (badness 8000) in paragraph at lines 1155--1156
+Underfull \hbox (badness 8000) in paragraph at lines 1159--1160
 \T1/ptm/m/n/10 De-fault is \T1/pcr/m/n/10 False \T1/ptm/m/n/10 if $\OML/cmm/m/i
 t/10 m \OMS/cmsy/m/n/10 ^^U \OML/cmm/m/it/10 n$ \T1/ptm/m/n/10 and \T1/pcr/m/n/
 10 True \T1/ptm/m/n/10 oth-er-wise (op-po-site to \T1/pcr/m/n/10 growing.full_r
@@ -773,7 +769,7 @@ Package rerunfilecheck Info: File `DFOLS.out' has not changed.
 Here is how much of TeX's memory you used:
  13946 strings out of 479304
  199409 string characters out of 5869779
- 597748 words of memory out of 5000000
+ 604138 words of memory out of 5000000
  30696 multiletter control sequences out of 15000+600000
  452760 words of font info for 89 fonts, out of 8000000 for 9000
  1142 hyphenation exceptions out of 8191
@@ -799,7 +795,7 @@ exmf-dist/fonts/type1/urw/helvetic/uhvbo8a.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/
 times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.p
 fb>
-Output written on DFOLS.pdf (37 pages, 321015 bytes).
+Output written on DFOLS.pdf (37 pages, 321478 bytes).
 PDF statistics:
  616 PDF objects out of 1000 (max. 8388607)
  543 compressed objects within 6 object streams

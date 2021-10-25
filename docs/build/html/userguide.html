@@ -211,6 +211,7 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_MAXFUN_WARNING</span></code> - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_SLOW_WARNING</span></code> - maximum number of slow iterations reached.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_FALSE_SUCCESS_WARNING</span></code> - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_TR_INCREASE_WARNING</span></code> - model increase when solving the trust region subproblem with multiple arbitrary constraints.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_INPUT_ERROR</span></code> - error in the inputs.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_TR_INCREASE_ERROR</span></code> - error occurred when solving the trust region subproblem.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_LINALG_ERROR</span></code> - linear algebra error, e.g. the interpolation points produced a singular linear system.</p></li>
@@ -336,7 +337,7 @@ Success: rho has reached rhoend
 </div>
 </div></blockquote>
 <p>DFO-LS automatically fixes this, and moves <span class="math notranslate nohighlight">\(x_0\)</span> to a point within the bounds, in this case <span class="math notranslate nohighlight">\(x_0=(-1.2,0.85)\)</span>.</p>
-<p>If we want more complex constraints, we can instead write</p>
+<p>If we want more complex constraints, we can instead write something like the following:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the projection functions</span>
 <span class="k">def</span> <span class="nf">pball</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -354,17 +355,18 @@ Success: rho has reached rhoend
 </pre></div>
 </div>
 </div></blockquote>
-<p>DFO-LS correctly finds the solution to this constrained problem too:</p>
+<p>DFO-LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
-Solution xmin = [0.9        1.15358984]
-Residual vector = [3.43589838 0.1       ]
-Objective value f(xmin) = 11.81539771
+Solution xmin = [0.9        1.15359245]
+Residual vector = [3.43592448 0.1       ]
+Objective value f(xmin) = 11.81557703
 Needed 10 objective evaluations (at 10 points)
 Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
- [-1.00000000e+00  6.81262102e-15]]
-Exit flag = 0
-Success: rho has reached rhoend
+ [-1.00000000e+00 -1.81976605e-15]]
+Exit flag = 5
+Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
 ****************************
 </pre></div>
 </div>
