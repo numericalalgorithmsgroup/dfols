@@ -2,8 +2,8 @@
 DFO-LS: Derivative-Free Optimizer for Least-Squares
 ===================================================
 
-.. image::  https://travis-ci.org/numericalalgorithmsgroup/dfols.svg?branch=master
-   :target: https://travis-ci.org/numericalalgorithmsgroup/dfols
+.. image::  https://github.com/numericalalgorithmsgroup/dfols/actions/workflows/python_testing.yml/badge.svg
+   :target: https://github.com/numericalalgorithmsgroup/dfols/actions
    :alt: Build Status
 
 .. image::  https://img.shields.io/badge/License-GPL%20v3-blue.svg
