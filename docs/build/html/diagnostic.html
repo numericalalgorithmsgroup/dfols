@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Diagnostic Information &mdash; DFO-LS v1.3.0 documentation</title>
@@ -85,7 +86,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing DFO-LS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info.html">Overview</a></li>
@@ -164,7 +165,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="diagnostic-information">
+  <section id="diagnostic-information">
 <h1>Diagnostic Information<a class="headerlink" href="#diagnostic-information" title="Permalink to this headline">¶</a></h1>
 <p>In <a class="reference internal" href="userguide.html"><span class="doc">Using DFO-LS</span></a>, we saw that the output of DFO-LS returns a container which includes diagnostic information about the progress of the algorithm (<code class="code docutils literal notranslate"><span class="pre">soln.diagnostic_info</span></code>). This object is a <a class="reference external" href="http://pandas.pydata.org/">Pandas</a> DataFrame, with one row per iteration of the algorithm. In this section, we explain the meaning of each type of output (the columns of the DataFrame).</p>
 <p>To save this information to a CSV file, use:</p>
@@ -183,23 +184,23 @@
 </div>
 </div></blockquote>
 <p>Depending on exactly how DFO-LS terminates, the last row of results may not be fully populated.</p>
-<div class="section" id="current-iterate">
+<section id="current-iterate">
 <h2>Current Iterate<a class="headerlink" href="#current-iterate" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">xk</span></code> - Best point found so far (current iterate). This is only saved if <code class="code docutils literal notranslate"><span class="pre">user_params['logging.save_xk']</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">rk</span></code> - The vector of residuals at the current iterate. This is only saved if <code class="code docutils literal notranslate"><span class="pre">user_params['logging.save_rk']</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">fk</span></code> - The value of <span class="math notranslate nohighlight">\(f\)</span> at the current iterate.</p></li>
 </ul>
-</div>
-<div class="section" id="trust-region">
+</section>
+<section id="trust-region">
 <h2>Trust Region<a class="headerlink" href="#trust-region" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">rho</span></code> - The lower bound on the trust region radius <span class="math notranslate nohighlight">\(\rho_k\)</span>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">delta</span></code> - The trust region radius <span class="math notranslate nohighlight">\(\Delta_k\)</span>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">norm_sk</span></code> - The norm of the trust region step <span class="math notranslate nohighlight">\(\|s_k\|\)</span>.</p></li>
 </ul>
-</div>
-<div class="section" id="model-interpolation">
+</section>
+<section id="model-interpolation">
 <h2>Model Interpolation<a class="headerlink" href="#model-interpolation" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">npt</span></code> - The number of interpolation points.</p></li>
@@ -211,8 +212,8 @@
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_distance_xk</span></code> - The maximum distance from any interpolation point to the current iterate.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">norm_gk</span></code> - The norm of the model gradient <span class="math notranslate nohighlight">\(\|g_k\|\)</span>.</p></li>
 </ul>
-</div>
-<div class="section" id="iteration-count">
+</section>
+<section id="iteration-count">
 <h2>Iteration Count<a class="headerlink" href="#iteration-count" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">nruns</span></code> - The number of times the algorithm has been restarted.</p></li>
@@ -222,16 +223,16 @@
 <li><p><code class="code docutils literal notranslate"><span class="pre">iter_this_run</span></code> - The number of iterations since the last restart.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">iters_total</span></code> - The total number of iterations so far.</p></li>
 </ul>
-</div>
-<div class="section" id="algorithm-progress">
+</section>
+<section id="algorithm-progress">
 <h2>Algorithm Progress<a class="headerlink" href="#algorithm-progress" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">iter_type</span></code> - A text description of what type of iteration we had (e.g. Successful, Safety, etc.)</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">ratio</span></code> - The ratio of actual to predicted objective reduction in the trust region step.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">slow_iter</span></code> - Equal to 1 if the current iteration is successful but slow, 0 if is successful but not slow, and -1 if was not successful.</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

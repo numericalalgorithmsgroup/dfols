@@ -8,10 +8,11 @@ DFO-LS is designed to solve the nonlinear least-squares minimization problem (wi
 .. math::
 
    \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad x \in C
+   \text{s.t.} &\quad x \in C\\
+               &\quad  a \leq x \leq b
 
 We call :math:`f(x)` the objective function and :math:`r_i(x)` the residual functions (or simply residuals).
-Here :math:`C` is a non-empty and closed convex set.
+:math:`C` is the intersection of multiple convex sets given as input by the user.
 
 DFO-LS is a *derivative-free* optimization algorithm, which means it does not require the user to provide the derivatives of :math:`f(x)` or :math:`r_i(x)`, nor does it attempt to estimate them internally (by using finite differencing, for instance). 
 

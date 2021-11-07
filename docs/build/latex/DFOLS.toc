@@ -16,11 +16,12 @@
 \contentsline {section}{\numberline {3.2}How to use DFO\sphinxhyphen {}LS}{9}{section.3.2}%
 \contentsline {section}{\numberline {3.3}Optional Arguments}{10}{section.3.3}%
 \contentsline {section}{\numberline {3.4}A Simple Example}{11}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Adding Constraints and More Output}{12}{section.3.5}%
-\contentsline {section}{\numberline {3.6}Example: Noisy Objective Evaluation}{14}{section.3.6}%
-\contentsline {section}{\numberline {3.7}Example: Parameter Estimation/Data Fitting}{16}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Example: Solving a Nonlinear System of Equations}{18}{section.3.8}%
-\contentsline {section}{\numberline {3.9}References}{19}{section.3.9}%
+\contentsline {section}{\numberline {3.5}Adding Bounds and More Output}{12}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Handling Arbitrary Convex Constraints}{14}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Example: Noisy Objective Evaluation}{15}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Example: Parameter Estimation/Data Fitting}{17}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Example: Solving a Nonlinear System of Equations}{19}{section.3.9}%
+\contentsline {section}{\numberline {3.10}References}{20}{section.3.10}%
 \contentsline {chapter}{\numberline {4}Advanced Usage}{21}{chapter.4}%
 \contentsline {section}{\numberline {4.1}General Algorithm Parameters}{21}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Logging and Output}{21}{section.4.2}%

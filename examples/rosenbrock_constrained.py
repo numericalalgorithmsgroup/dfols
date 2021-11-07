@@ -1,4 +1,20 @@
-# DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints
+'''
+DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints
+
+This example defines two functions pball(x) and pbox(x) that project onto ball and
+box constraint sets respectively. It then passes both these functions to the DFO-LS
+solver so that it can find a constrained minimizer to the Rosenbrock function.
+Such a minimizer must lie in the intersection of constraint sets corresponding to
+projection functions pball(x) and pbox(x). The description of the problem is as follows:
+
+    min rosenbrock(x)
+    s.t.
+        -2 <= x[0] <= 1.1,
+        1.1 <= x[1] <= 3,
+        norm(x-c) <= 0.4
+
+where c = [0.7, 1.5] is the centre of the ball.
+'''
 from __future__ import print_function
 import numpy as np
 import dfols
@@ -10,12 +26,26 @@ def rosenbrock(x):
 # Define the starting point
 x0 = np.array([-1.2, 1])
 
-# Define the projection functions
+'''
+Define ball projection function
+Projects the input x onto a ball with
+centre point (0.7,1.5) and radius 0.4.
+'''
 def pball(x):
     c = np.array([0.7,1.5]) # ball centre
     r = 0.4 # ball radius
     return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
 
+'''
+Define box projection function
+Projects the input x onto a box
+such that -2 <= x[0] <= 0.9 and
+1.1 <= x[1] <= 3.
+
+Note: One could equivalently add bound
+constraints as a separate input to the solver
+instead.
+'''
 def pbox(x):
     l = np.array([-2, 1.1]) # lower bound
     u = np.array([0.9, 3]) # upper bound

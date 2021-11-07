@@ -49,3 +49,4 @@ Version 1.2.3 (1 Jun 2021)
 Version 1.3.0 (16 Oct 2021)
 ---------------------------
 * Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
+* Only new functionality is added, so there is no change to the solver for unconstrained/bound-constrained problems.

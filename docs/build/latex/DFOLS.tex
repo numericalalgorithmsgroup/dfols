@@ -73,7 +73,7 @@
 
 
 \title{DFO-LS Documentation}
-\date{25 October 2021}
+\date{07 November 2021}
 \release{1.3.0}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -91,18 +91,19 @@
 
 \sphinxstylestrong{Release:} 1.3.0
 
-\sphinxstylestrong{Date:} 16 October 2021
+\sphinxstylestrong{Date:} 07 November 2021
 
 \sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@anu.edu.au}{Lindon Roberts}
 
-DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional convex constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
+DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
 
 That is, DFO\sphinxhyphen{}LS solves
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad x \in C\end{split}
+\text{s.t.} &\quad x \in C\\
+            &\quad  a \leq x \leq b\end{split}
 \end{equation*}
-The constraint set \(C\) is assumed to be non\sphinxhyphen{}empty, closed and convex. Moreover, the constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
+The constraint set \(C\) is the intersection of multiple convex sets provided as input by the user. All constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
 Full details of the DFO\sphinxhyphen{}LS algorithm are given in our paper: C. Cartis, J. Fiala, B. Marteau and L. Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]} . DFO\sphinxhyphen{}LS is a more flexible version of \sphinxhref{https://github.com/numericalalgorithmsgroup/dfogn}{DFO\sphinxhyphen{}GN}.
 
@@ -251,10 +252,11 @@ If DFO\sphinxhyphen{}LS was installed manually you have to remove the installed 
 DFO\sphinxhyphen{}LS is designed to solve the nonlinear least\sphinxhyphen{}squares minimization problem (with optional convex constraints).
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad x \in C\end{split}
+\text{s.t.} &\quad x \in C\\
+            &\quad  a \leq x \leq b\end{split}
 \end{equation*}
 We call \(f(x)\) the objective function and \(r_i(x)\) the residual functions (or simply residuals).
-Here \(C\) is a non\sphinxhyphen{}empty and closed convex set.
+\(C\) is the intersection of multiple convex sets given as input by the user.
 
 DFO\sphinxhyphen{}LS is a \sphinxstyleemphasis{derivative\sphinxhyphen{}free} optimization algorithm, which means it does not require the user to provide the derivatives of \(f(x)\) or \(r_i(x)\), nor does it attempt to estimate them internally (by using finite differencing, for instance).
 
@@ -547,8 +549,8 @@ Success: Objective is sufficiently small
 This and all following problems can be found in the \sphinxhref{https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples}{examples} directory on the DFO\sphinxhyphen{}LS Github page.
 
 
-\section{Adding Constraints and More Output}
-\label{\detokenize{userguide:adding-constraints-and-more-output}}
+\section{Adding Bounds and More Output}
+\label{\detokenize{userguide:adding-bounds-and-more-output}}
 We can extend the above script to add constraints. To add bound constraints alone, we can add the lines
 \begin{quote}
 
@@ -588,44 +590,6 @@ RuntimeWarning: x0 above upper bound, adjusting
 \end{quote}
 
 DFO\sphinxhyphen{}LS automatically fixes this, and moves \(x_0\) to a point within the bounds, in this case \(x_0=(-1.2,0.85)\).
-
-If we want more complex constraints, we can instead write something like the following:
-\begin{quote}
-
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{c+c1}{\PYGZsh{} Define the projection functions}
-\PYG{k}{def} \PYG{n+nf}{pball}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
-    \PYG{n}{c} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.7}\PYG{p}{,}\PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} ball centre}
-    \PYG{n}{r} \PYG{o}{=} \PYG{l+m+mf}{0.4} \PYG{c+c1}{\PYGZsh{} ball radius}
-    \PYG{k}{return} \PYG{n}{c} \PYG{o}{+} \PYG{p}{(}\PYG{n}{r}\PYG{o}{/}\PYG{n}{np}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}\PYG{p}{,}\PYG{n}{r}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}
-
-\PYG{k}{def} \PYG{n+nf}{pbox}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
-    \PYG{n}{l} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mf}{1.1}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} lower bound}
-    \PYG{n}{u} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} upper bound}
-    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{minimum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{maximum}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{l}\PYG{p}{)}\PYG{p}{,} \PYG{n}{u}\PYG{p}{)}
-
-\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS (with box and ball constraints)}
-\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{rosenbrock}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{n}{pball}\PYG{p}{,}\PYG{n}{pbox}\PYG{p}{]}\PYG{p}{)}
-\end{sphinxVerbatim}
-\end{quote}
-
-DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
-gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
-\begin{quote}
-
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-****** DFO\PYGZhy{}LS Results ******
-Solution xmin = [0.9        1.15359245]
-Residual vector = [3.43592448 0.1       ]
-Objective value f(xmin) = 11.81557703
-Needed 10 objective evaluations (at 10 points)
-Approximate Jacobian = [[\PYGZhy{}1.79826221e+01  1.00004412e+01]
- [\PYGZhy{}1.00000000e+00 \PYGZhy{}1.81976605e\PYGZhy{}15]]
-Exit flag = 5
-Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
-****************************
-\end{sphinxVerbatim}
-\end{quote}
 
 We can also get DFO\sphinxhyphen{}LS to print out more detailed information about its progress using the \sphinxhref{https://docs.python.org/3/library/logging.html}{logging} module. To do this, we need to add the following lines:
 \begin{quote}
@@ -675,6 +639,100 @@ An alternative option available is to get DFO\sphinxhyphen{}LS to print to termi
 ...
   1    55    1.00e\PYGZhy{}02  2.00e\PYGZhy{}01  1.50e\PYGZhy{}08  1.00e\PYGZhy{}08   56
   1    56    1.00e\PYGZhy{}02  2.00e\PYGZhy{}01  1.50e\PYGZhy{}08  1.00e\PYGZhy{}08   57
+\end{sphinxVerbatim}
+\end{quote}
+
+
+\section{Handling Arbitrary Convex Constraints}
+\label{\detokenize{userguide:handling-arbitrary-convex-constraints}}
+DFO\sphinxhyphen{}LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
+minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user\sphinxhyphen{}provided convex
+sets must be non\sphinxhyphen{}empty.
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{l+s+sd}{DFO\PYGZhy{}LS example: minimize the Rosenbrock function with arbitrary convex constraints}
+
+\PYG{l+s+sd}{This example defines two functions pball(x) and pbox(x) that project onto ball and}
+\PYG{l+s+sd}{box constraint sets respectively. It then passes both these functions to the DFO\PYGZhy{}LS}
+\PYG{l+s+sd}{solver so that it can find a constrained minimizer to the Rosenbrock function.}
+\PYG{l+s+sd}{Such a minimizer must lie in the intersection of constraint sets corresponding to}
+\PYG{l+s+sd}{projection functions pball(x) and pbox(x). The description of the problem is as follows:}
+
+\PYG{l+s+sd}{    min rosenbrock(x)}
+\PYG{l+s+sd}{    s.t.}
+\PYG{l+s+sd}{        \PYGZhy{}2 \PYGZlt{}= x[0] \PYGZlt{}= 1.1,}
+\PYG{l+s+sd}{        1.1 \PYGZlt{}= x[1] \PYGZlt{}= 3,}
+\PYG{l+s+sd}{        norm(x\PYGZhy{}c) \PYGZlt{}= 0.4}
+
+\PYG{l+s+sd}{where c = [0.7, 1.5] is the centre of the ball.}
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+
+\PYG{c+c1}{\PYGZsh{} Define the objective function}
+\PYG{k}{def} \PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{10.0} \PYG{o}{*} \PYG{p}{(}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{,} \PYG{l+m+mf}{1.0} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Define the starting point}
+\PYG{n}{x0} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.2}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{l+s+sd}{Define ball projection function}
+\PYG{l+s+sd}{Projects the input x onto a ball with}
+\PYG{l+s+sd}{centre point (0.7,1.5) and radius 0.4.}
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{k}{def} \PYG{n+nf}{pball}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.7}\PYG{p}{,}\PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} ball centre}
+    \PYG{n}{r} \PYG{o}{=} \PYG{l+m+mf}{0.4} \PYG{c+c1}{\PYGZsh{} ball radius}
+    \PYG{k}{return} \PYG{n}{c} \PYG{o}{+} \PYG{p}{(}\PYG{n}{r}\PYG{o}{/}\PYG{n}{np}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}\PYG{p}{,}\PYG{n}{r}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}
+
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{l+s+sd}{Define box projection function}
+\PYG{l+s+sd}{Projects the input x onto a box}
+\PYG{l+s+sd}{such that \PYGZhy{}2 \PYGZlt{}= x[0] \PYGZlt{}= 0.9 and}
+\PYG{l+s+sd}{1.1 \PYGZlt{}= x[1] \PYGZlt{}= 3.}
+
+\PYG{l+s+sd}{Note: One could equivalently add bound}
+\PYG{l+s+sd}{constraints as a separate input to the solver}
+\PYG{l+s+sd}{instead.}
+\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{k}{def} \PYG{n+nf}{pbox}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{l} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mf}{1.1}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} lower bound}
+    \PYG{n}{u} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} upper bound}
+    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{minimum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{maximum}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{l}\PYG{p}{)}\PYG{p}{,} \PYG{n}{u}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} For optional extra output details}
+\PYG{k+kn}{import} \PYG{n+nn}{logging}
+\PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{DEBUG}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{rosenbrock}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{n}{pball}\PYG{p}{,}\PYG{n}{pbox}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Display output}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+Note that for bound constraints one can choose to either implement them by defining a projection function as above, or by passing the bounds as input like in the example from the section on adding bound constraints.
+
+DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+****** DFO\PYGZhy{}LS Results ******
+Solution xmin = [0.9        1.15359245]
+Residual vector = [3.43592448 0.1       ]
+Objective value f(xmin) = 11.81557703
+Needed 10 objective evaluations (at 10 points)
+Approximate Jacobian = [[\PYGZhy{}1.79826221e+01  1.00004412e+01]
+ [\PYGZhy{}1.00000000e+00 \PYGZhy{}1.81976605e\PYGZhy{}15]]
+Exit flag = 5
+Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
+****************************
 \end{sphinxVerbatim}
 \end{quote}
 
@@ -1445,6 +1503,9 @@ Minor update to customise handling of NaNs in objective evaluations \sphinxhyphe
 \label{\detokenize{history:version-1-3-0-16-oct-2021}}\begin{itemize}
 \item {} 
 Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
+
+\item {} 
+Only new functionality is added, so there is no change to the solver for unconstrained/bound\sphinxhyphen{}constrained problems.
 
 \end{itemize}
 
