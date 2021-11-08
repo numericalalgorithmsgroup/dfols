@@ -512,7 +512,7 @@ def ctrsbox_linear(xbase, g, projections, Delta, d_max_iters=100, d_tol=1e-10, u
     trproj = lambda w: pball(w, xbase, Delta)
 
     # combine trust region constraints with user-entered constraints
-    P = projections.copy()
+    P = list(projections)  # make a copy of the projections list
     P.append(trproj)
     def proj(d0):
         p = dykstra(P, xbase + d0, max_iter=d_max_iters, tol=d_tol)

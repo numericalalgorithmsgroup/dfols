@@ -43,6 +43,8 @@ from .util import *
 
 __all__ = ['solve']
 
+module_logger = logging.getLogger(__name__) 
+
 
 # A container for the results of the optimization routine
 class OptimResults(object):
@@ -153,7 +155,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
         # However, this can fail for m<n, so need to use an alternative method (perturb_trust_region_step)
         if m < len(x0):
             if do_logging:
-                logging.debug("Inverse problem (m<n), switching default growing method")
+                module_logger.debug("Inverse problem (m<n), switching default growing method")
             params('growing.full_rank.use_full_rank_interp', new_value=False)
             params('growing.perturb_trust_region_step', new_value=True)
             if not params.params_changed['growing.delta_scale_new_dirns']:
@@ -169,11 +171,11 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                          npt - 1)  # cap at npt
     if params("init.random_initial_directions"):
         if do_logging:
-            logging.info("Initialising (random directions)")
+            module_logger.info("Initialising (random directions)")
         exit_info = control.initialise_random_directions(number_of_samples, num_directions, params)
     else:
         if do_logging:
-            logging.info("Initialising (coordinate directions)")
+            module_logger.info("Initialising (coordinate directions)")
         exit_info = control.initialise_coordinate_directions(number_of_samples, num_directions, params)
     if exit_info is not None:
         x, rvec, f, jacmin, nsamples = control.model.get_final_results()
@@ -195,18 +197,18 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
     # ------------------------------------------
     current_iter = -1
     if do_logging:
-        logging.info("Beginning main loop")
+        module_logger.info("Beginning main loop")
     if print_progress:
         print("{:^5}{:^7}{:^10}{:^10}{:^10}{:^10}{:^7}".format("Run", "Iter", "Obj", "Grad", "Delta", "rho", "Evals"))
     while True:
         current_iter += 1
 
         if do_logging:
-            logging.debug("*** Iter %g (delta = %g, rho = %g) ***" % (current_iter, control.delta, control.rho))
+            module_logger.debug("*** Iter %g (delta = %g, rho = %g) ***" % (current_iter, control.delta, control.rho))
 
         if (not finished_growing) and control.model.npt() >= control.model.num_pts:
             if do_logging:
-                logging.info("Finished growing init set")
+                module_logger.info("Finished growing init set")
             finished_growing = True
 
             if params("growing.reset_delta"):
@@ -217,7 +219,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
 
         if not finished_growing:
             if do_logging:
-                logging.debug("Main loop: still growing (have %g of %g pts)" % (control.model.npt(), control.model.num_pts))
+                module_logger.debug("Main loop: still growing (have %g of %g pts)" % (control.model.npt(), control.model.num_pts))
 
         # Noise level exit check
         if finished_growing and params("noise.quit_on_noise_level") and control.all_values_within_noise_level(params):
@@ -273,7 +275,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
         # Trust region step
         d, gopt, H, gnew, crvmin = control.trust_region_step(params)
         if do_logging:
-            logging.debug("Trust region step is d = " + str(d))
+            module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
         dnorm = min(LA.norm(d), control.delta)
 
@@ -289,7 +291,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
 
         if dnorm < params("general.safety_step_thresh") * control.rho and not finished_growing and params("growing.safety.do_safety_step"):
             if do_logging:
-                logging.debug("Safety step during growing phase")
+                module_logger.debug("Safety step during growing phase")
 
             if params("logging.save_diagnostic_info"):
                 diagnostic_info.update_ratio(np.nan)
@@ -367,7 +369,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
         elif dnorm < params("general.safety_step_thresh") * control.rho and finished_growing:
             # (start safety step)
             if do_logging:
-                logging.debug("Safety step (main phase)")
+                module_logger.debug("Safety step (main phase)")
 
             if params("logging.save_diagnostic_info"):
                 diagnostic_info.update_ratio(np.nan)
@@ -411,12 +413,12 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 # Reduce rho
                 control.reduce_rho(current_iter, params)
                 if do_logging:
-                    logging.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
+                    module_logger.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
                     if control.n() < params("logging.n_to_print_whole_x_vector"):
-                        logging.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
+                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
                                       + str(control.model.xopt(abs_coordinates=True)))
                     else:
-                        logging.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
+                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
                 continue  # next iteration
             else:
                 # Quit on rho=rhoend
@@ -456,18 +458,18 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
         else:
             # (start trust region step)
             if do_logging:
-                logging.debug("Standard trust region step")
+                module_logger.debug("Standard trust region step")
 
             # If growing, optionally perturb the trust region step in a new direction
             if not finished_growing and params("growing.perturb_trust_region_step"):
                 step_length = params('growing.delta_scale_new_dirns') * control.delta
                 dirn = control.get_new_direction_for_growing(step_length)
                 if do_logging:
-                    logging.debug("Perturbing trust region with step = %s" % str(dirn))
+                    module_logger.debug("Perturbing trust region with step = %s" % str(dirn))
                 d += dirn
                 xnew += dirn
                 if do_logging:
-                    logging.debug("New trust region step = %s" % str(d))
+                    module_logger.debug("New trust region step = %s" % str(d))
 
             # If finished growing, add chgJ and delta to restart auto-detect set
             if finished_growing and params("restarts.use_restarts") and params("restarts.auto_detect"):
@@ -546,7 +548,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
 
             # Update delta
             if do_logging:
-                logging.debug("Ratio = %g" % ratio)
+                module_logger.debug("Ratio = %g" % ratio)
             if params("logging.save_diagnostic_info"):
                 diagnostic_info.update_ratio(ratio)
                 diagnostic_info.update_slow_iter(-1)  # n/a, unless otherwise update
@@ -604,7 +606,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 knew = control.model.npt()
 
             if do_logging:
-                logging.debug("Updating with knew = %i" % knew)
+                module_logger.debug("Updating with knew = %i" % knew)
             control.model.change_point(knew, xnew, rvec_list[0, :])  # expect step, not absolute x
             for i in range(1, num_samples_run):
                 control.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
@@ -616,7 +618,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                     diagnostic_info.update_slow_iter(1 if this_iter_slow else 0)
                 if finished_growing and should_terminate:
                     if do_logging:
-                        logging.info("Slow iteration  - terminating/restarting")
+                        module_logger.info("Slow iteration  - terminating/restarting")
                     if params("restarts.use_restarts") and params("restarts.use_soft_restarts"):
                         number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                         exit_info = control.soft_restart(number_of_samples, nruns_so_far, params,
@@ -650,7 +652,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
             # While growing, (optionally) add new directions
             if not finished_growing and params("growing.num_new_dirns_each_iter") > 0:
                 if do_logging:
-                    logging.debug("Still growing: adding %g new directions" % params("growing.num_new_dirns_each_iter"))
+                    module_logger.debug("Still growing: adding %g new directions" % params("growing.num_new_dirns_each_iter"))
                 number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                 exit_info = control.add_new_direction_while_growing(number_of_samples, params)
                 if exit_info is not None:
@@ -683,7 +685,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                                        control.model.npt() - 1)  # cap at number of points
             if finished_growing and ratio > 0.0 and num_regression_steps > 0:
                 if do_logging:
-                    logging.info("Regression: moving %g points" % num_regression_steps)
+                    module_logger.info("Regression: moving %g points" % num_regression_steps)
                 number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                 if params("regression.momentum_extra_steps"):  # move points as random extra steps
                     exit_info = control.move_furthest_points_momentum(d, number_of_samples, num_regression_steps, params)
@@ -730,7 +732,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                                                                                 np.log(np.maximum(restart_auto_detect_chgJ, 1e-15)))
 
                     if do_logging:
-                        logging.debug("Iter %g: (slope, intercept, r_value) = (%g, %g, %g)" % (current_iter, slope, intercept, r_value))
+                        module_logger.debug("Iter %g: (slope, intercept, r_value) = (%g, %g, %g)" % (current_iter, slope, intercept, r_value))
                     if slope > params("restarts.auto_detect.min_chgJ_slope") \
                             and r_value > params("restarts.auto_detect.min_correl"):
                         # increasing trend, with at least some positive correlation
@@ -741,9 +743,9 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 # Data available (full NumPy vectors of fixed length): restart_auto_detect_delta, restart_auto_detect_chgJ
                 if do_restart and params("restarts.use_soft_restarts"):
                     if do_logging:
-                        logging.info("Auto detection: need to do a restart")
-                        logging.debug("delta history = %s" % str(restart_auto_detect_delta))
-                        logging.debug("chgJ history = %s" % str(restart_auto_detect_chgJ))
+                        module_logger.info("Auto detection: need to do a restart")
+                        module_logger.debug("delta history = %s" % str(restart_auto_detect_delta))
+                        module_logger.debug("chgJ history = %s" % str(restart_auto_detect_chgJ))
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                     exit_info = control.soft_restart(number_of_samples, nruns_so_far, params,
                                                      x_in_abs_coords_to_save=None, rvec_to_save=None,
@@ -760,7 +762,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                     continue  # next iteration
                 elif do_restart:
                     if do_logging:
-                        logging.info("Auto detection: need to do a restart")
+                        module_logger.info("Auto detection: need to do a restart")
                     exit_info = ExitInformation(EXIT_AUTO_DETECT_RESTART_WARNING, "Auto-detected restart")
                     nruns_so_far += 1
                     break  # quit
@@ -768,7 +770,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
 
             # Otherwise (ratio < eta1 = 0.1), check & fix geometry
             if do_logging:
-                logging.debug("Checking and possibly improving geometry (unsuccessful step)")
+                module_logger.debug("Checking and possibly improving geometry (unsuccessful step)")
             distsq = max((2.0 * control.delta) ** 2, (10.0 * control.rho) ** 2)
             update_delta = False
             number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
@@ -813,12 +815,12 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 # Reduce rho
                 control.reduce_rho(current_iter, params)
                 if do_logging:
-                    logging.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
+                    module_logger.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
                     if control.n() < params("logging.n_to_print_whole_x_vector"):
-                        logging.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
+                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
                                       + str(control.model.xopt(abs_coordinates=True)))
                     else:
-                        logging.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
+                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
                 continue  # next iteration
             else:
                 # Quit on rho=rhoend
@@ -846,8 +848,8 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
     # Quit & return the important information
     x, rvec, f, jacmin, nsamples = control.model.get_final_results()
     if do_logging:
-        logging.debug("At return from DFO-LS, number of function evals = %i" % nf)
-        logging.debug("Smallest objective value = %.15g at x = " % f + str(x))
+        module_logger.debug("At return from DFO-LS, number of function evals = %i" % nf)
+        module_logger.debug("Smallest objective value = %.15g at x = " % f + str(x))
     return x, rvec, f, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
 
 
@@ -1031,7 +1033,7 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
             npt = min(npt, params("restarts.max_npt"))
 
         if do_logging:
-            logging.info("Restarting from finish point (f = %g) after %g function evals; using rhobeg = %g and rhoend = %g"
+            module_logger.info("Restarting from finish point (f = %g) after %g function evals; using rhobeg = %g and rhoend = %g"
                      % (fmin, nf, rhobeg, rhoend))
         if params("restarts.hard.use_old_rk"):
             xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
@@ -1045,14 +1047,14 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
 
         if fmin2 < fmin or np.isnan(fmin):
             if do_logging:
-                logging.info("Successful run with new f = %s compared to old f = %s" % (fmin2, fmin))
+                module_logger.info("Successful run with new f = %s compared to old f = %s" % (fmin2, fmin))
             last_successful_run = nruns
             (xmin, rmin, fmin, nsamples_min) = (xmin2, rmin2, fmin2, nsamples2)
             if jacmin2 is not None:  # may be None if finished during setup phase, in which case just use old Jacobian
                 jacmin = jacmin2
         else:
             if do_logging:
-                logging.info("Unsuccessful run with new f = %s compared to old f = %s" % (fmin2, fmin))
+                module_logger.info("Unsuccessful run with new f = %s compared to old f = %s" % (fmin2, fmin))
 
     if nruns - last_successful_run >= params("restarts.max_unsuccessful_restarts"):
         exit_info = ExitInformation(EXIT_SUCCESS, "Reached maximum number of unsuccessful restarts")
@@ -1070,7 +1072,7 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
         results.diagnostic_info = df
 
     if do_logging:
-        logging.info("Did a total of %g run(s)" % nruns)
+        module_logger.info("Did a total of %g run(s)" % nruns)
 
     return results
 

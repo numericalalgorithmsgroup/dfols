@@ -40,6 +40,9 @@ from .util import sumsq, dykstra
 
 __all__ = ['Model']
 
+module_logger = logging.getLogger(__name__) 
+
+
 class Model(object):
     def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
@@ -306,7 +309,7 @@ class Model(object):
                 return col_scale(LA.solve_triangular(self.R, Qb), self.right_scaling)
         else:
             if self.do_logging:
-                logging.warning("model.solve_geom_system not using factorisation")
+                module_logger.warning("model.solve_geom_system not using factorisation")
             W, left_scaling, right_scaling = self.interpolation_matrix()
             return col_scale(LA.lstsq(W, col_scale(rhs * left_scaling))[0], right_scaling)
 
@@ -334,7 +337,7 @@ class Model(object):
         rhs = self.fval_v[fval_row_idx, :]  # size npt * m
         if np.any(np.isnan(rhs)) and throw_error_on_nans:
             if self.do_logging:
-                logging.warning("model.interpolate_mini_models_svd: NaNs encountered in objective evaluations, raising error")
+                module_logger.warning("model.interpolate_mini_models_svd: NaNs encountered in objective evaluations, raising error")
             raise np.linalg.LinAlgError("NaN encountered in objective evaluations")
         try:
             dg = self.solve_geom_system(rhs)  # size (n+1)*m

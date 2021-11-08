@@ -52,8 +52,8 @@ def pbox(x):
     return np.minimum(np.maximum(x,l), u)
 
 # For optional extra output details
-import logging
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+# import logging
+# logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Call DFO-LS
 soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
