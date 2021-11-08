@@ -9,9 +9,9 @@ DFO-LS is designed to solve the local optimization problem
 .. math::
 
    \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad  a \leq x \leq b
+   \text{s.t.} &\quad x \in C
 
-where the bound constraints :math:`a \leq x \leq b` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).
+where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper [CFMR2018]_.
@@ -48,6 +48,7 @@ The possible values of :code:`soln.flag` are defined by the following variables:
 * :code:`soln.EXIT_MAXFUN_WARNING` - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.
 * :code:`soln.EXIT_SLOW_WARNING` - maximum number of slow iterations reached.
 * :code:`soln.EXIT_FALSE_SUCCESS_WARNING` - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.
+* :code:`soln.EXIT_TR_INCREASE_WARNING` - model increase when solving the trust region subproblem with multiple arbitrary constraints.
 * :code:`soln.EXIT_INPUT_ERROR` - error in the inputs.
 * :code:`soln.EXIT_TR_INCREASE_ERROR` - error occurred when solving the trust region subproblem.
 * :code:`soln.EXIT_LINALG_ERROR` - linear algebra error, e.g. the interpolation points produced a singular linear system.
@@ -75,6 +76,7 @@ These arguments are:
 
 * :code:`args` - a tuple of extra arguments passed to the objective function. 
 * :code:`bounds` - a tuple :code:`(lower, upper)` with the vectors :math:`a` and :math:`b` of lower and upper bounds on :math:`x` (default is :math:`a_i=-10^{20}` and :math:`b_i=10^{20}`). To set bounds for either :code:`lower` or :code:`upper`, but not both, pass a tuple :code:`(lower, None)` or :code:`(None, upper)`.
+* :code:`projections` - a list :code:`[f1,f2,...,fn]` of functions that each take as input a point :code:`x` and return a new point :code:`y`. The new point :code:`y` should be given by the projection of :code:`x` onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.
 * :code:`npt` - the number of interpolation points to use (default is :code:`len(x0)+1`). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in :code:`user_params`).
 * :code:`rhobeg` - the initial value of the trust region radius (default is :math:`0.1\max(\|x_0\|_{\infty}, 1)`, or 0.1 if :code:`scaling_within_bounds`).
 * :code:`rhoend` - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is :math:`10^{-8}`).
@@ -144,7 +146,7 @@ This and all following problems can be found in the `examples <https://github.co
 
 Adding Bounds and More Output
 -----------------------------
-We can extend the above script to add constraints. To do this, we can add the lines
+We can extend the above script to add constraints. To add bound constraints alone, we can add the lines
 
   .. code-block:: python
   
@@ -188,7 +190,7 @@ We can also get DFO-LS to print out more detailed information about its progress
       
       # ... (call dfols.solve)
 
-And we can now see each evaluation of :code:`objfun`:
+And for the simple bounds example we can now see each evaluation of :code:`objfun`:
 
   .. code-block:: none
   
@@ -221,6 +223,95 @@ An alternative option available is to get DFO-LS to print to terminal progress i
       ...
         1    55    1.00e-02  2.00e-01  1.50e-08  1.00e-08   56   
         1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
+
+Handling Arbitrary Convex Constraints
+-----------------------------
+DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
+minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
+sets must be non-empty.
+
+  .. code-block:: python
+  
+      '''
+      DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints
+
+      This example defines two functions pball(x) and pbox(x) that project onto ball and
+      box constraint sets respectively. It then passes both these functions to the DFO-LS
+      solver so that it can find a constrained minimizer to the Rosenbrock function.
+      Such a minimizer must lie in the intersection of constraint sets corresponding to
+      projection functions pball(x) and pbox(x). The description of the problem is as follows:
+
+          min rosenbrock(x)
+          s.t.
+              -2 <= x[0] <= 1.1,
+              1.1 <= x[1] <= 3,
+              norm(x-c) <= 0.4
+
+      where c = [0.7, 1.5] is the centre of the ball.
+      '''
+      from __future__ import print_function
+      import numpy as np
+      import dfols
+
+      # Define the objective function
+      def rosenbrock(x):
+          return np.array([10.0 * (x[1] - x[0] ** 2), 1.0 - x[0]])
+
+      # Define the starting point
+      x0 = np.array([-1.2, 1])
+
+      '''
+      Define ball projection function
+      Projects the input x onto a ball with
+      centre point (0.7,1.5) and radius 0.4.
+      '''
+      def pball(x):
+          c = np.array([0.7,1.5]) # ball centre
+          r = 0.4 # ball radius
+          return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
+
+      '''
+      Define box projection function
+      Projects the input x onto a box
+      such that -2 <= x[0] <= 0.9 and
+      1.1 <= x[1] <= 3.
+
+      Note: One could equivalently add bound
+      constraints as a separate input to the solver
+      instead.
+      '''
+      def pbox(x):
+          l = np.array([-2, 1.1]) # lower bound
+          u = np.array([0.9, 3]) # upper bound
+          return np.minimum(np.maximum(x,l), u)
+
+      # For optional extra output details
+      import logging
+      logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+
+      # Call DFO-LS
+      soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
+
+      # Display output
+      print(soln)
+
+Note that for bound constraints one can choose to either implement them by defining a projection function as above, or by passing the bounds as input like in the example from the section on adding bound constraints.
+
+DFO-LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
+
+  .. code-block:: none
+
+      ****** DFO-LS Results ******
+      Solution xmin = [0.9        1.15359245]
+      Residual vector = [3.43592448 0.1       ]
+      Objective value f(xmin) = 11.81557703
+      Needed 10 objective evaluations (at 10 points)
+      Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
+       [-1.00000000e+00 -1.81976605e-15]]
+      Exit flag = 5
+      Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
+      ****************************
 
 Example: Noisy Objective Evaluation
 -----------------------------------

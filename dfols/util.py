@@ -27,11 +27,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import numpy as np
+import scipy.linalg as LA
 import sys
 
 
 __all__ = ['sumsq', 'eval_least_squares_objective', 'model_value', 'random_orthog_directions_within_bounds',
-           'random_directions_within_bounds', 'apply_scaling', 'remove_scaling']
+           'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank']
 
 
 def sumsq(x):
@@ -207,3 +208,50 @@ def remove_scaling(x_scaled, scaling_changes):
     shift, scale = scaling_changes
     return shift + x_scaled * scale
 
+
+def dykstra(P,x0,max_iter=100,tol=1e-10):
+    x = x0.copy()
+    p = len(P)
+    y = np.zeros((p,x0.shape[0]))
+
+    n = 0
+    cI = float('inf')
+    while n < max_iter and cI >= tol:
+        cI = 0
+        for i in range(0,p):
+            # Update iterate
+            prev_x = x.copy()
+            x = P[i](prev_x - y[i,:])
+
+            # Update increment
+            prev_y = y[i,:].copy()
+            y[i,:] = x - (prev_x - prev_y)
+
+            # Stop condition
+            cI += np.linalg.norm(prev_y - y[i,:])**2
+
+        n += 1
+
+    return x
+
+
+def pball(x,c,r):
+    return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
+
+
+def pbox(x,l,u):
+    return np.minimum(np.maximum(x,l), u)
+
+'''
+Calculates rank of square matrix with QR.
+We use the fact that the rank of a square matrix A
+can be given by the number of nonzero diagonal elements of
+R in the QR factorization of A.
+'''
+def qr_rank(A,tol=1e-15):
+    m,n = A.shape
+    assert m == n, "Input matrix must be square"
+    Q,R = LA.qr(A)
+    D = np.abs(np.diag(R))
+    rank = np.sum(D > tol) 
+    return rank, D

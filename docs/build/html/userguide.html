@@ -5,10 +5,11 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using DFO-LS &mdash; DFO-LS v1.2.3 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.3.0 documentation</title>
   
 
   
@@ -61,7 +62,7 @@
             
             
               <div class="version">
-                1.2.3
+                1.3.0
               </div>
             
           
@@ -85,7 +86,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installing DFO-LS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="info.html">Overview</a></li>
@@ -95,6 +96,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#optional-arguments">Optional Arguments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-simple-example">A Simple Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-bounds-and-more-output">Adding Bounds and More Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-arbitrary-convex-constraints">Handling Arbitrary Convex Constraints</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-noisy-objective-evaluation">Example: Noisy Objective Evaluation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-parameter-estimation-data-fitting">Example: Parameter Estimation/Data Fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-solving-a-nonlinear-system-of-equations">Example: Solving a Nonlinear System of Equations</a></li>
@@ -168,20 +170,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="using-dfo-ls">
+  <section id="using-dfo-ls">
 <h1>Using DFO-LS<a class="headerlink" href="#using-dfo-ls" title="Permalink to this headline">¶</a></h1>
 <p>This section describes the main interface to DFO-LS and how to use it.</p>
-<div class="section" id="nonlinear-least-squares-minimization">
+<section id="nonlinear-least-squares-minimization">
 <h2>Nonlinear Least-Squares Minimization<a class="headerlink" href="#nonlinear-least-squares-minimization" title="Permalink to this headline">¶</a></h2>
 <p>DFO-LS is designed to solve the local optimization problem</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &amp;\quad  a \leq x \leq b\end{split}\]</div>
-<p>where the bound constraints <span class="math notranslate nohighlight">\(a \leq x \leq b\)</span> are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds).</p>
+\text{s.t.} &amp;\quad x \in C\end{split}\]</div>
+<p>where the set <span class="math notranslate nohighlight">\(C\)</span> is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).</p>
 <p>DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
 For an in-depth technical description of the algorithm see the paper <a class="reference internal" href="#cfmr2018" id="id1"><span>[CFMR2018]</span></a>.</p>
-</div>
-<div class="section" id="how-to-use-dfo-ls">
+</section>
+<section id="how-to-use-dfo-ls">
 <h2>How to use DFO-LS<a class="headerlink" href="#how-to-use-dfo-ls" title="Permalink to this headline">¶</a></h2>
 <p>The main interface to DFO-LS is via the function <code class="code docutils literal notranslate"><span class="pre">solve</span></code></p>
 <blockquote>
@@ -211,6 +213,7 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_MAXFUN_WARNING</span></code> - maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_SLOW_WARNING</span></code> - maximum number of slow iterations reached.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_FALSE_SUCCESS_WARNING</span></code> - DFO-LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_TR_INCREASE_WARNING</span></code> - model increase when solving the trust region subproblem with multiple arbitrary constraints.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_INPUT_ERROR</span></code> - error in the inputs.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_TR_INCREASE_ERROR</span></code> - error occurred when solving the trust region subproblem.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.EXIT_LINALG_ERROR</span></code> - linear algebra error, e.g. the interpolation points produced a singular linear system.</p></li>
@@ -222,8 +225,8 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="optional-arguments">
+</section>
+<section id="optional-arguments">
 <h2>Optional Arguments<a class="headerlink" href="#optional-arguments" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="code docutils literal notranslate"><span class="pre">solve</span></code> function has several optional arguments which the user may provide:</p>
 <blockquote>
@@ -239,6 +242,7 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">args</span></code> - a tuple of extra arguments passed to the objective function.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">bounds</span></code> - a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> with the vectors <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> of lower and upper bounds on <span class="math notranslate nohighlight">\(x\)</span> (default is <span class="math notranslate nohighlight">\(a_i=-10^{20}\)</span> and <span class="math notranslate nohighlight">\(b_i=10^{20}\)</span>). To set bounds for either <code class="code docutils literal notranslate"><span class="pre">lower</span></code> or <code class="code docutils literal notranslate"><span class="pre">upper</span></code>, but not both, pass a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">None)</span></code> or <code class="code docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">upper)</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">projections</span></code> - a list <code class="code docutils literal notranslate"><span class="pre">[f1,f2,...,fn]</span></code> of functions that each take as input a point <code class="code docutils literal notranslate"><span class="pre">x</span></code> and return a new point <code class="code docutils literal notranslate"><span class="pre">y</span></code>. The new point <code class="code docutils literal notranslate"><span class="pre">y</span></code> should be given by the projection of <code class="code docutils literal notranslate"><span class="pre">x</span></code> onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">npt</span></code> - the number of interpolation points to use (default is <code class="code docutils literal notranslate"><span class="pre">len(x0)+1</span></code>). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in <code class="code docutils literal notranslate"><span class="pre">user_params</span></code>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">rhobeg</span></code> - the initial value of the trust region radius (default is <span class="math notranslate nohighlight">\(0.1\max(\|x_0\|_{\infty}, 1)\)</span>, or 0.1 if <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">rhoend</span></code> - minimum allowed value of trust region radius, which determines when a successful termination occurs (default is <span class="math notranslate nohighlight">\(10^{-8}\)</span>).</p></li>
@@ -252,8 +256,8 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 </ul>
 <p>In general when using optimization software, it is good practice to scale your variables so that moving each by a given amount has approximately the same impact on the objective function.
 The <code class="code docutils literal notranslate"><span class="pre">scaling_within_bounds</span></code> flag is designed to provide an easy way to achieve this, if you have set the bounds <code class="code docutils literal notranslate"><span class="pre">lower</span></code> and <code class="code docutils literal notranslate"><span class="pre">upper</span></code>.</p>
-</div>
-<div class="section" id="a-simple-example">
+</section>
+<section id="a-simple-example">
 <h2>A Simple Example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h2>
 <p>Suppose we wish to minimize the <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock test function</a>:</p>
 <div class="math notranslate nohighlight">
@@ -299,10 +303,10 @@ Success: Objective is sufficiently small
 </div>
 </div></blockquote>
 <p>This and all following problems can be found in the <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples">examples</a> directory on the DFO-LS Github page.</p>
-</div>
-<div class="section" id="adding-bounds-and-more-output">
+</section>
+<section id="adding-bounds-and-more-output">
 <h2>Adding Bounds and More Output<a class="headerlink" href="#adding-bounds-and-more-output" title="Permalink to this headline">¶</a></h2>
-<p>We can extend the above script to add constraints. To do this, we can add the lines</p>
+<p>We can extend the above script to add constraints. To add bound constraints alone, we can add the lines</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define bound constraints (lower &lt;= x &lt;= upper)</span>
 <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">])</span>
@@ -344,7 +348,7 @@ Success: rho has reached rhoend
 </pre></div>
 </div>
 </div></blockquote>
-<p>And we can now see each evaluation of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>:</p>
+<p>And for the simple bounds example we can now see each evaluation of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>:</p>
 <blockquote>
 <div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Function eval 1 at point 1 has f = 39.65 at x = [-1.2   0.85]
 Initialising (coordinate directions)
@@ -377,8 +381,97 @@ Did a total of 1 run(s)
 </pre></div>
 </div>
 </div></blockquote>
+</section>
+<section id="handling-arbitrary-convex-constraints">
+<h2>Handling Arbitrary Convex Constraints<a class="headerlink" href="#handling-arbitrary-convex-constraints" title="Permalink to this headline">¶</a></h2>
+<p>DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
+minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
+sets must be non-empty.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints</span>
+
+<span class="sd">This example defines two functions pball(x) and pbox(x) that project onto ball and</span>
+<span class="sd">box constraint sets respectively. It then passes both these functions to the DFO-LS</span>
+<span class="sd">solver so that it can find a constrained minimizer to the Rosenbrock function.</span>
+<span class="sd">Such a minimizer must lie in the intersection of constraint sets corresponding to</span>
+<span class="sd">projection functions pball(x) and pbox(x). The description of the problem is as follows:</span>
+
+<span class="sd">    min rosenbrock(x)</span>
+<span class="sd">    s.t.</span>
+<span class="sd">        -2 &lt;= x[0] &lt;= 1.1,</span>
+<span class="sd">        1.1 &lt;= x[1] &lt;= 3,</span>
+<span class="sd">        norm(x-c) &lt;= 0.4</span>
+
+<span class="sd">where c = [0.7, 1.5] is the centre of the ball.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">dfols</span>
+
+<span class="c1"># Define the objective function</span>
+<span class="k">def</span> <span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+<span class="c1"># Define the starting point</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Define ball projection function</span>
+<span class="sd">Projects the input x onto a ball with</span>
+<span class="sd">centre point (0.7,1.5) and radius 0.4.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="k">def</span> <span class="nf">pball</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">1.5</span><span class="p">])</span> <span class="c1"># ball centre</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="c1"># ball radius</span>
+    <span class="k">return</span> <span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">),</span><span class="n">r</span><span class="p">]))</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Define box projection function</span>
+<span class="sd">Projects the input x onto a box</span>
+<span class="sd">such that -2 &lt;= x[0] &lt;= 0.9 and</span>
+<span class="sd">1.1 &lt;= x[1] &lt;= 3.</span>
+
+<span class="sd">Note: One could equivalently add bound</span>
+<span class="sd">constraints as a separate input to the solver</span>
+<span class="sd">instead.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="k">def</span> <span class="nf">pbox</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span> <span class="c1"># lower bound</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c1"># upper bound</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">l</span><span class="p">),</span> <span class="n">u</span><span class="p">)</span>
+
+<span class="c1"># For optional extra output details</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Call DFO-LS</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">projections</span><span class="o">=</span><span class="p">[</span><span class="n">pball</span><span class="p">,</span><span class="n">pbox</span><span class="p">])</span>
+
+<span class="c1"># Display output</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="example-noisy-objective-evaluation">
+</div></blockquote>
+<p>Note that for bound constraints one can choose to either implement them by defining a projection function as above, or by passing the bounds as input like in the example from the section on adding bound constraints.</p>
+<p>DFO-LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
+gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [0.9        1.15359245]
+Residual vector = [3.43592448 0.1       ]
+Objective value f(xmin) = 11.81557703
+Needed 10 objective evaluations (at 10 points)
+Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
+ [-1.00000000e+00 -1.81976605e-15]]
+Exit flag = 5
+Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
+****************************
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="example-noisy-objective-evaluation">
 <h2>Example: Noisy Objective Evaluation<a class="headerlink" href="#example-noisy-objective-evaluation" title="Permalink to this headline">¶</a></h2>
 <p>As described in <a class="reference internal" href="info.html"><span class="doc">Overview</span></a>, derivative-free algorithms such as DFO-LS are particularly useful when <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to a derivative-based solver:</p>
 <blockquote>
@@ -478,8 +571,8 @@ Success: Objective is sufficiently small
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="example-parameter-estimation-data-fitting">
+</section>
+<section id="example-parameter-estimation-data-fitting">
 <h2>Example: Parameter Estimation/Data Fitting<a class="headerlink" href="#example-parameter-estimation-data-fitting" title="Permalink to this headline">¶</a></h2>
 <p>Next, we show a short example of using DFO-LS to solve a parameter estimation problem (taken from <a class="reference external" href="https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html#examples">here</a>). Given some observations <span class="math notranslate nohighlight">\((t_i,y_i)\)</span>, we wish to calibrate parameters <span class="math notranslate nohighlight">\(x=(x_1,x_2)\)</span> in the exponential decay model</p>
 <div class="math notranslate nohighlight">
@@ -562,8 +655,8 @@ Success: rho has reached rhoend
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="example-solving-a-nonlinear-system-of-equations">
+</section>
+<section id="example-solving-a-nonlinear-system-of-equations">
 <h2>Example: Solving a Nonlinear System of Equations<a class="headerlink" href="#example-solving-a-nonlinear-system-of-equations" title="Permalink to this headline">¶</a></h2>
 <p>Lastly, we give an example of using DFO-LS to solve a nonlinear system of equations (taken from <a class="reference external" href="http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm#imlug_genstatexpls_sect004.htm">here</a>). We wish to solve the following set of equations</p>
 <div class="math notranslate nohighlight">
@@ -615,16 +708,16 @@ Success: Objective is sufficiently small
 </div>
 </div></blockquote>
 <p>Here, we see that both entries of the residual vector are very small, so both equations have been solved to high accuracy.</p>
-</div>
-<div class="section" id="references">
+</section>
+<section id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <dl class="citation">
 <dt class="label" id="cfmr2018"><span class="brackets"><a class="fn-backref" href="#id1">CFMR2018</a></span></dt>
 <dd><p>Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, <a class="reference external" href="https://doi.org/10.1145/3338517">Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers</a>, <em>ACM Transactions on Mathematical Software</em>, 45:3 (2019), pp. 32:1-32:41 [<a class="reference external" href="https://arxiv.org/abs/1804.00154">preprint</a>]</p>
 </dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

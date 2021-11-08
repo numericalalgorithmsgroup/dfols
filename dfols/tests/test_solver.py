@@ -41,6 +41,13 @@ def rosenbrock_jacobian(x):
     return np.array([[-20.0*x[0], 10.0], [-1.0, 0.0]])
 
 
+def p_box(x,l,u):
+    return np.minimum(np.maximum(x,l), u)
+
+def p_ball(x,c,r):
+    return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
+
+
 class TestNans(unittest.TestCase):
     # Generic objective that only returns NaNs (like optclim code)
     # Verify get a sensible termination
@@ -185,3 +192,21 @@ class TestInverseProblemGrowing(unittest.TestCase):
         self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=1e-1), "Wrong Jacobian")
         self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
 
+
+class TestRosenbrockBoxBall(unittest.TestCase):
+    # Minimise the (2d) Rosenbrock function, where x[1] hits the upper bound
+    def runTest(self):
+        # n, m = 2, 2
+        x0 = np.array([-1.2, 0.7])  # standard start point does not satisfy bounds
+        lower = np.array([0.7, -2.0])
+        upper = np.array([1.0, 2])
+        boxproj = lambda x: p_box(x,lower,upper)
+        ballproj = lambda x: p_ball(x,np.array([0.5,1]),0.25)
+        xmin = np.array([0.70424386, 0.85583188])  # approximate
+        fmin = np.dot(rosenbrock(xmin), rosenbrock(xmin))
+        soln = dfols.solve(rosenbrock, x0, projections=[boxproj,ballproj])
+        print(soln.x)
+        self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
+        self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
+        self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=1e-2), "Wrong Jacobian")
+        self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")

@@ -11,6 +11,15 @@ produces a new vector d which (approximately) solves the trust region subproblem
 The other outputs: gnew is the gradient of the model at d, and crvmin has
 information about the curvature of the model at the solution.
 
+For handling arbitrary constraints, the call is
+    d, gnew, crvmin = ctrsbox(xopt, g, H, projections, delta)
+which produces a new vector d approximately solving the constrained trust region subproblem:
+    min_{d}  g'*d + 0.5*d'*H*d
+    s.t.    ||d|| <= delta
+            xopt + d is feasible w.r.t. the constraint set C
+The other outputs: gnew is the gradient of the model at d, and crvmin has
+information about the curvature of the model at the solution.
+
 We also provide a function for maximising the absolute value of a linear function
 inside a similar trust region - this is useful for geometry steps.
 The call
@@ -22,6 +31,13 @@ solves
 With this value, the variable d=x-xbase solves the problem
     min_s  abs(c + g' * d)
     s.t.   lower <= xbase + d <= upper
+          ||d|| <= delta
+Again, we have a version of this for handling arbitrary constraints
+The call
+    x = ctrsbox_geometry(xbase, c, g, projections, Delta)
+Solves
+    min_s  abs(c + g' * d)
+    s.t.   xbase + d is feasible w.r.t. the constraint set C
           ||d|| <= delta
 
 Notes
@@ -63,13 +79,77 @@ except ImportError:
     # Fall back to Python implementation
     USE_FORTRAN = False
 
+from .util import dykstra, pball, pbox, sumsq, model_value
 
-from .util import sumsq
-
-
-__all__ = ['trsbox', 'trsbox_geometry']
+__all__ = ['ctrsbox', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
 ZERO_THRESH = 1e-14
+
+def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+    n = xopt.size
+    assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
+    assert g.shape == (n,), "g and xopt have incompatible sizes"
+    assert len(H.shape) == 2, "H must be a matrix"
+    assert H.shape == (n,n), "H and xopt have incompatible sizes"
+    assert np.allclose(H, H.T), "H must be symmetric"
+    assert delta > 0.0, "delta must be strictly positive"
+
+    d = np.zeros((n,))
+    gnew = g.copy()
+    gy = g.copy()
+    crvmin = -1.0
+    y = d.copy()
+    eta = 1.2 # L backtrack scaling factor
+    t = 1
+
+    # Initial guess of L is norm(Hessian)
+    L = np.linalg.norm(H, 2)
+
+    # trust region is a ball of radius delta around xopt
+    trproj = lambda w: pball(w, xopt, delta)
+
+    # combine trust region constraints with user-entered constraints
+    P = projections.copy()
+    P.append(trproj)
+    def proj(d0):
+        p = dykstra(P, xopt+d0, max_iter=d_max_iters, tol=d_tol)
+        # we want the step only, so we subtract xopt
+        # from the new point: proj(xk+d) - xk
+        return p - xopt
+
+    MAX_LOOP_ITERS = 100 * n ** 2
+
+    # projected GD loop 
+    for ii in range(MAX_LOOP_ITERS):
+        w = y - (1/L)*gy
+        prev_d = d.copy()
+        d = proj(w)
+
+        # size of step taken
+        s = d - prev_d
+        stplen = np.linalg.norm(s)
+
+        # update true gradient
+        gnew += H.dot(s)
+
+        # update CRVMIN
+        crv = s.dot(H).dot(s)/sumsq(s) if sumsq(s) >= ZERO_THRESH else crvmin
+        crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
+
+        # exit condition
+        if stplen <= ZERO_THRESH:
+            break
+
+        # momentum update
+        prev_t = t
+        t = (1 + np.sqrt(1 + 4 * t ** 2))/2
+        prev_y = y.copy()
+        y = d + s*(prev_t - 1)/t
+
+        # update gradient w.r.t y
+        gy += H.dot(y - prev_y)
+
+    return d, gnew, crvmin
 
 
 def trsbox(xopt, g, H, sl, su, delta, use_fortran=USE_FORTRAN):
@@ -405,8 +485,63 @@ def ball_step(x0, g, Delta):
     if sqrt(gsqnorm) < ZERO_THRESH:  # Error catching: if g=0, make no step
         return 0.0
     else:
-        return (sqrt(gdotx0**2 + gsqnorm*(Delta**2 - x0sqnorm)) - gdotx0) / gsqnorm
+        # Sqrt had negative input on prob 46 in OG DFOLS with noise
+        #  print("Inside of the sqrt:", gdotx0**2 + gsqnorm*(Delta**2 - x0sqnorm))
+        # Got Inside of the sqrt: -3.608971127647144e-42
+        # Added max(0,...) here
+        return (sqrt(np.maximum(0,gdotx0**2 + gsqnorm*(Delta**2 - x0sqnorm))) - gdotx0) / gsqnorm
 
+def ctrsbox_linear(xbase, g, projections, Delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+    # Solve the convex program:
+    #   min_d   g' * d
+    #   s.t.    xbase + d is feasible w.r.t. constraint set C
+    #           ||d||^2 <= Delta^2
+
+    n = g.size
+    d = np.zeros((n,))
+    y = d.copy()
+    t = 1
+    dirn = -g
+    cons_dirns = []
+
+    # If g[i] = 0, never step along this direction
+    constant_directions = np.where(np.abs(dirn) < ZERO_THRESH)[0]
+    dirn[constant_directions] = 0.0
+
+    # trust region is a ball of radius delta centered around xbase
+    trproj = lambda w: pball(w, xbase, Delta)
+
+    # combine trust region constraints with user-entered constraints
+    P = projections.copy()
+    P.append(trproj)
+    def proj(d0):
+        p = dykstra(P, xbase + d0, max_iter=d_max_iters, tol=d_tol)
+        # we want the step only, so we subtract
+        # xbase from the new point: proj(xk + d) - xk
+        return p - xbase
+
+    MAX_LOOP_ITERS = 100 * n ** 2
+
+    # projected GD loop 
+    for ii in range(MAX_LOOP_ITERS):
+        w = y + dirn
+        prev_d = d.copy()
+        d = proj(w)
+
+        s = d - prev_d
+        stplen = np.linalg.norm(s)
+
+        # exit condition
+        if stplen <= ZERO_THRESH:
+            break
+
+        # 'momentum' update
+        prev_t = t
+        t = (1 + np.sqrt(1 + 4 * t ** 2))/2
+        prev_y = y.copy()
+        y = d + s*(prev_t - 1)/t
+
+    return d
 
 def trsbox_linear(g, a_in, b_in, Delta, use_fortran=USE_FORTRAN):
     # Solve the convex program:
@@ -466,6 +601,22 @@ def trsbox_linear(g, a_in, b_in, Delta, use_fortran=USE_FORTRAN):
             dirn[idx_hit] = 0.0  # no more searching this direction
     return x
 
+def ctrsbox_geometry(xbase, c, g, projections, Delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+    # Given a Lagrange polynomial defined by: L(x) = c + g' * (x - xbase)
+    # Maximise |L(x)| in a box + trust region - that is, solve:
+    #   max_x  abs(c + g' * (x - xbase))
+    #    s.t.  x is feasible w.r.t constraint set C
+    #          ||x-xbase|| <= Delta
+    # Setting s = x-xbase (or x = xbase + s), this is equivalent to:
+    #   max_s  abs(c + g' * s)
+    #   s.t.   xbase + s is is feasible w.r.t constraint set C
+    #          ||s|| <= Delta
+    smin = ctrsbox_linear(xbase, g, projections, Delta, d_max_iters=100, d_tol=1e-10, use_fortran=use_fortran)  # minimise g' * s
+    smax = ctrsbox_linear(xbase, -g, projections, Delta, d_max_iters=100, d_tol=1e-10, use_fortran=use_fortran)  # maximise g' * s
+    if abs(c + np.dot(g, smin)) >= abs(c + np.dot(g, smax)):  # choose the one with largest absolute value
+        return smin
+    else:
+        return smax
 
 def trsbox_geometry(xbase, c, g, lower, upper, Delta, use_fortran=USE_FORTRAN):
     # Given a Lagrange polynomial defined by: L(x) = c + g' * (x - xbase)

@@ -166,3 +166,134 @@ class TestRandomNotOrthogBox(unittest.TestCase):
             self.assertTrue(np.all(dirns[i, :] >= lower), "Direction %i below lower bound" % i)
             self.assertTrue(np.all(dirns[i, :] <= upper), "Direction %i above upper bound" % i)
         # self.assertTrue(False, "bad")
+
+# Trivial case of full rank
+class TestMatrixRankQR1(unittest.TestCase):
+    def runTest(self):
+        mr_tol = 1e-18
+        A = np.array([
+            [1,0,0,0],
+            [0,1,0,0],
+            [0,0,1,0],
+            [0,0,0,1]])
+        rank, D = qr_rank(A,mr_tol)
+        self.assertTrue(np.all(D > mr_tol), "Incorrect diagonal matrix output")
+        self.assertTrue(rank == 4, "Incorrect rank output")
+
+# Full rank but QR has negative entries for diag(R)
+class TestMatrixRankQR2(unittest.TestCase):
+    def runTest(self):
+        mr_tol = 1e-18
+        A = np.array([
+            [1,2,3,4],
+            [0,6,7,8],
+            [-1,-2,-2,-1],
+            [4,2,2,1]])
+        rank, D = qr_rank(A,mr_tol)
+        self.assertTrue(np.all(D > mr_tol), "Incorrect diagonal matrix output")
+        self.assertTrue(rank == 4, "Incorrect rank output")
+
+
+# Not full rank
+class TestMatrixRankQR3(unittest.TestCase):
+    def runTest(self):
+        mr_tol = 1e-18
+        A = np.array([
+            [1,2,3,4],
+            [2,6,4,8],
+            [0,0,0,0],
+            [0,0,0,0]])
+        rank, D = qr_rank(A,mr_tol)
+        self.assertTrue(np.all(D[0:2] > mr_tol), "Incorrect diagonal matrix output (rows 1,2)")
+        self.assertTrue(np.all(D[2:4] <= mr_tol), "Incorrect diagonal matrix output (rows 3,4)")
+        self.assertTrue(rank == 2, "Incorrect rank output")
+
+
+class TestDykstraBoxInt(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0,0])
+        lower = np.array([-0.01, -0.1])
+        upper = np.array([0.01, 0.5])
+        boxproj = lambda x: pbox(x,lower,upper)
+        P = [boxproj]
+        xproj = dykstra(P,x0)
+        self.assertTrue(np.all(xproj == x0), "Incorrect point returned by Dykstra")
+
+
+class TestDykstraBoxExt(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([-2,5])
+        lower = np.array([-1, -1])
+        upper = np.array([0.5, 0.9])
+        boxproj = lambda x: pbox(x,lower,upper)
+        P = [boxproj]
+        xproj = dykstra(P,x0)
+        xtrue = np.array([-1,0.9])
+        self.assertTrue(np.allclose(xproj, xtrue), "Incorrect point returned by Dykstra")
+
+class TestDykstraBallInt(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0,0])
+        ballproj = lambda x: pball(x,x0+1,2)
+        P = [ballproj]
+        xproj = dykstra(P,x0)
+        self.assertTrue(np.all(xproj == x0), "Incorrect point returned by Dykstra")
+
+
+class TestDykstraBallExt(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([-3,5])
+        ballproj = lambda x: pball(x,np.array([-0.5,1]),1)
+        P = [ballproj]
+        xproj = dykstra(P,x0)
+        xtrue = np.array([-1.02999894, 1.8479983])
+        self.assertTrue(np.allclose(xproj, xtrue), "Incorrect point returned by Dykstra")
+
+
+class TestDykstraBoxBallInt(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0.72,1.1])
+        lower = np.array([0.7, -2.0])
+        upper = np.array([1.0, 2])
+        boxproj = lambda x: pbox(x,lower,upper)
+        ballproj = lambda x: pball(x,np.array([0.5,1]),0.25)
+        P = [boxproj,ballproj]
+        xproj = dykstra(P,x0)
+        self.assertTrue(np.all(xproj == x0), "Incorrect point returned by Dykstra")
+
+class TestDykstraBoxBallExt1(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0,4])
+        lower = np.array([0.7, -2.0])
+        upper = np.array([1.0, 2])
+        boxproj = lambda x: pbox(x,lower,upper)
+        ballproj = lambda x: pball(x,np.array([0.5,1]),0.25)
+        P = [boxproj,ballproj]
+        xproj = dykstra(P,x0)
+        xtrue = np.array([0.6940582, 1.1576116])
+        self.assertTrue(np.allclose(xproj, xtrue), "Incorrect point returned by Dykstra")
+
+
+class TestDykstraBoxBallExt2(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0.8,-3])
+        lower = np.array([0.7, -2.0])
+        upper = np.array([1.0, 2])
+        boxproj = lambda x: pbox(x,lower,upper)
+        ballproj = lambda x: pball(x,np.array([0.5,1]),0.25)
+        P = [boxproj,ballproj]
+        xproj = dykstra(P,x0)
+        xtrue = np.array([0.68976232, 0.8372417])
+        self.assertTrue(np.allclose(xproj, xtrue), "Incorrect point returned by Dykstra")
+
+
+class TestDykstraBoxBallBdry(unittest.TestCase):
+    def runTest(self):
+        x0 = np.array([0.7,0.85])
+        lower = np.array([0.7, -2.0])
+        upper = np.array([1.0, 2])
+        boxproj = lambda x: pbox(x,lower,upper)
+        ballproj = lambda x: pball(x,np.array([0.5,1]),0.25)
+        P = [boxproj,ballproj]
+        xproj = dykstra(P,x0)
+        self.assertTrue(np.allclose(xproj, x0), "Incorrect point returned by Dykstra")

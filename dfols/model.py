@@ -36,12 +36,12 @@ import numpy as np
 import scipy.linalg as LA
 
 from .trust_region import trsbox_geometry
-from .util import sumsq
+from .util import sumsq, dykstra
 
 __all__ = ['Model']
 
 class Model(object):
-    def __init__(self, npt, x0, r0, xl, xu, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
+    def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
         if n is None:
             n = len(x0)
@@ -63,6 +63,7 @@ class Model(object):
         self.xbase = x0.copy()
         self.sl = xl - self.xbase  # lower bound w.r.t. xbase (require xpt >= sl)
         self.su = xu - self.xbase  # upper bound w.r.t. xbase (require xpt <= su)
+        self.projections = projections
         self.points = np.zeros((npt, n))  # interpolation points w.r.t. xbase
 
         # Function values
@@ -123,6 +124,8 @@ class Model(object):
             return np.minimum(np.maximum(self.sl, self.points[k, :].copy()), self.su)
         else:
             # Apply bounds and convert back to absolute coordinates
+            if self.projections:
+                return dykstra(self.projections, self.xbase + self.points[k,:])
             return self.xbase + np.minimum(np.maximum(self.sl, self.points[k, :]), self.su)
 
     def rvec(self, k):
@@ -133,8 +136,10 @@ class Model(object):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         return self.fval[k]
 
-    def as_absolute_coordinates(self, x):
+    def as_absolute_coordinates(self, x, full_dykstra=False):
         # If x were an interpolation point, get the absolute coordinates of x
+        if self.projections:
+            return dykstra(self.projections, self.xbase + x)
         return self.xbase + np.minimum(np.maximum(self.sl, x), self.su)
 
     def xpt_directions(self, include_kopt=True):

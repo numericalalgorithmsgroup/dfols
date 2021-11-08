@@ -109,6 +109,11 @@ class ParameterList(object):
         self.params["growing.full_rank.min_sing_val"] = 1e-6  # absolute floor on singular values
         self.params["growing.full_rank.svd_max_jac_cond"] = 1e8  # maximum condition number of Jacobian
         self.params["growing.perturb_trust_region_step"] = False  # add random direction onto TRS solution?
+        # Dykstra's algorithm
+        self.params["dykstra.d_tol"] = 1e-10
+        self.params["dykstra.max_iters"] = 100
+        # Matrix rank algorithm
+        self.params["matrix_rank.r_tol"] = 1e-18
 
         self.params_changed = {}
         for p in self.params:
@@ -257,6 +262,12 @@ class ParameterList(object):
             type_str, nonetype_ok, lower, upper = 'float', True, 1.0, None
         elif key == "growing.perturb_trust_region_step":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
+        elif key == "dykstra.d_tol":
+            type_str, nonetype_ok, lower, upper = 'float', False, 0.0, None
+        elif key == "dykstra.max_iters":
+            type_str, nonetype_ok, lower, upper = 'int', False, 0, None
+        elif key == "matrix_rank.r_tol":
+            type_str, nonetype_ok, lower, upper = 'float', False, 0.0, None
         else:
             assert False, "ParameterList.param_type() has unknown key: %s" % key
         return type_str, nonetype_ok, lower, upper
