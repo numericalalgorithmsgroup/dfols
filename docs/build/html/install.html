@@ -5,8 +5,7 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Installing DFO-LS &mdash; DFO-LS v1.3.0 documentation</title>
@@ -86,7 +85,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installing DFO-LS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -165,9 +164,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="installing-dfo-ls">
+  <div class="section" id="installing-dfo-ls">
 <h1>Installing DFO-LS<a class="headerlink" href="#installing-dfo-ls" title="Permalink to this headline">¶</a></h1>
-<section id="requirements">
+<div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>DFO-LS requires the following software to be installed:</p>
 <ul class="simple">
@@ -180,8 +179,8 @@
 <li><p>Pandas 0.17 or higher (<a class="reference external" href="http://pandas.pydata.org/">http://pandas.pydata.org/</a>)</p></li>
 </ul>
 <p><strong>Optional package:</strong> DFO-LS versions 1.2 and higher also support the <a class="reference external" href="https://github.com/lindonroberts/trust-region">trustregion</a> package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. <a class="reference external" href="https://gcc.gnu.org/wiki/GFortran">gfortran</a>) and NumPy installed, then run <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">trustregion</span></code>. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.</p>
-</section>
-<section id="installation-using-pip">
+</div>
+<div class="section" id="installation-using-pip">
 <h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Permalink to this headline">¶</a></h2>
 <p>For easy installation, use <em>pip</em> (<a class="reference external" href="http://www.pip-installer.org/">http://www.pip-installer.org/</a>) as root:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. code-block:: bash
@@ -209,8 +208,8 @@
 </pre></div>
 </div>
 <p>to upgrade DFO-LS to the latest version.</p>
-</section>
-<section id="manual-installation">
+</div>
+<div class="section" id="manual-installation">
 <h2>Manual installation<a class="headerlink" href="#manual-installation" title="Permalink to this headline">¶</a></h2>
 <p>Alternatively, you can download the source code from <a class="reference external" href="https://github.com/numericalalgorithmsgroup/dfols">Github</a> and unpack as follows:</p>
 <blockquote>
@@ -239,8 +238,8 @@ $ <span class="o">[</span>sudo<span class="o">]</span> pip install .  <span clas
 </pre></div>
 </div>
 </div></blockquote>
-</section>
-<section id="testing">
+</div>
+<div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>If you installed DFO-LS manually, you can test your installation by running:</p>
 <blockquote>
@@ -249,8 +248,8 @@ $ <span class="o">[</span>sudo<span class="o">]</span> pip install .  <span clas
 </div>
 </div></blockquote>
 <p>Alternatively, the HTML documentation provides some simple examples of how to run DFO-LS.</p>
-</section>
-<section id="uninstallation">
+</div>
+<div class="section" id="uninstallation">
 <h2>Uninstallation<a class="headerlink" href="#uninstallation" title="Permalink to this headline">¶</a></h2>
 <p>If DFO-LS was installed using <em>pip</em> you can uninstall as follows:</p>
 <blockquote>
@@ -259,8 +258,8 @@ $ <span class="o">[</span>sudo<span class="o">]</span> pip install .  <span clas
 </div>
 </div></blockquote>
 <p>If DFO-LS was installed manually you have to remove the installed files by hand (located in your python site-packages directory).</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

@@ -46,7 +46,8 @@ Version 1.2.3 (1 Jun 2021)
 ---------------------------
 * Minor update to customise handling of NaNs in objective evaluations - no changes to the DFO-LS algorithm.
 
-Version 1.3.0 (16 Oct 2021)
+Version 1.3.0 (8 Nov 2021)
 ---------------------------
 * Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
+* Add module-level logging for more informative log outputs.
 * Only new functionality is added, so there is no change to the solver for unconstrained/bound-constrained problems.
