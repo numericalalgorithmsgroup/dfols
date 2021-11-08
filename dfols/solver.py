@@ -893,7 +893,7 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
         xlb = xl.copy()
         xub = xu.copy()
         bproj = lambda w: pbox(w,xlb,xub)
-        projections = projections.copy()
+        projections = list(projections)
         projections.append(bproj)
 
         # since using arbitrary constraints, don't constrain otherwise
