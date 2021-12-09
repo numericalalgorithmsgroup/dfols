@@ -73,7 +73,7 @@
 
 
 \title{DFO-LS Documentation}
-\date{08 November 2021}
+\date{09 December 2021}
 \release{1.3.0}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -138,6 +138,15 @@ Pandas 0.17 or higher (\sphinxurl{http://pandas.pydata.org/})
 \end{itemize}
 
 \sphinxstylestrong{Optional package:} DFO\sphinxhyphen{}LS versions 1.2 and higher also support the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package for fast trust\sphinxhyphen{}region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. \sphinxhref{https://gcc.gnu.org/wiki/GFortran}{gfortran}) and NumPy installed, then run \sphinxcode{\sphinxupquote{pip install trustregion}}. You do not have to have trustregion installed for DFO\sphinxhyphen{}LS to work, and it is not installed by default.
+
+
+\section{Installation using conda}
+\label{\detokenize{install:installation-using-conda}}
+DFO\sphinxhyphen{}LS can be directly installed in Anaconda environments using \sphinxhref{https://anaconda.org/conda-forge/dfo-ls}{conda\sphinxhyphen{}forge}:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYGZdl{} conda install \PYGZhy{}c conda\PYGZhy{}forge dfo\PYGZhy{}ls
+\end{sphinxVerbatim}
 
 
 \section{Installation using pip}

@@ -17,6 +17,10 @@ DFO-LS: Derivative-Free Optimizer for Least-Squares
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2630426.svg
    :target: https://doi.org/10.5281/zenodo.2630426
    :alt: DOI:10.5281/zenodo.2630426
+   
+.. image:: https://static.pepy.tech/personalized-badge/dfo-ls?period=total&units=international_system&left_color=black&right_color=green&left_text=Downloads
+   :target: https://pepy.tech/project/dfo-ls
+   :alt: Total download
 
 DFO-LS is a flexible package for solving nonlinear least-squares minimization, without requiring derivatives of the objective. It is particularly useful when evaluations of the objective function are expensive and/or noisy. DFO-LS is more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
 
@@ -48,23 +52,31 @@ Additionally, the following python packages should be installed (these will be i
 
 **Optional package:** DFO-LS versions 1.2 and higher also support the `trustregion <https://github.com/lindonroberts/trust-region>`_ package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_) and NumPy installed, then run :code:`pip install trustregion`. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.
 
+Installation using conda
+------------------------
+DFO-LS can be directly installed in Anaconda environments using `conda-forge <https://anaconda.org/conda-forge/dfo-ls>`_:
+
+.. code-block:: bash
+
+    $ conda install -c conda-forge dfo-ls
+
 Installation using pip
 ----------------------
 For easy installation, use `pip <http://www.pip-installer.org/>`_ as root:
 
- .. code-block:: bash
+.. code-block:: bash
 
     $ [sudo] pip install DFO-LS
 
 or alternatively *easy_install*:
 
- .. code-block:: bash
+.. code-block:: bash
 
     $ [sudo] easy_install DFO-LS
 
 If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
 
- .. code-block:: bash
+.. code-block:: bash
 
     $ pip install --user DFO-LS
 
@@ -72,7 +84,7 @@ which will install DFO-LS in your home directory.
 
 Note that if an older install of DFO-LS is present on your system you can use:
 
- .. code-block:: bash
+.. code-block:: bash
 
     $ [sudo] pip install --upgrade DFO-LS
 

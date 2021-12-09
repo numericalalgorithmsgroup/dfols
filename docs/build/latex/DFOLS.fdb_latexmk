@@ -1,10 +1,10 @@
 # Fdb version 3
-["makeindex DFOLS.idx"] 1533896586 "DFOLS.idx" "DFOLS.ind" "DFOLS" 1636351033
-  "DFOLS.idx" 1636351032 0 d41d8cd98f00b204e9800998ecf8427e ""
+["makeindex DFOLS.idx"] 1533896586 "DFOLS.idx" "DFOLS.ind" "DFOLS" 1639018541
+  "DFOLS.idx" 1639018452 0 d41d8cd98f00b204e9800998ecf8427e ""
   (generated)
-  "DFOLS.ilg"
   "DFOLS.ind"
-["pdflatex"] 1636351032 "DFOLS.tex" "DFOLS.pdf" "DFOLS" 1636351033
+  "DFOLS.ilg"
+["pdflatex"] 1639018452 "DFOLS.tex" "DFOLS.pdf" "DFOLS" 1639018541
   "/etc/texmf/web2c/texmf.cnf" 1585531380 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
@@ -168,22 +168,22 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1520210507 32485 c64754543d8ac501bea6e75e209ea521 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1586757552 2556815 161db45eb32a3ed5e427095833ec947f ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1585531429 724918 9f2ac0f6dd6683249c7737077a8c4a4a ""
-  "DFOLS.aux" 1636351033 13532 5eb4b20bc4b37f557cc9805519734719 ""
+  "DFOLS.aux" 1639018453 13735 2d66a687ffffc53415f7ef322391a6d0 ""
   "DFOLS.ind" 1587347499 0 d41d8cd98f00b204e9800998ecf8427e "makeindex DFOLS.idx"
-  "DFOLS.out" 1636351033 10118 b2f2a301207388d7a95736fc5891fb85 ""
-  "DFOLS.tex" 1636351031 93297 04c555d02fee9b5110ce7644814dd560 ""
-  "DFOLS.toc" 1636351033 4983 8c5b3a33bb5bd5104000c35229dc39c2 ""
+  "DFOLS.out" 1639018453 10299 5ced6c511759bb8d66a01a987ff3a6f5 ""
+  "DFOLS.tex" 1639018450 93683 9306d2897f9c7bb3194d4fbf3d8d2133 ""
+  "DFOLS.toc" 1639018453 5069 acd8eab136eef4c586b8e051a5935773 ""
   "data_fitting.png" 1587347499 29893 211bb1c28ea25d47c8c0990fbf39c55c ""
   "footnotehyper-sphinx.sty" 1587347499 8888 1bbd7bdeae8c8bed1d10d551bddb1cc9 ""
   "sphinx.sty" 1614221565 82020 a38700b8aa22dfd94a8a5b905e69be73 ""
-  "sphinxhighlight.sty" 1636351032 6607 9139c967ef186821cb11bb3b0580e00e ""
+  "sphinxhighlight.sty" 1639018540 6607 9139c967ef186821cb11bb3b0580e00e ""
   "sphinxmanual.cls" 1587347499 4236 124cd90deb92742b5d3922bfc2cd70c0 ""
-  "sphinxmessages.sty" 1636351032 745 3f5fcd6cdd7964ed608767954a8ced6f ""
+  "sphinxmessages.sty" 1639018540 745 3f5fcd6cdd7964ed608767954a8ced6f ""
   "sphinxmulticell.sty" 1587347499 14606 0b6edc2b1a83546ed92026d1f6a311b5 ""
   (generated)
-  "DFOLS.idx"
-  "DFOLS.log"
   "DFOLS.toc"
-  "DFOLS.out"
   "DFOLS.pdf"
   "DFOLS.aux"
+  "DFOLS.idx"
+  "DFOLS.log"
+  "DFOLS.out"

@@ -89,6 +89,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installing DFO-LS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-using-conda">Installation using conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-using-pip">Installation using pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#manual-installation">Manual installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
@@ -100,6 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diagnostic.html">Diagnostic Information</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributors</a></li>
 </ul>
 
             
@@ -179,6 +181,13 @@
 <li><p>Pandas 0.17 or higher (<a class="reference external" href="http://pandas.pydata.org/">http://pandas.pydata.org/</a>)</p></li>
 </ul>
 <p><strong>Optional package:</strong> DFO-LS versions 1.2 and higher also support the <a class="reference external" href="https://github.com/lindonroberts/trust-region">trustregion</a> package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. <a class="reference external" href="https://gcc.gnu.org/wiki/GFortran">gfortran</a>) and NumPy installed, then run <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">trustregion</span></code>. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.</p>
+</div>
+<div class="section" id="installation-using-conda">
+<h2>Installation using conda<a class="headerlink" href="#installation-using-conda" title="Permalink to this headline">¶</a></h2>
+<p>DFO-LS can be directly installed in Anaconda environments using <a class="reference external" href="https://anaconda.org/conda-forge/dfo-ls">conda-forge</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda install -c conda-forge dfo-ls
+</pre></div>
+</div>
 </div>
 <div class="section" id="installation-using-pip">
 <h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Permalink to this headline">¶</a></h2>

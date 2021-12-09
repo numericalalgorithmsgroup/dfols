@@ -15,6 +15,14 @@ Additionally, the following python packages should be installed (these will be i
 
 **Optional package:** DFO-LS versions 1.2 and higher also support the `trustregion <https://github.com/lindonroberts/trust-region>`_ package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_) and NumPy installed, then run :code:`pip install trustregion`. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.
 
+Installation using conda
+------------------------
+DFO-LS can be directly installed in Anaconda environments using `conda-forge <https://anaconda.org/conda-forge/dfo-ls>`_:
+
+.. code-block:: bash
+
+    $ conda install -c conda-forge dfo-ls
+
 Installation using pip
 ----------------------
 For easy installation, use *pip* (http://www.pip-installer.org/) as root::
