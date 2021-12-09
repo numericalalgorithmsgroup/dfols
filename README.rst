@@ -20,7 +20,7 @@ DFO-LS: Derivative-Free Optimizer for Least-Squares
    
 .. image:: https://static.pepy.tech/personalized-badge/dfo-ls?period=total&units=international_system&left_color=black&right_color=green&left_text=Downloads
    :target: https://pepy.tech/project/dfo-ls
-   :alt: Total download
+   :alt: Total downloads
 
 DFO-LS is a flexible package for solving nonlinear least-squares minimization, without requiring derivatives of the objective. It is particularly useful when evaluations of the objective function are expensive and/or noisy. DFO-LS is more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
 
