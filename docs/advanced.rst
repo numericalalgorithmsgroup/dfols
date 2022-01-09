@@ -2,7 +2,7 @@ Advanced Usage
 ==============
 This section describes different optional user parameters available in DFO-LS.
 
-In the last section (:doc:`userguide`), we introduced :code:`dfols.solve()`, which has the optional input :code:`user_params`. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the paper [CFMR2018]_.
+In the last section (:doc:`userguide`), we introduced :code:`dfols.solve()`, which has the optional input :code:`user_params`. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers [CFMR2018]_ and [HR2021]_.
 
 The default values, used if no override is given, in some cases vary depending on whether :code:`objfun` has stochastic noise; that is, whether evaluating :code:`objfun(x)` several times at the same :code:`x` gives the same result or not. Whether or not this is the case is determined by the :code:`objfun_has_noise` input to :code:`dfols.solve()` (and not by inspecting :code:`objfun`, for instance).
 
@@ -119,3 +119,5 @@ References
 .. [CFMR2018]   
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
+.. [HR2021]   
+   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).

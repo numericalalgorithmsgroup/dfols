@@ -14,7 +14,7 @@ DFO-LS is designed to solve the local optimization problem
 where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the paper [CFMR2018]_.
+For an in-depth technical description of the algorithm see the papers [CFMR2018]_ and [HR2021]_.
 
 How to use DFO-LS
 -----------------
@@ -66,7 +66,7 @@ The :code:`solve` function has several optional arguments which the user may pro
 
   .. code-block:: python
   
-      dfols.solve(objfun, x0, args=(), bounds=None, npt=None, rhobeg=None, 
+      dfols.solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=None, 
                   rhoend=1e-8, maxfun=None, nsamples=None, 
                   user_params=None, objfun_has_noise=False, 
                   scaling_within_bounds=False,
@@ -569,3 +569,5 @@ References
 .. [CFMR2018]   
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
+.. [HR2021]   
+   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).

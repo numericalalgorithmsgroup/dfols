@@ -38,6 +38,10 @@ If you use DFO-LS in a paper, please cite:
 
 Cartis, C., Fiala, J., Marteau, B. and Roberts, L., `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41.
 
+If you use DFO-LS for problems with constraints, including bound constraints, please also cite:
+
+Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).
+
 Requirements
 ------------
 DFO-LS requires the following software to be installed:
