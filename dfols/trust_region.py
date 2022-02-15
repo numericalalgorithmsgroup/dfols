@@ -29,14 +29,14 @@ solves
     s.t.  lower <= x <= upper
           ||x-xbase|| <= Delta
 With this value, the variable d=x-xbase solves the problem
-    min_s  abs(c + g' * d)
+    min_d  abs(c + g' * d)
     s.t.   lower <= xbase + d <= upper
           ||d|| <= delta
 Again, we have a version of this for handling arbitrary constraints
 The call
     x = ctrsbox_geometry(xbase, c, g, projections, Delta)
 Solves
-    min_s  abs(c + g' * d)
+    min_d  abs(c + g' * d)
     s.t.   xbase + d is feasible w.r.t. the constraint set C
           ||d|| <= delta
 
@@ -70,9 +70,10 @@ alternative licensing.
 # Ensure compatibility with Python 2
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from math import sqrt
+from math import sqrt, ceil
 import numpy as np
 try:
+    # TODO: modify FORTRAN import
     import trustregion
     USE_FORTRAN = True
 except ImportError:
@@ -85,8 +86,9 @@ __all__ = ['ctrsbox', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
+    # TODO: check k_H, L_h, prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
     assert len(H.shape) == 2, "H must be a matrix"
@@ -94,16 +96,24 @@ def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fo
     assert np.allclose(H, H.T), "H must be symmetric"
     assert delta > 0.0, "delta must be strictly positive"
 
-    d = np.zeros((n,))
-    gnew = g.copy()
-    gy = g.copy()
-    crvmin = -1.0
-    y = d.copy()
-    eta = 1.2 # L backtrack scaling factor
+    # Initialization
+    d = np.zeros(n) # start with zero vector
+    y = np.zeros(n)
     t = 1
+    u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
+    crvmin = -1.0
+    MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol) # maximum number of iterations
 
-    # Initial guess of L is norm(Hessian)
-    L = np.linalg.norm(H, 2)
+    def gradient_Fu(g, H, u, h, d):
+    # Calculate gradient_Fu,
+    # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of
+    # h.
+    # We assume that h is global Lipschitz continous with constant L_h,
+    # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
+        return g + H @ d + (d - prox_uh(u, h, d)) / u
+
+    # Lipschitz constant of gradient_Fu
+    l = k_H + 1 / u 
 
     # trust region is a ball of radius delta around xopt
     trproj = lambda w: pball(w, xopt, delta)
@@ -117,38 +127,28 @@ def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fo
         # from the new point: proj(xk+d) - xk
         return p - xopt
 
-    MAX_LOOP_ITERS = 100 * n ** 2
-
-    # projected GD loop 
-    for ii in range(MAX_LOOP_ITERS):
-        w = y - (1/L)*gy
+    # TODO: implement general step
+    for k in range(MAX_LOOP_ITERS):
         prev_d = d.copy()
-        d = proj(w)
+        prev_t = t
+        # gradient_Fu at y
+        g_Fu = gradient_Fu(g, H, u, h, y)
 
-        # size of step taken
-        s = d - prev_d
-        stplen = np.linalg.norm(s)
+        # main update step
+        d = proj(y - g_Fu / l)
 
         # update true gradient
-        gnew += H.dot(s)
+        # FIXME: gnew is the gradient of the smoothed version
+        gnew = gradient_Fu(g, H, u, h, d)
 
         # update CRVMIN
-        crv = s.dot(H).dot(s)/sumsq(s) if sumsq(s) >= ZERO_THRESH else crvmin
+        # FIXME: check calculation of crvmin
+        crv = d.dot(H).dot(d)/sumsq(d) if sumsq(d) >= ZERO_THRESH else crvmin
         crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
-
-        # exit condition
-        if stplen <= ZERO_THRESH:
-            break
-
+        
         # momentum update
-        prev_t = t
-        t = (1 + np.sqrt(1 + 4 * t ** 2))/2
-        prev_y = y.copy()
-        y = d + s*(prev_t - 1)/t
-
-        # update gradient w.r.t y
-        gy += H.dot(y - prev_y)
-
+        t = (1 + sqrt(1 + 4*t*t)) / 2
+        y = d + (prev_t - 1) * (d - prev_d) / t
     return d, gnew, crvmin
 
 
