@@ -39,8 +39,8 @@ class TestSFISTA(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = np.dot(g, d_k) + d_k.T @ H @ d_k / 2 + h(d_k)
-            func_d_e = np.dot(g, d_e) + d_e.T @ H @ d_e / 2 + h(d_e)
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "unsuccessful when h=0!")
         
@@ -50,7 +50,7 @@ class TestSFISTA(unittest.TestCase):
         g = np.zeros(n)
         H = np.zeros([n,n])
         x = np.array([-0.2, 0.5, -0.1])
-        h = lambda d: np.linalg.norm(x + d, 1)
+        h = lambda d: np.linalg.norm(d, 1)
         k_H = 1
         delta = 1
         L_h = sqrt(3)
@@ -65,8 +65,8 @@ class TestSFISTA(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = np.dot(g, d_k) + d_k.T @ H @ d_k / 2 + h(d_k)
-            func_d_e = np.dot(g, d_e) + d_e.T @ H @ d_e / 2 + h(d_e)
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "unsuccessful when g=0, H=0!")
         
@@ -77,7 +77,7 @@ class TestSFISTA(unittest.TestCase):
         H = J_k.T @ J_k
         g = -H @ np.ones(n)
         x = np.array([-0.2, 0.5, -0.1])
-        h = lambda d: np.linalg.norm(x + d, 1)
+        h = lambda d: np.linalg.norm(x, 1)
         k_H = 1
         delta = 1
         L_h = sqrt(3)
@@ -89,8 +89,8 @@ class TestSFISTA(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = np.dot(g, d_k) + d_k.T @ H @ d_k / 2 + h(d_k)
-            func_d_e = np.dot(g, d_e) + d_e.T @ H @ d_e / 2 + h(d_e)
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "unsuccessful when mixed!")
 

@@ -127,7 +127,7 @@ def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, d_ma
         # from the new point: proj(xk+d) - xk
         return p - xopt
 
-    # TODO: implement general step
+    # general step
     for k in range(MAX_LOOP_ITERS):
         prev_d = d.copy()
         prev_t = t

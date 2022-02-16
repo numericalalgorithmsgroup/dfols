@@ -57,8 +57,10 @@ class TestModelValue(unittest.TestCase):
         H = np.sin(A + A.T)  # force symmetric
         vec = np.exp(np.arange(n, dtype=float))
         g = np.cos(3*np.arange(n, dtype=float) - 2.0)
-        mval = np.dot(g, vec) + 0.5 * np.dot(vec, np.dot(H, vec))
-        self.assertAlmostEqual(mval, model_value(g, H, vec), msg='Wrong value')
+        xopt = np.ones((n,))
+        h = lambda d: np.linalg.norm(d, 1)
+        mval = np.dot(g, vec) + 0.5 * np.dot(vec, np.dot(H, vec)) + h(xopt + vec)
+        self.assertAlmostEqual(mval, model_value(g, H, h, xopt, vec), msg='Wrong value')
 
 
 class TestRandom(unittest.TestCase):
