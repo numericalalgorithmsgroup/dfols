@@ -104,13 +104,14 @@ def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, d_ma
     crvmin = -1.0
     MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol) # maximum number of iterations
 
-    def gradient_Fu(g, H, u, h, d):
+    def gradient_Fu(xopt, g, H, u, h, prox_uh, d):
     # Calculate gradient_Fu,
     # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of
     # h.
     # We assume that h is global Lipschitz continous with constant L_h,
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
-        return g + H @ d + (d - prox_uh(u, h, d)) / u
+    # TODO: Add instruction to prox_uh
+        return g + H @ d + (d - prox_uh(u, h, xopt, d)) / u
 
     # Lipschitz constant of gradient_Fu
     l = k_H + 1 / u 
@@ -132,14 +133,14 @@ def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, d_ma
         prev_d = d.copy()
         prev_t = t
         # gradient_Fu at y
-        g_Fu = gradient_Fu(g, H, u, h, y)
+        g_Fu = gradient_Fu(xopt, g, H, u, h, prox_uh, y)
 
         # main update step
         d = proj(y - g_Fu / l)
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version
-        gnew = gradient_Fu(g, H, u, h, d)
+        gnew = gradient_Fu(xopt, g, H, u, h, prox_uh, d)
 
         # update CRVMIN
         # FIXME: check calculation of crvmin
