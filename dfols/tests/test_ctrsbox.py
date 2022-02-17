@@ -6,86 +6,180 @@ import numpy as np
 import unittest
 
 from dfols.trust_region import ctrsbox
-from dfols.util import model_value
+from dfols.util import model_value, pball, pbox
 from scipy.optimize import minimize
 
+# NOTE: Takes a few minutes to run
 def prox_uh(u, h, xopt, d):
     # Find prox_{uh} using Nelder–Mead method
     func = lambda s: u*h(xopt+s) + np.linalg.norm(s-d, 2)**2 / 2
     res = minimize(func, d, method='Nelder-Mead', tol=1e-8)
     return res.x
 
-class TestSFISTA(unittest.TestCase):
-
-    def test_smoooth(self):
+class TestUncInternalCDFO(unittest.TestCase):
+    def runTest(self):
         n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 2.0
+        xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta:
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+
+class TestUncBdryCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 5.0 / 12.0
         xopt = np.zeros((n,))
-        J_k = np.ones([n,n])
-        H = J_k.T @ J_k # H is positive semidefinite
-        d_opt_un = np.ones(n) # optimal solution without constraint
-        g = -H @ d_opt_un
-        h = lambda d: 0
-        k_H = 1
-        delta = 1
-        L_h = 1
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol) 
-        d_opt = d_opt_un / np.linalg.norm(d_opt_un, 2)
-        self.assertTrue(np.allclose(d_k, d_opt), "unsuccessful when h=0!")
-        for i in range(100):
-            d_e = delta * np.ones(n)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
             func_d_k = model_value(g, H, h, xopt, d_k)
             func_d_e = model_value(g, H, h, xopt, d_e)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
-                            func_d_k-func_d_e < func_tol), "unsuccessful when h=0!")
-        
-    def test_nonsmooth(self):
-        n = 3
-        g = np.zeros(n)
-        H = np.zeros([n,n])
-        xopt = np.array([-0.2, 0.5, -0.1])
-        h = lambda d: np.linalg.norm(d, 1)
-        k_H = 0
-        delta = 1
-        L_h = sqrt(3)
-        func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol) 
-        d_opt = -xopt
-        self.assertTrue(np.allclose(d_k, d_opt), "unsuccessful when g=0, H=0!")
-        for i in range(100):
-            d_e = delta * np.ones(n)
-            while np.linalg.norm(d_e, 2) > delta:
-                err = (np.random.rand(n) - 0.5)*1e-3
-                d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
-            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
-                            func_d_k-func_d_e < func_tol), "unsuccessful when g=0, H=0!")
-        
-    def test_all(self):
-        n = 3
-        J_k = np.ones([n,n])
-        H = J_k.T @ J_k
-        g = -H @ np.ones(n)
-        xopt = np.array([-0.2, 0.5, -0.3])
-        h = lambda d: np.linalg.norm(d, 1)
-        k_H = 1
-        delta = 1
-        L_h = sqrt(3)
-        func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol) 
-        for i in range(100):
-            d_e = delta * np.ones(n)
-            while np.linalg.norm(d_e, 2) > delta:
-                err = (np.random.rand(n) - 0.5)*1e-3
-                d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
-            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
-                            func_d_k-func_d_e < func_tol), "unsuccessful when mixed!")
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
-if __name__ == '__main__':
-    unittest.main()
+class TestUncHardCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([0.0, 0.0, 1.0])
+        H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = sqrt(2.0)
+        xopt = np.zeros((n,))
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta:
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+
+class TestConInternalCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 2.0
+        xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
+        sl = xopt + np.array([-0.5, -10.0, -10.0])
+        su = xopt + np.array([10.0, 10.0, 10.0])
+        proj = lambda x: pbox(x,sl,su)
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+
+class TestConBdryCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 5.0 / 12.0
+        xopt = np.zeros((n,))
+        sl = xopt + np.array([-0.3, -0.01, -0.1])
+        su = xopt + np.array([10.0, 1.0, 10.0])
+        proj = lambda x: pbox(x,sl,su)
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+
+class TestBoxBallInternalCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 2.0
+        xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
+        sl = xopt + np.array([-0.5, -10.0, -10.0])
+        su = xopt + np.array([10.0, 10.0, 10.0])
+        boxproj = lambda x: pbox(x,sl,su)
+        ballproj = lambda x: pball(x,xopt,5)
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+
+class TestBoxBallBdryCDFO(unittest.TestCase):
+    def runTest(self):
+        n = 3
+        g = np.array([1.0, 0.0, 1.0])
+        H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+        h = lambda d: np.linalg.norm(d, 1)
+        k_H = abs(max(np.diag(H), key=abs))
+        L_h = sqrt(3)
+        delta = 5.0 / 12.0
+        xopt = np.zeros((n,))
+        sl = xopt + np.array([-0.3, -0.01, -0.1])
+        su = xopt + np.array([10.0, 1.0, 10.0])
+        boxproj = lambda x: pbox(x,sl,su)
+        ballproj = lambda x: pball(x,xopt,0.25)
+        func_tol = 1e-3
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], k_H, L_h, prox_uh, delta, func_tol)
+        for i in range(50):
+            d_e = delta * np.ones(n) # initialize d_e
+            while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
+                err = (np.random.rand(n) - 0.5)*1e-3
+                d_e = d_k + err
+            func_d_k = model_value(g, H, h, xopt, d_k)
+            func_d_e = model_value(g, H, h, xopt, d_e)
+            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
+                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
