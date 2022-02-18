@@ -47,9 +47,12 @@ def sumsq(x):
     return np.dot(x, x)
 
 
-def eval_least_squares_objective(objfun, x, args=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
+def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
     # Evaluate least squares function
-    fvec = objfun(x, *args)
+    fvec = objfun(x, *argsf)
+    # Evaluate regularisation term
+    # QUESTION: correct usage of arg?
+    hvalue = h(x, *argsh)
 
     if check_for_overflow:
         try:
@@ -62,20 +65,25 @@ def eval_least_squares_objective(objfun, x, args=(), verbose=True, eval_num=0, p
     else:
         f = sumsq(fvec)
 
+    # objective = least-squares + regularisation
+    obj = f + hvalue
+
     if verbose:
         if len(x) < full_x_thresh:
-            module_logger.info("Function eval %i at point %i has f = %.15g at x = " % (eval_num, pt_num, f) + str(x))
+            module_logger.info("Function eval %i at point %i has obj = %.15g at x = " % (eval_num, pt_num, obj) + str(x))
         else:
-            module_logger.info("Function eval %i at point %i has f = %.15g at x = [...]" % (eval_num, pt_num, f))
+            module_logger.info("Function eval %i at point %i has obj = %.15g at x = [...]" % (eval_num, pt_num, obj))
 
-    return fvec, f
+    return fvec, obj
 
 
-def model_value(g, H, h, xopt, s):
+def model_value(g, H, h, xopt, s, argsh=()):
     # Calculate model value (s^T * g + 0.5* s^T * H * s) + h(xopt + s) = s^T * (gopt + 0.5 * H*s) + h(xopt + s)
     assert g.shape == s.shape, "g and s have incompatible sizes"
+    # QUESTION: correct use of args?
+    hvalue = h(xopt+s, *argsh)
     Hs = H.dot(s)
-    return np.dot(s, g + 0.5*Hs) + h(xopt + s)
+    return np.dot(s, g + 0.5*Hs) + hvalue
 
 
 def get_scale(dirn, delta, lower, upper):

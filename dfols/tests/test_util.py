@@ -44,11 +44,11 @@ class TestSumsq(unittest.TestCase):
 class TestEval(unittest.TestCase):
     def runTest(self):
         objfun = lambda x : np.array([10*(x[1]-x[0]**2), 1-x[0]])
+        h = lambda d: np.linalg.norm(d, 1)
         x = np.array([-1.2, 1.0])
-        fvec, f = eval_least_squares_objective(objfun, x)
+        fvec, obj = eval_least_squares_with_regularisation(objfun, h, x)
         self.assertTrue(np.all(fvec == objfun(x)), 'Residuals wrong')
-        self.assertAlmostEqual(f, sumsq(fvec), msg='Sum of squares wrong')
-
+        self.assertAlmostEqual(obj, sumsq(fvec)+h(x), msg='Object evaluation wrong')
 
 class TestModelValue(unittest.TestCase):
     def runTest(self):
