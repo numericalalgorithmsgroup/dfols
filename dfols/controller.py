@@ -97,11 +97,13 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
+    def __init__(self, objfun, h, argsf, argsh, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
                  scaling_changes, do_logging):
         self.do_logging = do_logging
         self.objfun = objfun
-        self.args = args
+        self.h = h
+        self.argsf = argsf
+        self.argsh = argsh
         self.maxfun = maxfun
         self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
@@ -227,7 +229,7 @@ class Controller(object):
             for k in range(0,self.n()):
                 # Evaluate objective at this new point
                 x = self.model.as_absolute_coordinates(D[k, :])
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -286,7 +288,7 @@ class Controller(object):
 
             # Evaluate objective at this new point
             x = self.model.as_absolute_coordinates(xpts_added[k, :])
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
@@ -339,7 +341,7 @@ class Controller(object):
             for ndirns in range(num_directions):
                 new_point = xopt + dirns[ndirns, :]  # alway base move around best value so far
                 x = self.model.as_absolute_coordinates(new_point)
-                rvec_list, f_list, num_samples_run, exit_info = eval_obj_results[ndirns]
+                rvec_list, obj_list, num_samples_run, exit_info = eval_obj_results[ndirns]
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
@@ -358,7 +360,7 @@ class Controller(object):
 
                 # Evaluate objective
                 x = self.model.as_absolute_coordinates(new_point)
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -395,7 +397,7 @@ class Controller(object):
         for j in range(num_steps):
             xnew = self.model.xopt() + (step_length / LA.norm(dirns[j, :])) * dirns[j, :]
             x = self.model.as_absolute_coordinates(xnew)
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
@@ -463,7 +465,7 @@ class Controller(object):
         fopt = self.model.fopt()  # again, evaluate now, before model.change_point()
         d = xnew - self.model.xopt()
         x = self.model.as_absolute_coordinates(xnew)
-        rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+        rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
         # Handle exit conditions (f < min obj value or maxfun reached)
         if exit_info is not None:
@@ -510,7 +512,7 @@ class Controller(object):
     def evaluate_objective(self, x, number_of_samples, params):
         # Sample from objective function several times, keeping track of maxfun and min_obj_value throughout
         rvec_list = np.zeros((number_of_samples, self.m()))
-        f_list = np.zeros((number_of_samples,))
+        obj_list = np.zeros((number_of_samples,))
         num_samples_run = 0
         incremented_nx = False
         exit_info = None
@@ -524,8 +526,8 @@ class Controller(object):
             if not incremented_nx:
                 self.nx += 1
                 incremented_nx = True
-            rvec_list[i, :], f_list[i] = eval_least_squares_objective(self.objfun, remove_scaling(x, self.scaling_changes),
-                                            args=self.args, eval_num=self.nf, pt_num=self.nx,
+            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, self.h, remove_scaling(x, self.scaling_changes),
+                                            argsf=self.argsf, argsh=self.argsh, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                             check_for_overflow=params("general.check_objfun_for_overflow"),
                                             verbose=self.do_logging)
@@ -536,7 +538,7 @@ class Controller(object):
                         sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
             exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
-        return rvec_list, f_list, num_samples_run, exit_info
+        return rvec_list, obj_list, num_samples_run, exit_info
 
     def choose_point_to_replace(self, d, skip_kopt=True):
         delsq = self.delta ** 2
@@ -721,7 +723,7 @@ class Controller(object):
             for i in range(num_pts_to_add):
                 xnew = self.model.xopt() + dirns[i, :]  # always base move around best value so far
                 x = self.model.as_absolute_coordinates(xnew)
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -801,7 +803,7 @@ class Controller(object):
                     dirns[i, :] = -dirns[i, :]
             xnew = np.maximum(np.minimum(self.model.xopt() + dirns[i, :], self.model.su), self.model.sl)
             x = self.model.as_absolute_coordinates(xnew)
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
