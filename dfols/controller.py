@@ -97,13 +97,16 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, h, argsf, argsh, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
+    def __init__(self, objfun, h, argsf, argsh, maxhessian, lh, prox_uh, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
                  scaling_changes, do_logging):
         self.do_logging = do_logging
         self.objfun = objfun
         self.h = h
         self.argsf = argsf
         self.argsh = argsh
+        self.maxhessian = maxhessian
+        self.lh = lh
+        self.prox_uh = self.prox_uh #TODO: add instruction for prox_uh
         self.maxfun = maxfun
         self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
@@ -439,9 +442,16 @@ class Controller(object):
         # Build model for full least squares objectives
         gopt, H = self.model.build_full_model()
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            # TODO: add func_tol after delta
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections, self.maxhessian,
+                                 self.lh, self.prox_uh, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
-            d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+            # NOTE: alternative way if using trsbox
+            # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+            # TODO: add func_tol after delta
+            proj = lambda x: pbox(x, self.model.sl, self.model.su)
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, proj, self.maxhessian,
+                                 self.lh, self.prox_uh, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
