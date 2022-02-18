@@ -28,7 +28,6 @@ import unittest
 
 from dfols.util import *
 
-
 def array_compare(x, y, thresh=1e-14):
     return np.max(np.abs(x - y)) < thresh
 

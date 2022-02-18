@@ -31,7 +31,7 @@ import scipy.linalg as LA
 import sys
 
 
-__all__ = ['sumsq', 'eval_least_squares_objective', 'model_value', 'random_orthog_directions_within_bounds',
+__all__ = ['sumsq', 'eval_least_squares_with_regularisation', 'model_value', 'random_orthog_directions_within_bounds',
            'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank']
 
 module_logger = logging.getLogger(__name__) 
