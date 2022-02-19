@@ -82,7 +82,7 @@ class ParameterList(object):
         self.params["restarts.use_soft_restarts"] = True
         self.params["restarts.soft.num_geom_steps"] = 3
         self.params["restarts.soft.move_xk"] = True
-        self.params["restarts.soft.max_fake_successful_steps"] = maxfun  # number ratio>0 steps below fsave allowed
+        self.params["restarts.soft.max_fake_successful_steps"] = maxfun  # number ratio>0 steps below objsave allowed
         self.params["restarts.hard.use_old_rk"] = True  # recycle r(xk) from previous run?
         self.params["restarts.increase_npt"] = False
         self.params["restarts.increase_npt_amt"] = 1
@@ -268,6 +268,8 @@ class ParameterList(object):
             type_str, nonetype_ok, lower, upper = 'int', False, 0, None
         elif key == "matrix_rank.r_tol":
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, None
+        elif key == "func_tol.criticality_measure":
+            type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
         else:
             assert False, "ParameterList.param_type() has unknown key: %s" % key
         return type_str, nonetype_ok, lower, upper

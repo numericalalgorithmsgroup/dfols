@@ -255,7 +255,7 @@ class Model(object):
             return False  # this value is worse than what we have already - didn't save
 
     def get_final_results(self):
-        # Return x and fval for optimal point (either from xsave+fsave or kopt)
+        # Return x and objval for optimal point (either from xsave+objsave or kopt)
         if self.objsave is None or self.objopt() <= self.objsave:  # optimal has changed since xsave+objsave were last set
             return self.xopt(abs_coordinates=True).copy(), self.ropt().copy(), self.objopt(), self.model_jac.copy(), self.nsamples[self.kopt]
         else:

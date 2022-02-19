@@ -311,7 +311,7 @@ class Controller(object):
             # Note: this works because the steps for (k) and (k-n) points were in the same coordinate direction
             if self.n() + 1 <= k < 2 * self.n() + 1:
                 # Only swap if steps were in different directions AND new pt has lower objective
-                if stepa * stepb < 0.0 and self.model.fval[k] < self.model.fval[k - self.n()]:
+                if stepa * stepb < 0.0 and self.model.objval[k] < self.model.objval[k - self.n()]:
                     xpts_added[[k, k-self.n()]] = xpts_added[[k-self.n(), k]]
 
         return None   # return & continue
@@ -438,20 +438,39 @@ class Controller(object):
 
         return dirn * (step_length / LA.norm(dirn))
 
-    def trust_region_step(self, params):
-        # Build model for full least squares objectives
+    def evaluate_criticality_measure(self, params):
+        # TODO: add comment for calculation of criticality measure
+        # Build model for full least squares function
         gopt, H = self.model.build_full_model()
+        func_tol = params("func_tol.criticality_measure") * self.delta
         if self.model.projections:
-            # TODO: add func_tol after delta
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections, self.maxhessian,
-                                 self.lh, self.prox_uh, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.h, self.model.projections, self.maxhessian,
+                                 self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
-            # TODO: add func_tol after delta
+            proj = lambda x: pbox(x, self.model.sl, self.model.su)
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, proj, self.maxhessian,
+                                 self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+        
+        # Calculate criticality measure
+        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, self.h, self.model.xopt(abs_coordinates=True), d, self.argsh)
+        return criticality_measure
+
+    def trust_region_step(self, params, func_tol):
+        # Build model for full least squares function
+        gopt, H = self.model.build_full_model()
+        if self.model.projections:
+            # TODO: (might done) add func_tol after delta 
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections, self.maxhessian,
+                                 self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+        else:
+            # NOTE: alternative way if using trsbox
+            # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+            # TODO: (might done) add func_tol after delta
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
             d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, proj, self.maxhessian,
-                                 self.lh, self.prox_uh, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                 self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -472,7 +491,7 @@ class Controller(object):
             return exit_info  # didn't fix geometry - return & quit
 
         gopt, H = self.model.build_full_model()  # save here, to calculate predicted value from geometry step
-        fopt = self.model.fopt()  # again, evaluate now, before model.change_point()
+        objopt = self.model.objopt()  # again, evaluate now, before model.change_point()
         d = xnew - self.model.xopt()
         x = self.model.as_absolute_coordinates(xnew)
         rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
@@ -490,11 +509,13 @@ class Controller(object):
             self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
         # Estimate actual reduction to add to diffs vector
-        f = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0))  # estimate actual objective value
+        # QUESTION: unsure about x here 
+        obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(x, *self.argsh)  # estimate actual objective value
 
-        # pred_reduction = - calculate_model_value(gopt, H, d)
-        pred_reduction = - model_value(gopt, H, d)
-        actual_reduction = fopt - f
+        # pred_reduction = - calculate_model_value(gopt, H, d)\
+        # QUESTION: unsure about x here
+        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, self.h, x, d, self.argsh) # since m(0) = h(x)
+        actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
 
@@ -537,10 +558,10 @@ class Controller(object):
                 self.nx += 1
                 incremented_nx = True
             rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, self.h, remove_scaling(x, self.scaling_changes),
-                                            argsf=self.argsf, argsh=self.argsh, eval_num=self.nf, pt_num=self.nx,
+                                            argsf=self.argsf, argsh=self.argsh, verbose=self.do_logging, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                             check_for_overflow=params("general.check_objfun_for_overflow"),
-                                            verbose=self.do_logging)
+                                            )
             num_samples_run += 1
 
         # Check if the average value was below our threshold
@@ -624,11 +645,11 @@ class Controller(object):
         self.last_successful_iter = current_iter  # reset successful iteration check
         return
 
-    def calculate_ratio(self, current_iter, rvec_list, d, gopt, H):
+    def calculate_ratio(self, x, current_iter, rvec_list, d, gopt, H):
         exit_info = None
-        f = sumsq(np.mean(rvec_list, axis=0))  # estimate actual objective value
-        pred_reduction = - model_value(gopt, H, d) # negative of m since m(0) = 0
-        actual_reduction = self.model.fopt() - f
+        obj = sumsq(np.mean(rvec_list, axis=0)) + self.h(x, *self.argsh) # estimate actual objective value
+        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, self.h, x, d, self.argsh) # since m(0) = h(x)
+        actual_reduction = self.model.objopt() - obj
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!
             self.last_successful_iter = current_iter
@@ -645,13 +666,13 @@ class Controller(object):
         if len(self.last_iters_step_taken) <= params("slow.history_for_slow"):
             # Not enough info, simply append
             self.last_iters_step_taken.append(current_iter)
-            self.last_fopts_step_taken.append(self.model.fopt())
+            self.last_fopts_step_taken.append(self.model.objopt())
             this_iter_slow = False
         else:
             # Enough info - shift values
             self.last_iters_step_taken = self.last_iters_step_taken[1:] + [current_iter]
-            self.last_fopts_step_taken = self.last_fopts_step_taken[1:] + [self.model.fopt()]
-            this_iter_slow = (log(self.last_fopts_step_taken[0]) - log(self.model.fopt())) / \
+            self.last_fopts_step_taken = self.last_fopts_step_taken[1:] + [self.model.objopt()]
+            this_iter_slow = (log(self.last_fopts_step_taken[0]) - log(self.model.objopt())) / \
                              float(params("slow.history_for_slow")) < params("slow.thresh_for_slow")
         # Update counter of number of slow iterations
         if this_iter_slow:
@@ -668,9 +689,9 @@ class Controller(object):
     def soft_restart(self, number_of_samples, nruns_so_far, params, x_in_abs_coords_to_save=None, rvec_to_save=None,
                      nsamples_to_save=None):
         # A successful run is one where we reduced fopt
-        if self.model.fopt() < self.last_run_fopt:
+        if self.model.objopt() < self.last_run_fopt:
             self.last_successful_run = nruns_so_far
-        self.last_run_fopt = self.model.fopt()
+        self.last_run_fopt = self.model.objopt()
 
         ok_to_do_restart = (nruns_so_far - self.last_successful_run < params("restarts.max_unsuccessful_restarts")) and \
                            (self.nf < self.maxfun)
@@ -691,7 +712,7 @@ class Controller(object):
                               self.model.nsamples[self.model.kopt], x_in_abs_coords=True)
 
         if self.do_logging:
-            module_logger.info("Soft restart [currently, f = %g after %g function evals]" % (self.model.fopt(), self.nf))
+            module_logger.info("Soft restart [currently, f = %g after %g function evals]" % (self.model.objopt(), self.nf))
         # Resetting method: reset delta and rho, then move the closest 'num_steps' points to xk to improve geometry
         # Note: closest points because we are suddenly increasing delta & rho, so we want to encourage spreading out points
         self.delta = self.rhobeg
@@ -780,11 +801,11 @@ class Controller(object):
             add_noise = params("noise.scale_factor_for_quit") * params("noise.additive_noise_level")
             for k in range(self.model.npt()):
                 all_fvals_within_noise = all_fvals_within_noise and \
-                                (self.model.fval[k] <= self.model.fopt() + add_noise / sqrt(self.model.nsamples[k]))
+                                (self.model.objval[k] <= self.model.objopt() + add_noise / sqrt(self.model.nsamples[k]))
         else:  # noise_level_multiplicative
             ratio = 1.0 + params("noise.scale_factor_for_quit") * params("noise.multiplicative_noise_level")
             for k in range(self.model.npt()):
-                this_ratio = self.model.fval[k] / self.model.fopt()  # fval_opt strictly positive (would have quit o/w)
+                this_ratio = self.model.objval[k] / self.model.objopt()  # fval_opt strictly positive (would have quit o/w)
                 all_fvals_within_noise = all_fvals_within_noise and (
                     this_ratio <= ratio / sqrt(self.model.nsamples[k]))
         return all_fvals_within_noise

@@ -173,7 +173,7 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertEqual(1, nsamples, 'Wrong final nsamples')
         self.assertIsNone(model.xsave, 'xsave not none after initialisation')
         self.assertIsNone(model.rsave, 'rsave not none after initialisation')
-        self.assertIsNone(model.objsave, 'fsave not none after initialisation')
+        self.assertIsNone(model.objsave, 'objsave not none after initialisation')
         self.assertIsNone(model.nsamples_save, 'nsamples_save not none after initialisation')
         model.save_point(x0, rosenbrock(x0), 1, x_in_abs_coords=True)
         self.assertTrue(array_compare(model.xsave, x0), 'Wrong xsave after saving')
