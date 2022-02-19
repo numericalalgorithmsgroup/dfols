@@ -44,7 +44,8 @@ module_logger = logging.getLogger(__name__)
 
 
 class Model(object):
-    def __init__(self, npt, x0, r0, h, argh, xl, xu, projections, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
+    # QUESTION: argh=() correct?
+    def __init__(self, npt, x0, r0, h, xl, xu, projections, r0_nsamples, argh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
         if n is None:
             n = len(x0)
@@ -181,7 +182,7 @@ class Model(object):
 
         self.points[k, :] = x.copy()
         self.fval_v[k, :] = rvec.copy()
-        self.objval[k] = sumsq(rvec) + self.h(x, self.argh)
+        self.objval[k] = sumsq(rvec) + self.h(self.xbase + x, *self.argh)
         self.nsamples[k] = 1
         self.factorisation_current = False
 
@@ -205,8 +206,8 @@ class Model(object):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         t = float(self.nsamples[k]) / float(self.nsamples[k] + 1)
         self.fval_v[k, :] = t * self.fval_v[k, :] + (1 - t) * rvec_extra
-        # QUESTION: how to sample when we have h? incorrect self.h(self.points[k, :])
-        self.objval[k] = sumsq(self.fval_v[k, :]) + self.h(self.points[k, :])
+        # QUESTION: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
+        self.objval[k] = sumsq(self.fval_v[k, :]) + self.h(self.xbase + self.points[k, :], *self.argh)
         self.nsamples[k] += 1
 
         self.kopt = np.argmin(self.objval[:self.npt()])  # make sure kopt is always the best value we have
@@ -215,13 +216,13 @@ class Model(object):
     def add_new_point(self, x, rvec):
         self.points = np.append(self.points, x.reshape((1, self.n())), axis=0)  # append row to xpt
         self.fval_v = np.append(self.fval_v, rvec.reshape((1, self.m())), axis=0)  # append row to fval_v
-        obj = sumsq(rvec) + self.h(x, self.argh)
+        obj = sumsq(rvec) + self.h(self.xbase + x, *self.argh)
         self.objval = np.append(self.objval, obj)  # append entry to fval
         self.nsamples = np.append(self.nsamples, 1)  # add new sample number
         self.num_pts += 1  # make sure npt is updated
         self.npt_so_far += 1
 
-        if obj < self.fopt():
+        if obj < self.objopt():
             self.kopt = self.npt() - 1
 
         self.factorisation_current = False
@@ -241,9 +242,10 @@ class Model(object):
         return
 
     def save_point(self, x, rvec, nsamples, x_in_abs_coords=True):
-        obj = sumsq(rvec) + self.h(x, self.argh)
+        xabs = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
+        obj = sumsq(rvec) + self.h(xabs, *self.argh)
         if self.objsave is None or obj <= self.objsave:
-            self.xsave = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
+            self.xsave = xabs
             self.rsave = rvec.copy()
             self.objsave = obj
             self.jacsave = self.model_jac.copy()

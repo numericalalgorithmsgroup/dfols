@@ -106,7 +106,7 @@ class Controller(object):
         self.argsh = argsh
         self.maxhessian = maxhessian
         self.lh = lh
-        self.prox_uh = self.prox_uh #TODO: add instruction for prox_uh
+        self.prox_uh = prox_uh #TODO: add instruction for prox_uh
         self.maxfun = maxfun
         self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
