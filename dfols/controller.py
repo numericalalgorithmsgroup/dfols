@@ -108,7 +108,7 @@ class Controller(object):
         self.lh = lh
         self.prox_uh = prox_uh #TODO: add instruction for prox_uh
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
+        self.model = Model(npt, x0, r0, h, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
         self.nf = nf
         self.nx = nx
@@ -450,7 +450,7 @@ class Controller(object):
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, proj, self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, [proj], self.maxhessian,
                                  self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
@@ -469,7 +469,7 @@ class Controller(object):
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             # TODO: (might done) add func_tol after delta
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, proj, self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, [proj], self.maxhessian,
                                  self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 
@@ -560,8 +560,7 @@ class Controller(object):
             rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, self.h, remove_scaling(x, self.scaling_changes),
                                             argsf=self.argsf, argsh=self.argsh, verbose=self.do_logging, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                            check_for_overflow=params("general.check_objfun_for_overflow"),
-                                            )
+                                            check_for_overflow=params("general.check_objfun_for_overflow"))
             num_samples_run += 1
 
         # Check if the average value was below our threshold

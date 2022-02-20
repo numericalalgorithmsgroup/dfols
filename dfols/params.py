@@ -114,7 +114,9 @@ class ParameterList(object):
         self.params["dykstra.max_iters"] = 100
         # Matrix rank algorithm
         self.params["matrix_rank.r_tol"] = 1e-18
-
+        # Function tolerance when applying S-FISTA method
+        self.params["func_tol.criticality_measure"] = 1e-1
+        self.params["func_tol.tr_step"] = 1-1e-1
         self.params_changed = {}
         for p in self.params:
             self.params_changed[p] = False
@@ -269,6 +271,8 @@ class ParameterList(object):
         elif key == "matrix_rank.r_tol":
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, None
         elif key == "func_tol.criticality_measure":
+            type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
+        elif key == "func_tol.tr_step":
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
         else:
             assert False, "ParameterList.param_type() has unknown key: %s" % key

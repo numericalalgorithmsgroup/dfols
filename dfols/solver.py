@@ -48,10 +48,10 @@ module_logger = logging.getLogger(__name__)
 
 # A container for the results of the optimization routine
 class OptimResults(object):
-    def __init__(self, xmin, rmin, fmin, jacmin, nf, nx, nruns, exit_flag, exit_msg):
+    def __init__(self, xmin, rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg):
         self.x = xmin
         self.resid = rmin
-        self.f = fmin
+        self.obj = objmin
         self.jacobian = jacmin
         self.nf = nf
         self.nx = nx
@@ -77,7 +77,7 @@ class OptimResults(object):
                 output += "Residual vector = %s\n" % str(self.resid)
             else:
                 output += "Not showing residual vector because it is too long; check self.resid\n"
-            output += "Objective value f(xmin) = %.10g\n" % self.f
+            output += "Objective value f(xmin) = %.10g\n" % self.obj
             output += "Needed %g objective evaluations (at %g points)\n" % (self.nf, self.nx)
             if self.nruns > 1:
                 output += "Did a total of %g runs\n" % self.nruns
@@ -95,7 +95,7 @@ class OptimResults(object):
         return output
 
 
-def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
+def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
                diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
                do_logging=True, print_progress=False):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
@@ -105,18 +105,17 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
         # Evaluate the first time...
         nf = nf_so_far + 1
         nx = nx_so_far + 1
-        r0, f0 = eval_least_squares_objective(objfun, remove_scaling(x0, scaling_changes),
-                                              args=args, eval_num=nf, pt_num=nx,
+        r0, obj0 = eval_least_squares_with_regularisation(objfun, h, remove_scaling(x0, scaling_changes),
+                                              argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
                                               full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                              check_for_overflow=params("general.check_objfun_for_overflow"),
-                                              verbose=do_logging)
+                                              check_for_overflow=params("general.check_objfun_for_overflow"))
         m = len(r0)
 
         # Now we have m, we can evaluate the rest of the times
         rvec_list = np.zeros((number_of_samples, m))
-        f_list = np.zeros((number_of_samples,))
+        obj_list = np.zeros((number_of_samples,))
         rvec_list[0, :] = r0
-        f_list[0] = f0
+        obj_list[0] = obj0
         num_samples_run = 1
         exit_info = None
 
@@ -128,10 +127,10 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
 
             nf += 1
             # Don't increment nx for x0 - we did this earlier
-            rvec_list[i, :], f_list[i] = eval_least_squares_objective(objfun, remove_scaling(x0, scaling_changes), args=args, eval_num=nf, pt_num=nx,
+            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(objfun, h, remove_scaling(x0, scaling_changes), 
+                                                argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
                                                 full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                                check_for_overflow=params("general.check_objfun_for_overflow"),
-                                                verbose=do_logging)
+                                                check_for_overflow=params("general.check_objfun_for_overflow"))
             num_samples_run += 1
 
         r0_avg = np.mean(rvec_list[:num_samples_run, :], axis=0)
@@ -162,7 +161,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 params('growing.delta_scale_new_dirns', new_value=0.1)
 
     # Initialise controller
-    control = Controller(objfun, args, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
+    control = Controller(objfun, h, argsf, argsh, maxhessian, lh, prox_uh, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
                          params, scaling_changes, do_logging)
 
     # Initialise interpolation set
@@ -178,8 +177,8 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
             module_logger.info("Initialising (coordinate directions)")
         exit_info = control.initialise_coordinate_directions(number_of_samples, num_directions, params)
     if exit_info is not None:
-        x, rvec, f, jacmin, nsamples = control.model.get_final_results()
-        return x, rvec, f, None, nsamples, control.nf, control.nx, nruns_so_far + 1, exit_info, diagnostic_info
+        x, rvec, obj, jacmin, nsamples = control.model.get_final_results()
+        return x, rvec, obj, None, nsamples, control.nf, control.nx, nruns_so_far + 1, exit_info, diagnostic_info
 
     finished_growing = (control.model.npt() >= control.model.num_pts)  # have we finished growing the initial set yet?
 
@@ -271,16 +270,21 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 nruns_so_far += 1
                 break  # quit
 
+        # Calculate criticality measure
+        criticality_measure = control.evaluate_criticality_measure(params)
 
+        # Build func_tol for trust region step
+        # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=0.01 here; choose a more strict maxhessian
+        func_tol_tr = (1-params("func_tol.tr_step")) * 1e-2 * criticality_measure * min(control.delta, criticality_measure / maxhessian)
         # Trust region step
-        d, gopt, H, gnew, crvmin = control.trust_region_step(params)
+        d, gopt, H, gnew, crvmin = control.trust_region_step(params, func_tol_tr)
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
         dnorm = min(LA.norm(d), control.delta)
 
         if print_progress:
-            print("{:^5}{:^7}{:^10.2e}{:^10.2e}{:^10.2e}{:^10.2e}{:^7}".format(nruns_so_far+1, current_iter+1, control.model.fopt(), np.linalg.norm(gopt), control.delta, control.rho, control.nf))
+            print("{:^5}{:^7}{:^10.2e}{:^10.2e}{:^10.2e}{:^10.2e}{:^7}".format(nruns_so_far+1, current_iter+1, control.model.objopt(), np.linalg.norm(gopt), control.delta, control.rho, control.nf))
 
         if params("logging.save_diagnostic_info"):
             diagnostic_info.save_info_from_control(control, nruns_so_far, current_iter,
@@ -415,10 +419,10 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 if do_logging:
                     module_logger.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
                     if control.n() < params("logging.n_to_print_whole_x_vector"):
-                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
+                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.objopt())
                                       + str(control.model.xopt(abs_coordinates=True)))
                     else:
-                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
+                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.objopt()))
                 continue  # next iteration
             else:
                 # Quit on rho=rhoend
@@ -515,7 +519,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
             # Evaluate new point
             x = control.model.as_absolute_coordinates(xnew)
             number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
-            rvec_list, f_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples, params)
             if exit_info is not None:
                 if num_samples_run > 0:
                     control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
@@ -524,7 +528,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            ratio, exit_info = control.calculate_ratio(current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
+            ratio, exit_info = control.calculate_ratio(x, current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -640,7 +644,7 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                         break  # quit
 
                 # Update list of successful steps
-                this_step_was_not_improvement = control.model.fsave is not None and control.model.fopt() > control.model.fsave
+                this_step_was_not_improvement = control.model.objsave is not None and control.model.objopt() > control.model.objsave
                 succ_steps_not_improvement.pop()  # remove last item
                 succ_steps_not_improvement.insert(0, this_step_was_not_improvement)  # add at beginning
                 # Terminate (not restart) if all are True
@@ -817,10 +821,10 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
                 if do_logging:
                     module_logger.info("New rho = %g after %i function evaluations" % (control.rho, control.nf))
                     if control.n() < params("logging.n_to_print_whole_x_vector"):
-                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.fopt())
+                        module_logger.debug("Best so far: f = %.15g at x = " % (control.model.objopt())
                                       + str(control.model.xopt(abs_coordinates=True)))
                     else:
-                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.fopt()))
+                        module_logger.debug("Best so far: f = %.15g at x = [...]" % (control.model.objopt()))
                 continue  # next iteration
             else:
                 # Quit on rho=rhoend
@@ -846,14 +850,14 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
     # (end main loop)
 
     # Quit & return the important information
-    x, rvec, f, jacmin, nsamples = control.model.get_final_results()
+    x, rvec, obj, jacmin, nsamples = control.model.get_final_results()
     if do_logging:
         module_logger.debug("At return from DFO-LS, number of function evals = %i" % nf)
-        module_logger.debug("Smallest objective value = %.15g at x = " % f + str(x))
-    return x, rvec, f, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
+        module_logger.debug("Smallest objective value = %.15g at x = " % obj + str(x))
+    return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
 
 
-def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
+def solve(objfun, h, x0, maxhessian, lh, prox_uh, argsf=(), argsh=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
     x0 = x0.astype(float)
     n = len(x0)
@@ -923,6 +927,12 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
 
     exit_info = None
     # Input & parameter checks
+    if exit_info is None and maxhessian < 1.0:
+        exit_info = ExitInformation(EXIT_INPUT_ERROR, "maxhessian must be >= 1")
+
+    if exit_info is None and lh <= 0.0:
+        exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh must be positive")
+
     if exit_info is None and npt < n + 1:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "npt must be >= n+1 for linear models with inexact interpolation")
 
@@ -1017,8 +1027,8 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
     nruns = 0
     nf = 0
     nx = 0
-    xmin, rmin, fmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
-        solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+    xmin, rmin, objmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
+        solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                     diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user,
                    do_logging=do_logging, print_progress=print_progress)
 
@@ -1034,27 +1044,27 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
 
         if do_logging:
             module_logger.info("Restarting from finish point (f = %g) after %g function evals; using rhobeg = %g and rhoend = %g"
-                     % (fmin, nf, rhobeg, rhoend))
+                     % (objmin, nf, rhobeg, rhoend))
         if params("restarts.hard.use_old_rk"):
-            xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
-                solve_main(objfun, xmin, args, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
+                solve_main(objfun, h, xmin, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                             diagnostic_info, scaling_changes, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
                            do_logging=do_logging, print_progress=print_progress)
         else:
-            xmin2, rmin2, fmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
-                solve_main(objfun, xmin, args, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
+                solve_main(objfun, h, xmin, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                            diagnostic_info, scaling_changes, do_logging=do_logging, print_progress=print_progress)
 
-        if fmin2 < fmin or np.isnan(fmin):
+        if objmin2 < objmin or np.isnan(objmin):
             if do_logging:
-                module_logger.info("Successful run with new f = %s compared to old f = %s" % (fmin2, fmin))
+                module_logger.info("Successful run with new f = %s compared to old f = %s" % (objmin2, objmin))
             last_successful_run = nruns
-            (xmin, rmin, fmin, nsamples_min) = (xmin2, rmin2, fmin2, nsamples2)
+            (xmin, rmin, objmin, nsamples_min) = (xmin2, rmin2, objmin2, nsamples2)
             if jacmin2 is not None:  # may be None if finished during setup phase, in which case just use old Jacobian
                 jacmin = jacmin2
         else:
             if do_logging:
-                module_logger.info("Unsuccessful run with new f = %s compared to old f = %s" % (fmin2, fmin))
+                module_logger.info("Unsuccessful run with new f = %s compared to old f = %s" % (objmin2, objmin))
 
     if nruns - last_successful_run >= params("restarts.max_unsuccessful_restarts"):
         exit_info = ExitInformation(EXIT_SUCCESS, "Reached maximum number of unsuccessful restarts")
@@ -1066,7 +1076,7 @@ def solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=Non
     if scaling_changes is not None and jacmin is not None:
         for i in range(n):
             jacmin[:, i] = jacmin[:, i] / scaling_changes[1][i]
-    results = OptimResults(remove_scaling(xmin, scaling_changes), rmin, fmin, jacmin, nf, nx, nruns, exit_flag, exit_msg)
+    results = OptimResults(remove_scaling(xmin, scaling_changes), rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg)
     if params("logging.save_diagnostic_info"):
         df = diagnostic_info.to_dataframe(with_xk=params("logging.save_xk"), with_rk=params("logging.save_rk"))
         results.diagnostic_info = df
