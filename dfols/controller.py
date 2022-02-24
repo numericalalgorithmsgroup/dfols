@@ -461,13 +461,11 @@ class Controller(object):
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
         if self.model.projections:
-            # TODO: (might done) add func_tol after delta 
             d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections, self.maxhessian,
                                  self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
-            # TODO: (might done) add func_tol after delta
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
             d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, [proj], self.maxhessian,
                                  self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
@@ -509,11 +507,9 @@ class Controller(object):
             self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
         # Estimate actual reduction to add to diffs vector
-        # QUESTION: unsure about x here 
         obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(x, *self.argsh)  # estimate actual objective value
 
         # pred_reduction = - calculate_model_value(gopt, H, d)\
-        # QUESTION: unsure about x here
         pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, self.h, x, d, self.argsh) # since m(0) = h(x)
         actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]

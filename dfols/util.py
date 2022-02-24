@@ -51,7 +51,6 @@ def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), ver
     # Evaluate least squares function
     fvec = objfun(x, *argsf)
     # Evaluate regularisation term
-    # QUESTION: correct usage of arg?
     hvalue = h(x, *argsh)
 
     if check_for_overflow:
@@ -80,7 +79,6 @@ def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), ver
 def model_value(g, H, h, xopt, s, argsh=()):
     # Calculate model value (s^T * g + 0.5* s^T * H * s) + h(xopt + s) = s^T * (gopt + 0.5 * H*s) + h(xopt + s)
     assert g.shape == s.shape, "g and s have incompatible sizes"
-    # QUESTION: correct use of args?
     hvalue = h(xopt+s, *argsh)
     Hs = H.dot(s)
     return np.dot(s, g + 0.5*Hs) + hvalue
