@@ -86,9 +86,9 @@ __all__ = ['ctrsbox', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, args=(), d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox(xopt, g, H, h, projections, L_h, prox_uh, delta, func_tol, args=(), d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
-    # TODO: check k_H, L_h, prox_uh
+    # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
     assert len(H.shape) == 2, "H must be a matrix"
@@ -100,6 +100,7 @@ def ctrsbox(xopt, g, H, h, projections, k_H, L_h, prox_uh, delta, func_tol, args
     d = np.zeros(n) # start with zero vector
     y = np.zeros(n)
     t = 1
+    k_H = np.linalg.norm(H, 'fro') # NOTE: use ||H||_2 <= ||H||_F, might be better than maxhessian
     u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
     crvmin = -1.0
     MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol) # maximum number of iterations

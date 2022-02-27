@@ -30,12 +30,11 @@ class TestUncInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta:
@@ -52,12 +51,11 @@ class TestUncBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta:
@@ -74,12 +72,11 @@ class TestUncHardCDFO(unittest.TestCase):
         g = np.array([0.0, 0.0, 1.0])
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = sqrt(2.0)
         xopt = np.zeros((n,))
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta:
@@ -96,7 +93,6 @@ class TestConInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
@@ -104,7 +100,7 @@ class TestConInternalCDFO(unittest.TestCase):
         su = xopt + np.array([10.0, 10.0, 10.0])
         proj = lambda x: pbox(x,sl,su)
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
@@ -121,7 +117,6 @@ class TestConBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
@@ -129,7 +124,7 @@ class TestConBdryCDFO(unittest.TestCase):
         su = xopt + np.array([10.0, 1.0, 10.0])
         proj = lambda x: pbox(x,sl,su)
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [proj], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
@@ -146,7 +141,6 @@ class TestBoxBallInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
@@ -155,7 +149,7 @@ class TestBoxBallInternalCDFO(unittest.TestCase):
         boxproj = lambda x: pbox(x,sl,su)
         ballproj = lambda x: pball(x,xopt,5)
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
@@ -172,7 +166,6 @@ class TestBoxBallBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        k_H = abs(max(np.diag(H), key=abs))
         L_h = sqrt(3)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
@@ -181,7 +174,7 @@ class TestBoxBallBdryCDFO(unittest.TestCase):
         boxproj = lambda x: pbox(x,sl,su)
         ballproj = lambda x: pball(x,xopt,0.25)
         func_tol = 1e-3
-        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], k_H, L_h, prox_uh, delta, func_tol)
+        d_k, gnew, crvmin = ctrsbox(xopt, g, H, h, [boxproj, ballproj], L_h, prox_uh, delta, func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
