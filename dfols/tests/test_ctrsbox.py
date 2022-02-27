@@ -9,12 +9,20 @@ from dfols.trust_region import ctrsbox
 from dfols.util import model_value, pball, pbox
 from scipy.optimize import minimize
 
-# NOTE: Takes a few minutes to run
-def prox_uh(u, h, xopt, d):
-    # Find prox_{uh} using Nelder–Mead method
-    func = lambda s: u*h(xopt+s) + np.linalg.norm(s-d, 2)**2 / 2
-    res = minimize(func, d, method='Nelder-Mead', tol=1e-8)
-    return res.x
+# NOTE: [SOLVED!] S-FISTA slow becuase implicit form of prox_uh
+def prox_uh(xopt, u, d):
+    # prox_uh(d) = min_{s} ||s-d||^2 / 2 + uh(xopt+s) 
+    # When h is 1-norm, we have the explicit solution
+    n = d.shape[0]
+    rtn = np.zeros(d.shape)
+    for i in range(n):
+        if d[i] > u - xopt[i]:
+            rtn[i] = d[i] - u
+        elif d[i] < -u-xopt[i]:
+            rtn[i] = d[i] + u
+        else:
+            rtn[i] = d[i]
+    return rtn
 
 class TestUncInternalCDFO(unittest.TestCase):
     def runTest(self):
