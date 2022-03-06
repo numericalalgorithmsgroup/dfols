@@ -108,7 +108,7 @@ class Controller(object):
         self.lh = lh
         self.prox_uh = prox_uh #TODO: add instruction for prox_uh
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, h, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
+        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, h=self.h, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
         self.nf = nf
         self.nx = nx
