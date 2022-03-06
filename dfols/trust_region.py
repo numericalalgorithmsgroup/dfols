@@ -86,7 +86,7 @@ __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbo
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, args=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, argsprox=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
     # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
@@ -113,7 +113,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, args=(), func_t
     # We assume that h is global Lipschitz continous with constant L_h,
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
     # TODO: Add instruction to prox_uh
-        return g + H @ d + (d - prox_uh(xopt, u, d, *args)) / u
+        return g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
 
     # Lipschitz constant of gradient_Fu
     l = k_H + 1 / u 
@@ -135,14 +135,14 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, args=(), func_t
         prev_d = d.copy()
         prev_t = t
         # gradient_Fu at y
-        g_Fu = gradient_Fu(xopt, g, H, u, prox_uh, d, *args)
+        g_Fu = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
 
         # main update step
         d = proj(y - g_Fu / l)
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version
-        gnew = gradient_Fu(xopt, g, H, u, prox_uh, d, *args)
+        gnew = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
 
         # update CRVMIN
         # FIXME: check calculation of crvmin

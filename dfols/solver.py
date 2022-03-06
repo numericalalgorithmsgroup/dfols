@@ -95,8 +95,8 @@ class OptimResults(object):
         return output
 
 
-def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
-               diagnostic_info, scaling_changes, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
+def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
+               diagnostic_info, scaling_changes, maxhessian=None, h=None, lh=None, argsh=(), prox_uh=None, argsprox=None, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
                do_logging=True, print_progress=False):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
@@ -105,7 +105,7 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
         # Evaluate the first time...
         nf = nf_so_far + 1
         nx = nx_so_far + 1
-        r0, obj0 = eval_least_squares_with_regularisation(objfun, h, remove_scaling(x0, scaling_changes),
+        r0, obj0 = eval_least_squares_with_regularisation(objfun, remove_scaling(x0, scaling_changes), h, 
                                               argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
                                               full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                               check_for_overflow=params("general.check_objfun_for_overflow"))
@@ -127,7 +127,7 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
 
             nf += 1
             # Don't increment nx for x0 - we did this earlier
-            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(objfun, h, remove_scaling(x0, scaling_changes), 
+            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(objfun, remove_scaling(x0, scaling_changes), h, 
                                                 argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
                                                 full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                                 check_for_overflow=params("general.check_objfun_for_overflow"))
@@ -161,8 +161,8 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
                 params('growing.delta_scale_new_dirns', new_value=0.1)
 
     # Initialise controller
-    control = Controller(objfun, h, argsf, argsh, maxhessian, lh, prox_uh, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
-                         params, scaling_changes, do_logging)
+    control = Controller(objfun, argsf, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
+                         params, scaling_changes, do_logging, maxhessian=maxhessian, h=h, lh=lh, argsh=argsh,  prox_uh=prox_uh, argsprox=argsprox)
 
     # Initialise interpolation set
     number_of_samples = max(nsamples(control.delta, control.rho, 0, nruns_so_far), 1)
@@ -270,14 +270,19 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
                 nruns_so_far += 1
                 break  # quit
 
-        # Calculate criticality measure
-        criticality_measure = control.evaluate_criticality_measure(params)
+        if h == None:
+            # Trust region step
+            d, gopt, H, gnew, crvmin = control.trust_region_step(params)
+        else:
+            # Calculate criticality measure
+            criticality_measure = control.evaluate_criticality_measure(params)
 
-        # Build func_tol for trust region step
-        # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=0.01 here; choose a more strict maxhessian
-        func_tol_tr = (1-params("func_tol.tr_step")) * 1e-2 * criticality_measure * min(control.delta, criticality_measure / maxhessian)
-        # Trust region step
-        d, gopt, H, gnew, crvmin = control.trust_region_step(params, func_tol_tr)
+            # Build func_tol for trust region step
+            # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=0.01 here; choose a more strict maxhessian
+            func_tol_tr = (1-params("func_tol.tr_step")) * 1e-2 * criticality_measure * min(control.delta, criticality_measure / maxhessian)
+
+            # Trust region step
+            d, gopt, H, gnew, crvmin = control.trust_region_step(params, func_tol_tr)
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
@@ -444,7 +449,7 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
                     # Cannot reduce rho, so check xnew and quit
                     x = control.model.as_absolute_coordinates(xnew)
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
-                    rvec_list, f_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
+                    rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
                                                                                                params)
                     
                     if num_samples_run > 0:
@@ -857,7 +862,7 @@ def solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, pro
     return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
 
 
-def solve(objfun, h, x0, maxhessian, lh, prox_uh, argsf=(), argsh=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
+def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), argsh=(), argsprox=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
     x0 = x0.astype(float)
     n = len(x0)
@@ -927,11 +932,11 @@ def solve(objfun, h, x0, maxhessian, lh, prox_uh, argsf=(), argsh=(), bounds=Non
 
     exit_info = None
     # Input & parameter checks
-    if exit_info is None and maxhessian < 1.0:
-        exit_info = ExitInformation(EXIT_INPUT_ERROR, "maxhessian must be >= 1")
+    if exit_info is None and h != None and (maxhessian == None or maxhessian < 1.0):
+        exit_info = ExitInformation(EXIT_INPUT_ERROR, "maxhessian is not None and must be >= 1")
 
-    if exit_info is None and lh <= 0.0:
-        exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh must be positive")
+    if exit_info is None and h != None and (lh == None or lh <= 0.0):
+        exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh is not None and lh must be positive")
 
     if exit_info is None and npt < n + 1:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "npt must be >= n+1 for linear models with inexact interpolation")
@@ -1028,8 +1033,8 @@ def solve(objfun, h, x0, maxhessian, lh, prox_uh, argsf=(), argsh=(), bounds=Non
     nf = 0
     nx = 0
     xmin, rmin, objmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
-        solve_main(objfun, h, x0, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                    diagnostic_info, scaling_changes, default_growing_method_set_by_user=default_growing_method_set_by_user,
+        solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+                    diagnostic_info, scaling_changes, maxhessian, h, lh, argsh, prox_uh, argsprox, default_growing_method_set_by_user=default_growing_method_set_by_user,
                    do_logging=do_logging, print_progress=print_progress)
 
     # Hard restarts loop
@@ -1047,13 +1052,13 @@ def solve(objfun, h, x0, maxhessian, lh, prox_uh, argsf=(), argsh=(), bounds=Non
                      % (objmin, nf, rhobeg, rhoend))
         if params("restarts.hard.use_old_rk"):
             xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
-                solve_main(objfun, h, xmin, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                            diagnostic_info, scaling_changes, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
+                solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+                            diagnostic_info, scaling_changes, maxhessian, h, lh, argsh, prox_uh, argsprox, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
                            do_logging=do_logging, print_progress=print_progress)
         else:
             xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
-                solve_main(objfun, h, xmin, argsf, argsh, maxhessian, lh, prox_uh, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                           diagnostic_info, scaling_changes, do_logging=do_logging, print_progress=print_progress)
+                solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
+                           diagnostic_info, scaling_changes, maxhessian, lh, h, argsh, prox_uh, argsprox, do_logging=do_logging, print_progress=print_progress)
 
         if objmin2 < objmin or np.isnan(objmin):
             if do_logging:

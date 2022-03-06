@@ -97,8 +97,8 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, h, argsf, argsh, maxhessian, lh, prox_uh, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
-                 scaling_changes, do_logging):
+    def __init__(self, objfun, argsf, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
+                 scaling_changes, do_logging, maxhessian=None, lh=None, h=None, argsh = (), prox_uh=None, argsprox = ()):
         self.do_logging = do_logging
         self.objfun = objfun
         self.h = h
@@ -107,8 +107,9 @@ class Controller(object):
         self.maxhessian = maxhessian
         self.lh = lh
         self.prox_uh = prox_uh #TODO: add instruction for prox_uh
+        self.argsprox = argsprox
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, h=self.h, precondition=params("interpolation.precondition"),
+        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, h=self.h, argsh = argsh, precondition=params("interpolation.precondition"),
                            abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
         self.nf = nf
         self.nx = nx
@@ -439,36 +440,42 @@ class Controller(object):
         return dirn * (step_length / LA.norm(dirn))
 
     def evaluate_criticality_measure(self, params):
-        # TODO: add comment for calculation of criticality measure
+        # TODO: add comment for calculation of criticality measure, need h != None
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
         func_tol = params("func_tol.criticality_measure") * self.delta
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.h, self.model.projections,
-                                 self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.model.projections, 1,
+                                self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, [proj],
-                                 self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, 2*H, [proj], 1,
+                                self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
         criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
         return criticality_measure
 
-    def trust_region_step(self, params, func_tol):
+    def trust_region_step(self, params, func_tol=1e-3):
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
-        if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections,
-                                 self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+        if self.h == None:
+            if self.model.projections:
+                d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            else:
+                d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
         else:
-            # NOTE: alternative way if using trsbox
-            # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
-            proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, [proj],
-                                 self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            if self.model.projections:
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
+                                     self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            else:
+                # NOTE: alternative way if using trsbox
+                # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+                proj = lambda x: pbox(x, self.model.sl, self.model.su)
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, H, self.h, [proj], self.delta,
+                                      self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -507,10 +514,13 @@ class Controller(object):
             self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
         # Estimate actual reduction to add to diffs vector
-        obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(x, *self.argsh)  # estimate actual objective value
-
-        # pred_reduction = - calculate_model_value(gopt, H, d)\
-        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh) # since m(0) = h(x)
+        obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) # estimate actual objective value
+        # pred_reduction = - calculate_model_value(gopt, H, d)
+        pred_reduction = - model_value(gopt, H, d)
+        if self.h != None:
+            obj += self.h(x, *self.argsh)
+            # since m(0) = h(x)
+            pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
         actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
@@ -553,7 +563,7 @@ class Controller(object):
             if not incremented_nx:
                 self.nx += 1
                 incremented_nx = True
-            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, self.h, remove_scaling(x, self.scaling_changes),
+            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, remove_scaling(x, self.scaling_changes), self.h,
                                             argsf=self.argsf, argsh=self.argsh, verbose=self.do_logging, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
                                             check_for_overflow=params("general.check_objfun_for_overflow"))
@@ -642,8 +652,14 @@ class Controller(object):
 
     def calculate_ratio(self, x, current_iter, rvec_list, d, gopt, H):
         exit_info = None
-        obj = sumsq(np.mean(rvec_list, axis=0)) + self.h(x, *self.argsh) # estimate actual objective value
-        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh) # since m(0) = h(x)
+        # estimate actual objective value
+        obj = sumsq(np.mean(rvec_list, axis=0))
+        # pred_reduction = - calculate_model_value(gopt, H, d)
+        pred_reduction = - model_value(gopt, H, d)
+        if self.h != None:
+            obj += self.h(x, *self.argsh) 
+            # since m(0) = h(x)
+            pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
         actual_reduction = self.model.objopt() - obj
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!

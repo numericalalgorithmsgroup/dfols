@@ -45,7 +45,7 @@ module_logger = logging.getLogger(__name__)
 
 class Model(object):
     # NOTE: argh optional here
-    def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, h=None, argh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
+    def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, h=None, argsh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
         if n is None:
             n = len(x0)
@@ -63,7 +63,7 @@ class Model(object):
         self.npt_so_far = 1  # number of points added so far (with function values)
 
         self.h = h
-        self.argh = argh
+        self.argsh = argsh
 
         # Initialise to blank some useful stuff
         # Interpolation points
@@ -80,7 +80,7 @@ class Model(object):
         self.objval = np.inf * np.ones((npt, ))  # overall objective value for each xpt
         self.objval[0] = sumsq(r0)
         if h != None:
-            self.objval[0] += h(x0, *argh)
+            self.objval[0] += h(x0, *argsh)
         self.kopt = 0  # index of current iterate (should be best value so far)
         self.nsamples = np.zeros((npt,), dtype=int)  # number of samples used to evaluate objective at each point
         self.nsamples[0] = r0_nsamples
@@ -186,7 +186,7 @@ class Model(object):
         self.fval_v[k, :] = rvec.copy()
         self.objval[k] = sumsq(rvec)
         if self.h != None:
-            self.objval[k] += self.h(self.xbase + x, *self.argh)
+            self.objval[k] += self.h(self.xbase + x, *self.argsh)
         self.nsamples[k] = 1
         self.factorisation_current = False
 
@@ -213,7 +213,7 @@ class Model(object):
         # QUESTION: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
         self.objval[k] = sumsq(self.fval_v[k, :])
         if self.h != None:
-            self.objval[k] += self.h(self.xbase + self.points[k, :], *self.argh)
+            self.objval[k] += self.h(self.xbase + self.points[k, :], *self.argsh)
         self.nsamples[k] += 1
 
         self.kopt = np.argmin(self.objval[:self.npt()])  # make sure kopt is always the best value we have
@@ -224,7 +224,7 @@ class Model(object):
         self.fval_v = np.append(self.fval_v, rvec.reshape((1, self.m())), axis=0)  # append row to fval_v
         obj = sumsq(rvec)
         if self.h != None:
-            obj += self.h(self.xbase + x, *self.argh)
+            obj += self.h(self.xbase + x, *self.argsh)
         self.objval = np.append(self.objval, obj)  # append entry to fval
         self.nsamples = np.append(self.nsamples, 1)  # add new sample number
         self.num_pts += 1  # make sure npt is updated
@@ -253,7 +253,7 @@ class Model(object):
         xabs = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
         obj = sumsq(rvec)
         if self.h != None:
-            obj += self.h(xabs, *self.argh)
+            obj += self.h(xabs, *self.argsh)
         if self.objsave is None or obj <= self.objsave:
             self.xsave = xabs
             self.rsave = rvec.copy()
