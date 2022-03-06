@@ -40,8 +40,8 @@ class TestUncInternalCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -61,8 +61,8 @@ class TestUncBdryCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -82,8 +82,8 @@ class TestUncHardCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta:
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -106,8 +106,8 @@ class TestConInternalCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -130,8 +130,8 @@ class TestConBdryCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(proj(xopt+d_e), xopt+d_e):
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -155,8 +155,8 @@ class TestBoxBallInternalCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
 
@@ -180,7 +180,7 @@ class TestBoxBallBdryCDFO(unittest.TestCase):
             while np.linalg.norm(d_e, 2) > delta or not np.allclose(boxproj(xopt+d_e), xopt+d_e) or not np.allclose(ballproj(xopt+d_e), xopt+d_e):
                 err = (np.random.rand(n) - 0.5)*1e-3
                 d_e = d_k + err
-            func_d_k = model_value(g, H, h, xopt, d_k)
-            func_d_e = model_value(g, H, h, xopt, d_e)
+            func_d_k = model_value(g, H, d_k, xopt, h)
+            func_d_e = model_value(g, H, d_e, xopt, h)
             self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
                             func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")

@@ -454,7 +454,7 @@ class Controller(object):
                                  self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
-        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, self.h, self.model.xopt(abs_coordinates=True), d, self.argsh)
+        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
         return criticality_measure
 
     def trust_region_step(self, params, func_tol):
@@ -510,7 +510,7 @@ class Controller(object):
         obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(x, *self.argsh)  # estimate actual objective value
 
         # pred_reduction = - calculate_model_value(gopt, H, d)\
-        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, self.h, x, d, self.argsh) # since m(0) = h(x)
+        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh) # since m(0) = h(x)
         actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
@@ -643,7 +643,7 @@ class Controller(object):
     def calculate_ratio(self, x, current_iter, rvec_list, d, gopt, H):
         exit_info = None
         obj = sumsq(np.mean(rvec_list, axis=0)) + self.h(x, *self.argsh) # estimate actual objective value
-        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, self.h, x, d, self.argsh) # since m(0) = h(x)
+        pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh) # since m(0) = h(x)
         actual_reduction = self.model.objopt() - obj
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!
