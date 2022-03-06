@@ -282,7 +282,9 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             func_tol_tr = (1-params("func_tol.tr_step")) * 1e-2 * criticality_measure * min(control.delta, criticality_measure / maxhessian)
 
             # Trust region step
-            d, gopt, H, gnew, crvmin = control.trust_region_step(params, func_tol_tr)
+            # FIXME: modify for speed: slow when 1e-6
+            print("func_tol_tr", func_tol_tr)
+            d, gopt, H, gnew, crvmin = control.trust_region_step(params, max(func_tol_tr, 1e-5))
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d

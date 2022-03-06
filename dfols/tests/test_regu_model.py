@@ -46,7 +46,7 @@ class TestAddValues(unittest.TestCase):
         x0 = np.array([-1.2, 1.0])
         xl = -1e20 * np.ones((n,))
         xu = 1e20 * np.ones((n,))        
-        h = lambda d, *argh: np.linalg.norm(d, 1)
+        h = lambda d, *argsh: np.linalg.norm(d, 1)
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1, h)
         self.assertEqual(model.npt(), 1, 'Wrong npt after initialisation')
         self.assertTrue(array_compare(model.xopt(abs_coordinates=True), x0), 'Wrong xopt after initialisation')
@@ -463,7 +463,7 @@ class TestUnderdetermined(unittest.TestCase):
         xl = -1e2 * np.ones((n,))
         xu = 1e2 * np.ones((n,))
         # model = Model(n+1, x0, np.array([0.0]), xl, xu, 1)
-        h = lambda d, *argh: np.linalg.norm(d, 1)
+        h = lambda d, *argsh: np.linalg.norm(d, 1)
         model = Model(n+1, A[0, :], np.array([b[0]]), xl, xu, [], 1, h)
 
         for i in range(1,npt):

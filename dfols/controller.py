@@ -444,6 +444,8 @@ class Controller(object):
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
         func_tol = params("func_tol.criticality_measure") * self.delta
+        # FIXME: modify for speed
+        print("func_tol_eta", func_tol)
         if self.model.projections:
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.model.projections, 1,
                                 self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
@@ -474,7 +476,7 @@ class Controller(object):
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
                 proj = lambda x: pbox(x, self.model.sl, self.model.su)
-                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, H, self.h, [proj], self.delta,
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, H, [proj], self.delta,
                                       self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 

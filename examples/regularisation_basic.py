@@ -3,11 +3,11 @@ import math
 import dfols
 from scipy.optimize import minimize
 
-x0 = np.array([0.0, 0.0])
-shift = np.array([1, 1])
-objfun = lambda x: x-shift
+x0 = np.array([1.0, 1.0])
+# shift = np.array([1, 1])
+objfun = lambda x: x
 proj = lambda x: pball(x, np.array([0, 0]), 1)
-h = lambda x: np.linalg.norm(x-shift, 1)
+h = lambda x: np.linalg.norm(x, 1)
 maxhessian = 1e2
 lh = math.sqrt(3)
 
@@ -29,5 +29,5 @@ def prox_uh(xopt, u, d):
             rtn[i] = d[i]
     return rtn
 
-soln = dfols.solve(objfun, h, x0, maxhessian, lh, prox_uh, projections = [proj])
-print(soln.x)
+soln = dfols.solve(objfun, x0, h, lh, maxhessian, prox_uh)
+print(soln)
