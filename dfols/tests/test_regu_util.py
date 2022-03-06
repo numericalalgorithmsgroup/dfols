@@ -43,11 +43,11 @@ class TestSumsq(unittest.TestCase):
 class TestEval(unittest.TestCase):
     def runTest(self):
         objfun = lambda x : np.array([10*(x[1]-x[0]**2), 1-x[0]])
+        h = lambda d: np.linalg.norm(d, 1)
         x = np.array([-1.2, 1.0])
-        fvec, f = eval_least_squares_with_regularisation(objfun, x)
+        fvec, obj = eval_least_squares_with_regularisation(objfun, x, h)
         self.assertTrue(np.all(fvec == objfun(x)), 'Residuals wrong')
-        self.assertAlmostEqual(f, sumsq(fvec), msg='Sum of squares wrong')
-
+        self.assertAlmostEqual(obj, sumsq(fvec)+h(x), msg='Object evaluation wrong')
 
 class TestModelValue(unittest.TestCase):
     def runTest(self):
@@ -56,8 +56,10 @@ class TestModelValue(unittest.TestCase):
         H = np.sin(A + A.T)  # force symmetric
         vec = np.exp(np.arange(n, dtype=float))
         g = np.cos(3*np.arange(n, dtype=float) - 2.0)
-        mval = np.dot(g, vec) + 0.5 * np.dot(vec, np.dot(H, vec))
-        self.assertAlmostEqual(mval, model_value(g, H, vec), msg='Wrong value')
+        xopt = np.ones((n,))
+        h = lambda d: np.linalg.norm(d, 1)
+        mval = np.dot(g, vec) + 0.5 * np.dot(vec, np.dot(H, vec)) + h(xopt + vec)
+        self.assertAlmostEqual(mval, model_value(g, H, vec, xopt, h), msg='Wrong value')
 
 
 class TestRandom(unittest.TestCase):

@@ -47,11 +47,9 @@ def sumsq(x):
     return np.dot(x, x)
 
 
-def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
+def eval_least_squares_with_regularisation(objfun, x, h=None, argsf=(), argsh=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
     # Evaluate least squares function
     fvec = objfun(x, *argsf)
-    # Evaluate regularisation term
-    hvalue = h(x, *argsh)
 
     if check_for_overflow:
         try:
@@ -65,7 +63,11 @@ def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), ver
         f = sumsq(fvec)
 
     # objective = least-squares + regularisation
-    obj = f + hvalue
+    obj = f
+    if h != None:
+        # Evaluate regularisation term
+        hvalue = h(x, *argsh)
+        obj = f + hvalue
 
     if verbose:
         if len(x) < full_x_thresh:
@@ -76,12 +78,15 @@ def eval_least_squares_with_regularisation(objfun, h, x, argsf=(), argsh=(), ver
     return fvec, obj
 
 
-def model_value(g, H, h, xopt, s, argsh=()):
+def model_value(g, H, s, xopt=(), h=None,argsh=()):
     # Calculate model value (s^T * g + 0.5* s^T * H * s) + h(xopt + s) = s^T * (gopt + 0.5 * H*s) + h(xopt + s)
     assert g.shape == s.shape, "g and s have incompatible sizes"
-    hvalue = h(xopt+s, *argsh)
     Hs = H.dot(s)
-    return np.dot(s, g + 0.5*Hs) + hvalue
+    rtn = np.dot(s, g + 0.5*Hs)
+    if h != None:
+        hvalue = h(xopt+s, *argsh)
+        rtn += hvalue
+    return rtn
 
 
 def get_scale(dirn, delta, lower, upper):

@@ -3,7 +3,7 @@ import math
 import dfols
 from scipy.optimize import minimize
 
-x0 = np.array([2, 0.5])
+x0 = np.array([0.0, 0.0])
 shift = np.array([1, 1])
 objfun = lambda x: x-shift
 proj = lambda x: pball(x, np.array([0, 0]), 1)
@@ -15,11 +15,19 @@ def pball(x,c,r):
     return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
 
 # NOTE: Takes a few minutes to run
-def prox_uh(u, h, xopt, d):
-    # Find prox_{uh} using Nelder–Mead method
-    func = lambda s: u*h(xopt+s) + np.linalg.norm(s-d, 2)**2 / 2
-    res = minimize(func, d, method='Nelder-Mead', tol=1e-8)
-    return res.x
+def prox_uh(xopt, u, d):
+    # prox_uh(d) = min_{s} ||s-d||^2 / 2 + uh(xopt+s) 
+    # When h is 1-norm, we have the explicit solution
+    n = d.shape[0]
+    rtn = np.zeros(d.shape)
+    for i in range(n):
+        if d[i] > u - xopt[i]:
+            rtn[i] = d[i] - u
+        elif d[i] < -u-xopt[i]:
+            rtn[i] = d[i] + u
+        else:
+            rtn[i] = d[i]
+    return rtn
 
 soln = dfols.solve(objfun, h, x0, maxhessian, lh, prox_uh, projections = [proj])
 print(soln.x)
