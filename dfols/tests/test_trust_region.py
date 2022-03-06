@@ -27,7 +27,7 @@ from math import sqrt
 import numpy as np
 import unittest
 
-from dfols.trust_region import ctrsbox, ctrsbox_geometry, trsbox, trsbox_geometry
+from dfols.trust_region import ctrsbox_pgd, ctrsbox_geometry, trsbox, trsbox_geometry
 from dfols.util import model_value
 
 
@@ -369,7 +369,7 @@ class TestUncInternalCDFO(unittest.TestCase):
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [], Delta)
         true_d = np.array([-1.0, 0.0, -0.5])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -384,7 +384,7 @@ class TestUncBdryCDFO(unittest.TestCase):
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         Delta = 5.0 / 12.0
         xopt = np.zeros((n,))
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [], Delta)
         true_d = np.array([-1.0 / 3.0, 0.0, -0.25])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -400,7 +400,7 @@ class TestUncHardCDFO(unittest.TestCase):
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         Delta = sqrt(2.0)
         xopt = np.zeros((n,))
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [], Delta)
         true_d = np.array([1.0, 0.0, -1.0])  # non-unique solution
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -418,7 +418,7 @@ class TestConInternalCDFO(unittest.TestCase):
         sl = xopt + np.array([-0.5, -10.0, -10.0])
         su = xopt + np.array([10.0, 10.0, 10.0])
         proj = lambda x: p_box(x,sl,su)
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [proj], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [proj], Delta)
         true_d = np.array([-1.0, 0.0, -0.5])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -436,7 +436,7 @@ class TestConBdryCDFO(unittest.TestCase):
         sl = xopt + np.array([-0.3, -0.01, -0.1])
         su = xopt + np.array([10.0, 1.0, 10.0])
         proj = lambda x: p_box(x,sl,su)
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [proj], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [proj], Delta)
         true_d = np.array([-1.0 / 3.0, 0.0, -0.25])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -455,7 +455,7 @@ class TestBoxBallInternalCDFO(unittest.TestCase):
         su = xopt + np.array([10.0, 10.0, 10.0])
         boxproj = lambda x: p_box(x,sl,su)
         ballproj = lambda x: p_ball(x,xopt,5)
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [boxproj,ballproj], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [boxproj,ballproj], Delta)
         true_d = np.array([-0.5, 0.0, -0.5])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)
@@ -473,7 +473,7 @@ class TestBoxBallBdryCDFO(unittest.TestCase):
         su = xopt + np.array([10.0, 1.0, 10.0])
         boxproj = lambda x: p_box(x,sl,su)
         ballproj = lambda x: p_ball(x,xopt,0.25)
-        d, gnew, _crvmin = ctrsbox(xopt, g, H, [boxproj,ballproj], Delta)
+        d, gnew, _crvmin = ctrsbox_pgd(xopt, g, H, [boxproj,ballproj], Delta)
         true_d = np.array([-0.22913085, 0.0, -0.09999527])
         est_min = model_value(g, H, d)
         true_min = model_value(g, H, true_d)

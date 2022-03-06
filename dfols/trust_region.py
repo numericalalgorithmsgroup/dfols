@@ -82,11 +82,11 @@ except ImportError:
 
 from .util import dykstra, pball, pbox, sumsq, model_value
 
-__all__ = ['ctrsbox', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
+__all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox(xopt, g, H, h, projections, L_h, prox_uh, delta, func_tol, args=(), d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, args=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
     # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
@@ -154,6 +154,71 @@ def ctrsbox(xopt, g, H, h, projections, L_h, prox_uh, delta, func_tol, args=(), 
         y = d + (prev_t - 1) * (d - prev_d) / t
     return d, gnew, crvmin
 
+def ctrsbox_pgd(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+    n = xopt.size
+    assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
+    assert g.shape == (n,), "g and xopt have incompatible sizes"
+    assert len(H.shape) == 2, "H must be a matrix"
+    assert H.shape == (n,n), "H and xopt have incompatible sizes"
+    assert np.allclose(H, H.T), "H must be symmetric"
+    assert delta > 0.0, "delta must be strictly positive"
+
+    d = np.zeros((n,))
+    gnew = g.copy()
+    gy = g.copy()
+    crvmin = -1.0
+    y = d.copy()
+    eta = 1.2 # L backtrack scaling factor
+    t = 1
+
+    # Initial guess of L is norm(Hessian)
+    L = np.linalg.norm(H, 2)
+
+    # trust region is a ball of radius delta around xopt
+    trproj = lambda w: pball(w, xopt, delta)
+
+    # combine trust region constraints with user-entered constraints
+    P = list(projections)  # make a copy of the projections list
+    P.append(trproj)
+    def proj(d0):
+        p = dykstra(P, xopt+d0, max_iter=d_max_iters, tol=d_tol)
+        # we want the step only, so we subtract xopt
+        # from the new point: proj(xk+d) - xk
+        return p - xopt
+
+    MAX_LOOP_ITERS = 100 * n ** 2
+
+    # projected GD loop 
+    for ii in range(MAX_LOOP_ITERS):
+        w = y - (1/L)*gy
+        prev_d = d.copy()
+        d = proj(w)
+
+        # size of step taken
+        s = d - prev_d
+        stplen = np.linalg.norm(s)
+
+        # update true gradient
+        gnew += H.dot(s)
+
+        # update CRVMIN
+        crv = s.dot(H).dot(s)/sumsq(s) if sumsq(s) >= ZERO_THRESH else crvmin
+        crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
+
+        # exit condition
+        if stplen <= ZERO_THRESH:
+            break
+
+        # momentum update
+        prev_t = t
+        t = (1 + np.sqrt(1 + 4 * t ** 2))/2
+        prev_y = y.copy()
+        y = d + s*(prev_t - 1)/t
+
+        # update gradient w.r.t y
+        gy += H.dot(y - prev_y)
+
+    return d, gnew, crvmin
 
 def trsbox(xopt, g, H, sl, su, delta, use_fortran=USE_FORTRAN):
     if use_fortran:
