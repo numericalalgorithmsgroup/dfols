@@ -152,6 +152,8 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, argsprox=(), fu
         # momentum update
         t = (1 + sqrt(1 + 4*t*t)) / 2
         y = d + (prev_t - 1) * (d - prev_d) / t
+    # FIXME: print d to check speed
+    print("d", d)
     return d, gnew, crvmin
 
 def ctrsbox_pgd(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):

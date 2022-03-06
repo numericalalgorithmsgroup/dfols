@@ -44,7 +44,7 @@ module_logger = logging.getLogger(__name__)
 
 
 class Model(object):
-    # NOTE: argh optional here
+    # NOTE: argsh optional here
     def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, h=None, argsh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
         if n is None:
