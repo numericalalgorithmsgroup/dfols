@@ -444,13 +444,13 @@ class Controller(object):
         gopt, H = self.model.build_full_model()
         func_tol = params("func_tol.criticality_measure") * self.delta
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.h, self.model.projections, self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.h, self.model.projections,
                                  self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, [proj], self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, 2*H, self.h, [proj],
                                  self.lh, self.prox_uh, 1, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
@@ -461,13 +461,13 @@ class Controller(object):
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections, self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.h, self.model.projections,
                                  self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, [proj], self.maxhessian,
+            d, gnew, crvmin = ctrsbox(self.model.xopt(), gopt, H, self.h, [proj],
                                  self.lh, self.prox_uh, self.delta, func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         return d, gopt, H, gnew, crvmin
 
