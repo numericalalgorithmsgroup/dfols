@@ -115,7 +115,7 @@ class ParameterList(object):
         # Matrix rank algorithm
         self.params["matrix_rank.r_tol"] = 1e-18
         # Function tolerance when applying S-FISTA method
-        self.params["func_tol.criticality_measure"] = 1e-1
+        self.params["func_tol.criticality_measure"] = 1e-3
         self.params["func_tol.tr_step"] = 1-1e-1
         self.params_changed = {}
         for p in self.params:

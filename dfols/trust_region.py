@@ -73,7 +73,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from math import sqrt, ceil
 import numpy as np
 try:
-    # TODO: modify FORTRAN import
     import trustregion
     USE_FORTRAN = True
 except ImportError:
@@ -86,7 +85,7 @@ __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbo
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, argsprox=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
     # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
@@ -100,20 +99,25 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, argsprox=(), fu
     d = np.zeros(n) # start with zero vector
     y = np.zeros(n)
     t = 1
-    k_H = np.linalg.norm(H, 'fro') # NOTE: use ||H||_2 <= ||H||_F, might be better than maxhessian
-    u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
+    k_H = np.linalg.norm(H, 2) # SOLVED: use ||H||_2 <= ||H||_F, might be better than maxhessian
+    # QUESTION: difference expression for u from MAX_LOP_ITERS
+    # u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
     crvmin = -1.0
-    MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol) # maximum number of iterations
+    # NOTE: iterataion depends on delta/func_tol
+    MAX_LOOP_ITERS =  ceil(min(delta*(2 * L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol, 500)) # maximum number of iterations
+    u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
+    print("smoothing parameter", u)
+    print("number of iterations", MAX_LOOP_ITERS)
 
-    def gradient_Fu(xopt, g, H, u, prox_uh, d, args=()):
-    # NOTE: args is argument of prox_uh
+    def gradient_Fu(xopt, g, H, u, prox_uh, d):
     # Calculate gradient_Fu,
     # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of
     # h.
     # We assume that h is global Lipschitz continous with constant L_h,
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
     # TODO: Add instruction to prox_uh
-        return g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
+    # SOLVED: bug here, previous: g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
+        return g + H @ d + (xopt + d - prox_uh(xopt + d, u, *argsprox)) / u
 
     # Lipschitz constant of gradient_Fu
     l = k_H + 1 / u 
@@ -139,21 +143,22 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, L_h, prox_uh, argsprox=(), fu
 
         # main update step
         d = proj(y - g_Fu / l)
+        # SOLVED: make sfista decrease in each iteration
+        if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
+            d = prev_d
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version
         gnew = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
 
         # update CRVMIN
-        # FIXME: check calculation of crvmin
+        # NOTE: crvmin is the Hessian term
         crv = d.dot(H).dot(d)/sumsq(d) if sumsq(d) >= ZERO_THRESH else crvmin
         crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
         
         # momentum update
         t = (1 + sqrt(1 + 4*t*t)) / 2
         y = d + (prev_t - 1) * (d - prev_d) / t
-    # FIXME: print d to check speed
-    print("d", d)
     return d, gnew, crvmin
 
 def ctrsbox_pgd(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):

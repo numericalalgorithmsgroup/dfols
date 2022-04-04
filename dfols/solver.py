@@ -41,6 +41,9 @@ from .diagnostic_info import *
 from .params import *
 from .util import *
 
+# NOTE: import for time tests
+import time
+
 __all__ = ['solve']
 
 module_logger = logging.getLogger(__name__) 
@@ -96,7 +99,7 @@ class OptimResults(object):
 
 
 def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
-               diagnostic_info, scaling_changes, maxhessian=None, h=None, lh=None, argsh=(), prox_uh=None, argsprox=None, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
+               diagnostic_info, scaling_changes, h=None, lh=None, argsh=(), prox_uh=None, argsprox=None, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
                do_logging=True, print_progress=False):
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
@@ -134,8 +137,13 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             num_samples_run += 1
 
         r0_avg = np.mean(rvec_list[:num_samples_run, :], axis=0)
-        if sumsq(r0_avg) <= params("model.abs_tol"):
-            exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        # NOTE: modify objvalue here
+        if h == None:
+            if sumsq(r0_avg) <= params("model.abs_tol"):
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        else:
+            if sumsq(r0_avg) + h(remove_scaling(x0, scaling_changes), *argsh)<= params("model.abs_tol"):
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
         if exit_info is not None:
             return x0, r0_avg, sumsq(r0_avg), None, num_samples_run, nf, nx, nruns_so_far+1, exit_info, diagnostic_info
@@ -162,7 +170,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
     # Initialise controller
     control = Controller(objfun, argsf, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
-                         params, scaling_changes, do_logging, maxhessian=maxhessian, h=h, lh=lh, argsh=argsh,  prox_uh=prox_uh, argsprox=argsprox)
+                         params, scaling_changes, do_logging, h=h, lh=lh, argsh=argsh,  prox_uh=prox_uh, argsprox=argsprox)
 
     # Initialise interpolation set
     number_of_samples = max(nsamples(control.delta, control.rho, 0, nruns_so_far), 1)
@@ -275,19 +283,32 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             d, gopt, H, gnew, crvmin = control.trust_region_step(params)
         else:
             # Calculate criticality measure
+            # output for time tests
+            print("="*76)
+            print("iteration: ", current_iter)
+            print("tr_radius", control.delta)
+            # NOTE: test time for criticality measure
+            time_cr_start = time.time()
             criticality_measure = control.evaluate_criticality_measure(params)
-
-            # Build func_tol for trust region step
-            # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=0.01 here; choose a more strict maxhessian
-            func_tol_tr = (1-params("func_tol.tr_step")) * 1e-2 * criticality_measure * min(control.delta, criticality_measure / maxhessian)
+            time_cr_end = time.time()
+            time_cr_taken = time_cr_end - time_cr_start
+            print("criticality value: ", criticality_measure)
+            print("criticality time: ", time_cr_taken)
+            print("*"*60)
 
             # Trust region step
-            # FIXME: modify for speed: slow when 1e-6
-            print("func_tol_tr", func_tol_tr)
-            d, gopt, H, gnew, crvmin = control.trust_region_step(params, max(func_tol_tr, 1e-5))
+            # SOLVED: modify for speed: slow when 1e-6, use max(func_tol, 1e-5) cause Exit flag = -2 
+            # Error (trust region increase): Either rust region step gave model increase
+            time_tr_start = time.time()
+            d, gopt, H, gnew, crvmin = control.trust_region_step(params, criticality_measure)
+            time_tr_end = time.time()
+            time_tr_taken = time_tr_end-time_tr_start
+            print("trust region time: ", time_tr_taken)
+            print("="*76)
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
+        print("xnew in relative coordinate (after trust_region_step): ", xnew)
         dnorm = min(LA.norm(d), control.delta)
 
         if print_progress:
@@ -450,6 +471,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 else:
                     # Cannot reduce rho, so check xnew and quit
                     x = control.model.as_absolute_coordinates(xnew)
+                    print("x from xnew", x)
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                     rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
                                                                                                params)
@@ -525,6 +547,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
             # Evaluate new point
             x = control.model.as_absolute_coordinates(xnew)
+            print("x from xnew again", x)
             number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
             rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples, params)
             if exit_info is not None:
@@ -535,7 +558,11 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            ratio, exit_info = control.calculate_ratio(x, current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
+            print("d before calcualte_ratio: ", d)
+            print("xopt before calcualte_ratio: ", control.model.xopt(abs_coordinates=True))
+            # NOTE: be careful abour x in calculate_ratio
+            ratio, exit_info = control.calculate_ratio(control.model.xopt(abs_coordinates=True), current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
+            print("ratio: ", ratio)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -864,7 +891,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
     return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
 
 
-def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), argsh=(), argsprox=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
+def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argsprox=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
     x0 = x0.astype(float)
     n = len(x0)
@@ -934,9 +961,6 @@ def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), 
 
     exit_info = None
     # Input & parameter checks
-    if exit_info is None and h != None and (maxhessian == None or maxhessian < 1.0):
-        exit_info = ExitInformation(EXIT_INPUT_ERROR, "maxhessian is not None and must be >= 1")
-
     if exit_info is None and h != None and (lh == None or lh <= 0.0):
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh is not None and lh must be positive")
 
@@ -1036,7 +1060,7 @@ def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), 
     nx = 0
     xmin, rmin, objmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
         solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                    diagnostic_info, scaling_changes, maxhessian, h, lh, argsh, prox_uh, argsprox, default_growing_method_set_by_user=default_growing_method_set_by_user,
+                    diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, default_growing_method_set_by_user=default_growing_method_set_by_user,
                    do_logging=do_logging, print_progress=print_progress)
 
     # Hard restarts loop
@@ -1055,12 +1079,12 @@ def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), 
         if params("restarts.hard.use_old_rk"):
             xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                            diagnostic_info, scaling_changes, maxhessian, h, lh, argsh, prox_uh, argsprox, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
+                            diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
                            do_logging=do_logging, print_progress=print_progress)
         else:
             xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
                 solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
-                           diagnostic_info, scaling_changes, maxhessian, lh, h, argsh, prox_uh, argsprox, do_logging=do_logging, print_progress=print_progress)
+                           diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, do_logging=do_logging, print_progress=print_progress)
 
         if objmin2 < objmin or np.isnan(objmin):
             if do_logging:
@@ -1090,6 +1114,8 @@ def solve(objfun, x0, h=None, lh=None, maxhessian=None, prox_uh=None, argsf=(), 
 
     if do_logging:
         module_logger.info("Did a total of %g run(s)" % nruns)
+    
+    print("xmin_ff", xmin)
 
     return results
 

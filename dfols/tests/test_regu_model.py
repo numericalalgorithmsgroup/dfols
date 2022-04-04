@@ -51,7 +51,6 @@ class TestAddValues(unittest.TestCase):
         self.assertEqual(model.npt(), 1, 'Wrong npt after initialisation')
         self.assertTrue(array_compare(model.xopt(abs_coordinates=True), x0), 'Wrong xopt after initialisation')
         self.assertTrue(array_compare(model.ropt(), rosenbrock(x0)), 'Wrong ropt after initialisation')
-        # NOTE: add None as the third argument for assertAlmostEqual
         self.assertAlmostEqual(model.objopt(), sumsq(rosenbrock(x0))+h(x0), None, 'Wrong objopt after initialisation')
         # Now add better point
         x1 = np.array([1.0, 0.9])
@@ -136,7 +135,7 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertTrue(array_compare(model.as_absolute_coordinates(x1 - x0), x1), 'Wrong abs coords')
         self.assertTrue(array_compare(model.as_absolute_coordinates(np.array([-1e3, 1e3])-x0), np.array([-1e2, 1e2])),
                         'Bad abs coords with bounds')
-        # NOTE: want x2 to be the final x, change np.array([2.0, 0.9]) to np.array([1.5, 0.9]) so that obj(x2) < obj(x1) when h is 1-norm.
+        # NOTE: compared to tests without regularisation, want x2 to be the final x, change np.array([2.0, 0.9]) to np.array([1.5, 0.9]) so that obj(x2) < obj(x1) when h is 1-norm.
         x2 = np.array([1.5, 0.9])
         model.change_point(2, x2 - model.xbase, rosenbrock(x2))
         sqdists = model.distances_to_xopt()

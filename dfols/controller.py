@@ -98,13 +98,12 @@ class ExitInformation(object):
 
 class Controller(object):
     def __init__(self, objfun, argsf, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
-                 scaling_changes, do_logging, maxhessian=None, lh=None, h=None, argsh = (), prox_uh=None, argsprox = ()):
+                 scaling_changes, do_logging, h=None, lh=None, argsh = (), prox_uh=None, argsprox = ()):
         self.do_logging = do_logging
         self.objfun = objfun
         self.h = h
         self.argsf = argsf
         self.argsh = argsh
-        self.maxhessian = maxhessian
         self.lh = lh
         self.prox_uh = prox_uh #TODO: add instruction for prox_uh
         self.argsprox = argsprox
@@ -443,26 +442,36 @@ class Controller(object):
         # TODO: add comment for calculation of criticality measure, need h != None
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
+        print("gopt", gopt)
+        print("H", H)
+        # NOTE: smaller params here to get more iterations in S-FISTA
         func_tol = params("func_tol.criticality_measure") * self.delta
-        # FIXME: modify for speed
-        print("func_tol_eta", func_tol)
+        print("function tolerance (criticality measure)", func_tol)
         if self.model.projections:
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.model.projections, 1,
-                                self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, 2*H, [proj], 1,
-                                self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, [proj], 1,
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
         criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
+        print("d (criticality measure): ", d)
+        print("model value (criticality measure): ", model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh))
         return criticality_measure
 
-    def trust_region_step(self, params, func_tol=1e-3):
+    def trust_region_step(self, params, criticality_measure=1e-2):
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
+        # Build func_tol for trust region step
+        # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=1here; choose maxhessian = max(||H||_2,1)
+        # QUESTION: when criticality_measure = 0? choose max(criticality_measure,1)
+        func_tol = (1-params("func_tol.tr_step")) * 1 * max(criticality_measure,1) * min(self.delta, max(criticality_measure,1) / max(np.linalg.norm(H, 2),1))
+        print("function tolerance (trust region step)", func_tol)
+
         if self.h == None:
             if self.model.projections:
                 d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
@@ -471,13 +480,21 @@ class Controller(object):
         else:
             if self.model.projections:
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
-                                     self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                     self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             else:
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
                 proj = lambda x: pbox(x, self.model.sl, self.model.su)
-                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(), gopt, H, [proj], self.delta,
-                                      self.lh, self.prox_uh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
+                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            # NOTE: check sufficient decrease. If increase in the model, set zero step
+            pred_reduction = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
+            print("pred_reduction", pred_reduction)
+            if pred_reduction < 0.0:
+                print("bad d", d)
+                d = np.zeros(d.shape)
+            print("d (trust region step): ", d)
+            print("new point (after trust region step): ", d + self.model.xopt(abs_coordinates=True))
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -572,9 +589,15 @@ class Controller(object):
             num_samples_run += 1
 
         # Check if the average value was below our threshold
-        if num_samples_run > 0 and \
-                        sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
-            exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        # QUESTION: how to choose x in h when using averaged values
+        if self.h == None:
+            if num_samples_run > 0 and \
+                            sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        else:
+            if num_samples_run > 0 and \
+                            sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(remove_scaling(x, self.scaling_changes),*self.argsh) <= self.model.min_objective_value():
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
         return rvec_list, obj_list, num_samples_run, exit_info
 
@@ -659,7 +682,8 @@ class Controller(object):
         # pred_reduction = - calculate_model_value(gopt, H, d)
         pred_reduction = - model_value(gopt, H, d)
         if self.h != None:
-            obj += self.h(x, *self.argsh) 
+            # QUESTION: x+d here correct? rvec_list takes mean value
+            obj += self.h(x+d, *self.argsh) 
             # since m(0) = h(x)
             pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
         actual_reduction = self.model.objopt() - obj
@@ -671,7 +695,8 @@ class Controller(object):
                 exit_info = ExitInformation(EXIT_TR_INCREASE_WARNING, "Either multiple constraints are active or trust region step gave model increase")
             else:
                 exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Either rust region step gave model increase")
-
+        print("actual reduction: ", actual_reduction)
+        print("pred reduction: ", pred_reduction)
         ratio = actual_reduction / pred_reduction
         return ratio, exit_info
 

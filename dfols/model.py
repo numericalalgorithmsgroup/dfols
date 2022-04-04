@@ -44,7 +44,6 @@ module_logger = logging.getLogger(__name__)
 
 
 class Model(object):
-    # NOTE: argsh optional here
     def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, h=None, argsh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
                  do_logging=True):
         if n is None:
@@ -210,7 +209,7 @@ class Model(object):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         t = float(self.nsamples[k]) / float(self.nsamples[k] + 1)
         self.fval_v[k, :] = t * self.fval_v[k, :] + (1 - t) * rvec_extra
-        # QUESTION: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
+        # NOTE: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
         self.objval[k] = sumsq(self.fval_v[k, :])
         if self.h != None:
             self.objval[k] += self.h(self.xbase + self.points[k, :], *self.argsh)

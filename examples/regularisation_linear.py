@@ -8,10 +8,12 @@ import time
 # unconstrained
 
 x0 = np.array([100.0,10.0])
-# shift = np.array([1, 1])
-objfun = lambda x: 6*(x-np.array([1,2]))
+A = np.array([[1.0, 3.0], [4.0, 2.0]])
+# shift = np.array([3.0, 1.0])
+shift = np.array([0.0, 0.0])
+objfun = lambda x: A @ (x-shift)
 # proj = lambda x: pball(x, np.array([0, 0]), 1)
-h = lambda x: 2*np.linalg.norm(x-np.array([1,2]), 1)
+h = lambda x: 2*np.linalg.norm(x-shift, 1)
 lh = math.sqrt(2)
 
 def pball(x,c,r):
