@@ -85,7 +85,7 @@ __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbo
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
     # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
@@ -104,7 +104,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     # u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
     crvmin = -1.0
     # NOTE: iterataion depends on delta/func_tol
-    MAX_LOOP_ITERS =  ceil(min(delta*(2 * L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol, 500)) # maximum number of iterations
+    MAX_LOOP_ITERS =  ceil(min(delta*(2 * L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol, max_iters)) # maximum number of iterations
     u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
     print("smoothing parameter", u)
     print("number of iterations", MAX_LOOP_ITERS)

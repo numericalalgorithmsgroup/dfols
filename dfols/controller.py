@@ -449,13 +449,15 @@ class Controller(object):
         print("function tolerance (criticality measure)", func_tol)
         if self.model.projections:
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.model.projections, 1,
-                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, [proj], 1,
-                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
         criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
@@ -480,13 +482,15 @@ class Controller(object):
         else:
             if self.model.projections:
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
-                                     self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                     self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                     max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             else:
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
                 proj = lambda x: pbox(x, self.model.sl, self.model.su)
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
-                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol,
+                                      max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             # NOTE: check sufficient decrease. If increase in the model, set zero step
             pred_reduction = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
             print("pred_reduction", pred_reduction)

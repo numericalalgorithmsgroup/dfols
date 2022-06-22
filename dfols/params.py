@@ -117,6 +117,7 @@ class ParameterList(object):
         # Function tolerance when applying S-FISTA method
         self.params["func_tol.criticality_measure"] = 1e-3
         self.params["func_tol.tr_step"] = 1-1e-1
+        self.params["func_tol.max_iters"] = 500
         self.params_changed = {}
         for p in self.params:
             self.params_changed[p] = False
@@ -274,6 +275,8 @@ class ParameterList(object):
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
         elif key == "func_tol.tr_step":
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
+        elif key == "func_tol.max_iters":
+            type_str, nonetype_ok, lower, upper = 'int', False, 0, None
         else:
             assert False, "ParameterList.param_type() has unknown key: %s" % key
         return type_str, nonetype_ok, lower, upper
