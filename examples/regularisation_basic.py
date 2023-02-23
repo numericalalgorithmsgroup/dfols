@@ -7,11 +7,11 @@ import time
 # Expected solution: x = [0, 0]
 # unconstrained
 
-x0 = np.array([100.0,10.0])
+x0 = 10*np.zeros(5)
 # shift = np.array([1, 1])
-objfun = lambda x: 6*(x-np.array([1,2]))
-# proj = lambda x: pball(x, np.array([0, 0]), 1)
-h = lambda x: 2*np.linalg.norm(x-np.array([1,2]), 1)
+objfun = lambda x: 6*(x-np.ones(5))
+# proj = lambda x: pball(x, np.array([0, 0]), 3)
+h = lambda x: 2*np.linalg.norm(x-np.ones(5), 1)
 lh = math.sqrt(2)
 
 def pball(x,c,r):

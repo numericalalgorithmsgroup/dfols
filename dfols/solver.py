@@ -278,6 +278,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 nruns_so_far += 1
                 break  # quit
 
+        tau = 1 # ratio used in the safety phase
         if h == None:
             # Trust region step
             d, gopt, H, gnew, crvmin = control.trust_region_step(params)
@@ -303,6 +304,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             d, gopt, H, gnew, crvmin = control.trust_region_step(params, criticality_measure)
             time_tr_end = time.time()
             time_tr_taken = time_tr_end-time_tr_start
+            tau = min(criticality_measure/(LA.norm(gopt)+lh),1)
             print("trust region time: ", time_tr_taken)
             print("="*76)
         if do_logging:
@@ -321,7 +323,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             diagnostic_info.update_interpolation_information(interp_error, ls_interp_cond_num, linalg_resid,
                                                              sqrt(norm_J_error), LA.norm(gopt), LA.norm(d))
 
-        if dnorm < params("general.safety_step_thresh") * control.rho and not finished_growing and params("growing.safety.do_safety_step"):
+        if dnorm < tau * params("general.safety_step_thresh") * control.rho and not finished_growing and params("growing.safety.do_safety_step"):
             if do_logging:
                 module_logger.debug("Safety step during growing phase")
 
@@ -610,7 +612,8 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                                         params("tr_radius.gamma_inc_overline") * dnorm), 1.0e10)
                 if params("logging.save_diagnostic_info"):
                     diagnostic_info.update_iter_type(ITER_VERY_SUCCESSFUL)
-            if control.delta <= 1.5 * control.rho:  # cap trust region radius at rho
+            # QUESTION: previously: control.delta <= 1.5 * control.rho, deal with rho at the end?
+            if control.delta <= tau * control.rho:  # cap trust region radius at rho
                 control.delta = control.rho
 
             # Steps for successful steps

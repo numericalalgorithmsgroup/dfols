@@ -12,7 +12,7 @@ A = np.array([[1.0, 3.0], [4.0, 2.0]])
 # shift = np.array([3.0, 1.0])
 shift = np.array([0.0, 0.0])
 objfun = lambda x: A @ (x-shift)
-# proj = lambda x: pball(x, np.array([0, 0]), 1)
+proj = lambda x: pball(x, np.array([0, 0]), 4)
 h = lambda x: 2*np.linalg.norm(x-shift, 1)
 lh = math.sqrt(2)
 
@@ -28,7 +28,7 @@ def prox_uh(x, u):
     return rtn
 
 time_start = time.time()
-soln = dfols.solve(objfun, x0, h, lh, prox_uh)
+soln = dfols.solve(objfun, x0, h, lh, prox_uh, projections=[])
 print(soln)
 time_end = time.time()
 time_taken = time_end - time_start
