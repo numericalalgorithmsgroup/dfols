@@ -101,13 +101,13 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     t = 1
     k_H = np.linalg.norm(H, 2) # SOLVED: use ||H||_2 <= ||H||_F, might be better than maxhessian
     # QUESTION: difference expression for u from MAX_LOP_ITERS
-    # u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
+    u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
     crvmin = -1.0
     # NOTE: iterataion depends on delta/func_tol
     MAX_LOOP_ITERS =  ceil(min(delta*(2 * L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol, max_iters)) # maximum number of iterations
-    u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
-    print("smoothing parameter", u)
-    print("number of iterations", MAX_LOOP_ITERS)
+    # u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
+    ##print("smoothing parameter", u)
+    ##print("number of iterations", MAX_LOOP_ITERS)
 
     def gradient_Fu(xopt, g, H, u, prox_uh, d):
     # Calculate gradient_Fu,

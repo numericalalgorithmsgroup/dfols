@@ -442,27 +442,27 @@ class Controller(object):
         # TODO: add comment for calculation of criticality measure, need h != None
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
-        print("gopt", gopt)
-        print("H", H)
+        ##print("gopt", gopt)
+        ##print("H", H)
         # NOTE: smaller params here to get more iterations in S-FISTA
         func_tol = params("func_tol.criticality_measure") * self.delta
-        print("function tolerance (criticality measure)", func_tol)
+        ##print("function tolerance (criticality measure)", func_tol)
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, self.model.projections, 1,
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(len(H)), self.model.projections, 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, 2*H, [proj], 1,
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(len(H)), [proj], 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
         criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
-        print("d (criticality measure): ", d)
-        print("model value (criticality measure): ", model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh))
+        ##print("d (criticality measure): ", d)
+        ##print("model value (criticality measure): ", model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh))
         return criticality_measure
 
     def trust_region_step(self, params, criticality_measure=1e-2):
@@ -472,7 +472,7 @@ class Controller(object):
         # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=1here; choose maxhessian = max(||H||_2,1)
         # QUESTION: when criticality_measure = 0? choose max(criticality_measure,1)
         func_tol = (1-params("func_tol.tr_step")) * 1 * max(criticality_measure,1) * min(self.delta, max(criticality_measure,1) / max(np.linalg.norm(H, 2),1))
-        print("function tolerance (trust region step)", func_tol)
+        ##print("function tolerance (trust region step)", func_tol)
 
         if self.h == None:
             if self.model.projections:
@@ -493,12 +493,12 @@ class Controller(object):
                                       max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             # NOTE: check sufficient decrease. If increase in the model, set zero step
             pred_reduction = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
-            print("pred_reduction", pred_reduction)
+            ##("pred_reduction", pred_reduction)
             if pred_reduction < 0.0:
-                print("bad d", d)
+                ##print("bad d", d)
                 d = np.zeros(d.shape)
-            print("d (trust region step): ", d)
-            print("new point (after trust region step): ", d + self.model.xopt(abs_coordinates=True))
+            ##print("d (trust region step): ", d)
+            ##print("new point (after trust region step): ", d + self.model.xopt(abs_coordinates=True))
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -699,8 +699,8 @@ class Controller(object):
                 exit_info = ExitInformation(EXIT_TR_INCREASE_WARNING, "Either multiple constraints are active or trust region step gave model increase")
             else:
                 exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Either rust region step gave model increase")
-        print("actual reduction: ", actual_reduction)
-        print("pred reduction: ", pred_reduction)
+        ##print("actual reduction: ", actual_reduction)
+        ##print("pred reduction: ", pred_reduction)
         ratio = actual_reduction / pred_reduction
         return ratio, exit_info
 

@@ -285,17 +285,17 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
         else:
             # Calculate criticality measure
             # output for time tests
-            print("="*76)
-            print("iteration: ", current_iter)
-            print("tr_radius", control.delta)
+            ##print("="*76)
+            ##print("iteration: ", current_iter)
+            ##print("tr_radius", control.delta)
             # NOTE: test time for criticality measure
             time_cr_start = time.time()
             criticality_measure = control.evaluate_criticality_measure(params)
             time_cr_end = time.time()
             time_cr_taken = time_cr_end - time_cr_start
-            print("criticality value: ", criticality_measure)
-            print("criticality time: ", time_cr_taken)
-            print("*"*60)
+            ##print("criticality value: ", criticality_measure)
+            ##print("criticality time: ", time_cr_taken)
+            ##print("*"*60)
 
             # Trust region step
             # SOLVED: modify for speed: slow when 1e-6, use max(func_tol, 1e-5) cause Exit flag = -2 
@@ -305,12 +305,12 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             time_tr_end = time.time()
             time_tr_taken = time_tr_end-time_tr_start
             tau = min(criticality_measure/(LA.norm(gopt)+lh),1)
-            print("trust region time: ", time_tr_taken)
-            print("="*76)
+            ##print("trust region time: ", time_tr_taken)
+            ##print("="*76)
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         xnew = control.model.xopt() + d
-        print("xnew in relative coordinate (after trust_region_step): ", xnew)
+        ##print("xnew in relative coordinate (after trust_region_step): ", xnew)
         dnorm = min(LA.norm(d), control.delta)
 
         if print_progress:
@@ -473,7 +473,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 else:
                     # Cannot reduce rho, so check xnew and quit
                     x = control.model.as_absolute_coordinates(xnew)
-                    print("x from xnew", x)
+                    ##print("x from xnew", x)
                     number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
                     rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples,
                                                                                                params)
@@ -549,7 +549,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
             # Evaluate new point
             x = control.model.as_absolute_coordinates(xnew)
-            print("x from xnew again", x)
+            ##print("x from xnew again", x)
             number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
             rvec_list, obj_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples, params)
             if exit_info is not None:
@@ -560,11 +560,11 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            print("d before calcualte_ratio: ", d)
-            print("xopt before calcualte_ratio: ", control.model.xopt(abs_coordinates=True))
+            ##print("d before calcualte_ratio: ", d)
+            ##print("xopt before calcualte_ratio: ", control.model.xopt(abs_coordinates=True))
             # NOTE: be careful abour x in calculate_ratio
             ratio, exit_info = control.calculate_ratio(control.model.xopt(abs_coordinates=True), current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
-            print("ratio: ", ratio)
+            ##print("ratio: ", ratio)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -594,9 +594,9 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 diagnostic_info.update_slow_iter(-1)  # n/a, unless otherwise update
             if ratio < params("tr_radius.eta1"):  # ratio < 0.1
                 if finished_growing:
-                    control.delta = min(params("tr_radius.gamma_dec") * control.delta, dnorm)
+                    control.delta = min(params("tr_radius.gamma_dec") * control.delta, dnorm) / tau
                 else:
-                    control.delta = min(params("growing.gamma_dec") * control.delta, dnorm)  # different gamma_dec
+                    control.delta = min(params("growing.gamma_dec") * control.delta, dnorm) / tau  # different gamma_dec
                 if params("logging.save_diagnostic_info"):
                     diagnostic_info.update_iter_type(ITER_ACCEPTABLE_NO_GEOM if ratio > 0.0
                                                      else ITER_UNSUCCESSFUL_NO_GEOM)  # we flag geom update below
@@ -612,8 +612,8 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                                         params("tr_radius.gamma_inc_overline") * dnorm), 1.0e10)
                 if params("logging.save_diagnostic_info"):
                     diagnostic_info.update_iter_type(ITER_VERY_SUCCESSFUL)
-            # QUESTION: previously: control.delta <= 1.5 * control.rho, deal with rho at the end?
-            if control.delta <= tau * control.rho:  # cap trust region radius at rho
+            # QUESTION: previously: control.delta <= 1.5 * control.rho, why use 1.5 here?
+            if control.delta <= 1.5 * control.rho:  # cap trust region radius at rho
                 control.delta = control.rho
 
             # Steps for successful steps
