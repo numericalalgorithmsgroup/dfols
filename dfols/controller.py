@@ -448,14 +448,14 @@ class Controller(object):
         func_tol = params("func_tol.criticality_measure") * self.delta
         ##print("function tolerance (criticality measure)", func_tol)
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(len(H)), self.model.projections, 1,
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), self.model.projections, 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
-            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(len(H)), [proj], 1,
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), [proj], 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
