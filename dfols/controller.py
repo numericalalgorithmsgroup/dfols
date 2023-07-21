@@ -460,7 +460,7 @@ class Controller(object):
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
         
         # Calculate criticality measure
-        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
+        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, np.zeros(H.shape), d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
         ##print("d (criticality measure): ", d)
         ##print("model value (criticality measure): ", model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh))
         return criticality_measure

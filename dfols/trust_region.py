@@ -135,6 +135,8 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         return p - xopt
 
     # general step
+    model_value_best = model_value(g, H, d, xopt, h, *argsh)
+    d_best = d.copy()
     for k in range(MAX_LOOP_ITERS):
         prev_d = d.copy()
         prev_t = t
@@ -143,9 +145,12 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
 
         # main update step
         d = proj(y - g_Fu / l)
-        # SOLVED: make sfista decrease in each iteration
-        if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
-            d = prev_d
+        # SOLVED: (previously) make sfista decrease in each iteration (might have d = 0, criticality measure=0)
+        # if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
+        #     d = prev_d
+        if model_value(g, H, d, xopt, h, *argsh) < model_value_best:
+            d_best = d
+            model_value_best =  model_value(g, H, d, xopt, h, *argsh)
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version
