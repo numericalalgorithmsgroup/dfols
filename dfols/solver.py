@@ -516,6 +516,17 @@ def solve_main(objfun, x0, args, xl, xu, projections, npt, rhobeg, rhoend, maxfu
             x = control.model.as_absolute_coordinates(xnew)
             number_of_samples = max(nsamples(control.delta, control.rho, current_iter, nruns_so_far), 1)
             rvec_list, f_list, num_samples_run, exit_info = control.evaluate_objective(x, number_of_samples, params)
+            if np.any(np.isnan(rvec_list)):
+                # Just exit without saving the current point
+                # We should be able to do a hard restart though, because it's unlikely 
+                # that we will get the same trust-region step after expanding the radius/re-initialising
+                module_logger.warning("NaN encountered in evaluation of trust-region step")
+                if params("interpolation.throw_error_on_nans"):
+                    raise np.linalg.LinAlgError("NaN encountered in objective evaluations")
+                
+                exit_info = ExitInformation(EXIT_EVAL_ERROR, "NaN received from objective function evaluation")
+                nruns_so_far += 1
+                break  # quit
             if exit_info is not None:
                 if num_samples_run > 0:
                     control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
