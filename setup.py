@@ -39,7 +39,7 @@ setup(
     author='Lindon Roberts',
     author_email='lindon.roberts@anu.edu.au',
     url='https://github.com/numericalalgorithmsgroup/dfols/',
-    download_url='https://github.com/numericalalgorithmsgroup/dfols/archive/v1.3.0.tar.gz',
+    download_url='https://github.com/numericalalgorithmsgroup/dfols/archive/v1.4.0.tar.gz',
     packages=['dfols'],
     license='GNU GPL',
     keywords = 'mathematics derivative free optimization nonlinear least squares',

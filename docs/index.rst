@@ -9,7 +9,7 @@ DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization
 
 **Date:** |today|
 
-**Author:** `Lindon Roberts <lindon.roberts@anu.edu.au>`_
+**Author:** `Lindon Roberts <lindon.roberts@sydney.edu.au>`_
 
 DFO-LS is a flexible package for finding local solutions to nonlinear least-squares minimization problems (with optional constraints), without requiring any derivatives of the objective. DFO-LS stands for Derivative-Free Optimizer for Least-Squares.
 

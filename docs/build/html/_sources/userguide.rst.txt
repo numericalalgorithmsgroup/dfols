@@ -52,6 +52,7 @@ The possible values of :code:`soln.flag` are defined by the following variables:
 * :code:`soln.EXIT_INPUT_ERROR` - error in the inputs.
 * :code:`soln.EXIT_TR_INCREASE_ERROR` - error occurred when solving the trust region subproblem.
 * :code:`soln.EXIT_LINALG_ERROR` - linear algebra error, e.g. the interpolation points produced a singular linear system.
+* :code:`soln.EXIT_EVAL_ERROR` - the objective function returned a NaN value when evaluating at a new trial point.
 
 These variables are defined in the :code:`soln` object, so can be accessed with, for example
 
@@ -225,7 +226,7 @@ An alternative option available is to get DFO-LS to print to terminal progress i
         1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
 
 Handling Arbitrary Convex Constraints
------------------------------
+-------------------------------------
 DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
 minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
 sets must be non-empty.

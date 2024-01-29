@@ -3,7 +3,7 @@ Contributors
 
 Main author
 -----------
-* Lindon Roberts (Australian National University)
+* Lindon Roberts (University of Sydney)
 
 Contributors
 ------------

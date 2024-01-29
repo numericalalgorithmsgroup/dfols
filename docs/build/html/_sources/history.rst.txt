@@ -51,3 +51,9 @@ Version 1.3.0 (8 Nov 2021)
 * Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
 * Add module-level logging for more informative log outputs.
 * Only new functionality is added, so there is no change to the solver for unconstrained/bound-constrained problems.
+
+Version 1.4.0 (29 Jan 2024)
+---------------------------
+* Require newer SciPy version (at least 1.11) as a dependency - avoids occasional undetermined behavior but no changes to the DFO-LS algorithm.
+* Gracefully handle NaN objective value from evaluation at a new trial point (trust-region step). 
+
