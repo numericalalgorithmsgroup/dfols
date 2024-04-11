@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installing DFO-LS &mdash; DFO-LS v1.4.0 documentation</title>
+  <title>Installing DFO-LS &mdash; DFO-LS v1.4.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=9172181d"></script>
+        <script src="_static/documentation_options.js?v=350a9c04"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             DFO-LS
           </a>
               <div class="version">
-                1.4.0
+                1.4.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -96,50 +96,52 @@
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>DFO-LS requires the following software to be installed:</p>
 <ul class="simple">
-<li><p>Python 2.7 or Python 3 (<a class="reference external" href="http://www.python.org/">http://www.python.org/</a>)</p></li>
+<li><p>Python 3.9 or higher (<a class="reference external" href="http://www.python.org/">http://www.python.org/</a>)</p></li>
 </ul>
 <p>Additionally, the following python packages should be installed (these will be installed automatically if using <em>pip</em>, see <a class="reference internal" href="#installation-using-pip">Installation using pip</a>):</p>
 <ul class="simple">
-<li><p>NumPy 1.11 or higher (<a class="reference external" href="http://www.numpy.org/">http://www.numpy.org/</a>)</p></li>
-<li><p>SciPy 1.11 or higher (<a class="reference external" href="http://www.scipy.org/">http://www.scipy.org/</a>)</p></li>
-<li><p>Pandas 0.17 or higher (<a class="reference external" href="http://pandas.pydata.org/">http://pandas.pydata.org/</a>)</p></li>
+<li><p>NumPy (<a class="reference external" href="http://www.numpy.org/">http://www.numpy.org/</a>)</p></li>
+<li><p>SciPy version 1.11 or higher (<a class="reference external" href="http://www.scipy.org/">http://www.scipy.org/</a>)</p></li>
+<li><p>Pandas (<a class="reference external" href="http://pandas.pydata.org/">http://pandas.pydata.org/</a>)</p></li>
 </ul>
 <p><strong>Optional package:</strong> DFO-LS versions 1.2 and higher also support the <a class="reference external" href="https://github.com/lindonroberts/trust-region">trustregion</a> package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. <a class="reference external" href="https://gcc.gnu.org/wiki/GFortran">gfortran</a>) and NumPy installed, then run <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">trustregion</span></code>. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.</p>
 </section>
 <section id="installation-using-conda">
 <h2>Installation using conda<a class="headerlink" href="#installation-using-conda" title="Link to this heading"></a></h2>
 <p>DFO-LS can be directly installed in Anaconda environments using <a class="reference external" href="https://anaconda.org/conda-forge/dfo-ls">conda-forge</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>dfo-ls
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>dfo-ls
 </pre></div>
 </div>
+</div></blockquote>
 </section>
 <section id="installation-using-pip">
 <h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Link to this heading"></a></h2>
 <p>For easy installation, use <em>pip</em> (<a class="reference external" href="http://www.pip-installer.org/">http://www.pip-installer.org/</a>) as root:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. code-block:: bash
-
-   $ [sudo] pip install DFO-LS
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
+</div></blockquote>
 <p>or alternatively <em>easy_install</em>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. code-block:: bash
-
-   $ [sudo] easy_install DFO-LS
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>easy_install<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
+</div></blockquote>
 <p>If you do not have root privileges or you want to install DFO-LS for your private use, you can use:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. code-block:: bash
-
-   $ pip install --user DFO-LS
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
+</div></blockquote>
 <p>which will install DFO-LS in your home directory.</p>
 <p>Note that if an older install of DFO-LS is present on your system you can use:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. code-block:: bash
-
-   $ [sudo] pip install --upgrade DFO-LS
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
+</div></blockquote>
 <p>to upgrade DFO-LS to the latest version.</p>
 </section>
 <section id="manual-installation">
@@ -164,7 +166,7 @@ $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>dfols
 </div>
 </div></blockquote>
 <p>instead.</p>
-<p>To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing <code class="code docutils literal notranslate"><span class="pre">setup.py</span></code>) and rerun the installation using <code class="code docutils literal notranslate"><span class="pre">pip</span></code>, as above:</p>
+<p>To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing <code class="code docutils literal notranslate"><span class="pre">pyproject.toml</span></code>) and rerun the installation using <code class="code docutils literal notranslate"><span class="pre">pip</span></code>, as above:</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>pull
 $<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="w">  </span><span class="c1"># with admin privileges</span>
@@ -174,13 +176,14 @@ $<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><sp
 </section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
-<p>If you installed DFO-LS manually, you can test your installation by running:</p>
+<p>If you installed DFO-LS manually, you can test your installation using the pytest package:</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span><span class="nb">test</span>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pytest
+$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--pyargs<span class="w"> </span>dfols
 </pre></div>
 </div>
 </div></blockquote>
-<p>Alternatively, the HTML documentation provides some simple examples of how to run DFO-LS.</p>
+<p>Alternatively, this documentation provides some simple examples of how to run DFO-LS.</p>
 </section>
 <section id="uninstallation">
 <h2>Uninstallation<a class="headerlink" href="#uninstallation" title="Link to this heading"></a></h2>
@@ -205,7 +208,7 @@ $<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><sp
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2017, Lindon Roberts.</p>
+    <p>&#169; Copyright 2017-2024, Lindon Roberts.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

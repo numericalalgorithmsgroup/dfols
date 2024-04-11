@@ -57,3 +57,7 @@ Version 1.4.0 (29 Jan 2024)
 * Require newer SciPy version (at least 1.11) as a dependency - avoids occasional undetermined behavior but no changes to the DFO-LS algorithm.
 * Gracefully handle NaN objective value from evaluation at a new trial point (trust-region step). 
 
+Version 1.4.1 (11 Apr 2024)
+---------------------------
+* Migrate package setup to pyproject.toml (required for Python version 3.12)
+* Drop support for Python 2.7 and <=3.8 in line with SciPy >=1.11 dependency (introduced v1.4.0)

@@ -5,13 +5,13 @@ Requirements
 ------------
 DFO-LS requires the following software to be installed:
 
-* Python 2.7 or Python 3 (http://www.python.org/)
+* Python 3.9 or higher (http://www.python.org/)
 
 Additionally, the following python packages should be installed (these will be installed automatically if using *pip*, see `Installation using pip`_):
 
-* NumPy 1.11 or higher (http://www.numpy.org/)
-* SciPy 1.11 or higher (http://www.scipy.org/)
-* Pandas 0.17 or higher (http://pandas.pydata.org/)
+* NumPy (http://www.numpy.org/)
+* SciPy version 1.11 or higher (http://www.scipy.org/)
+* Pandas (http://pandas.pydata.org/)
 
 **Optional package:** DFO-LS versions 1.2 and higher also support the `trustregion <https://github.com/lindonroberts/trust-region>`_ package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_) and NumPy installed, then run :code:`pip install trustregion`. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.
 
@@ -19,25 +19,25 @@ Installation using conda
 ------------------------
 DFO-LS can be directly installed in Anaconda environments using `conda-forge <https://anaconda.org/conda-forge/dfo-ls>`_:
 
-.. code-block:: bash
+ .. code-block:: bash
 
     $ conda install -c conda-forge dfo-ls
 
 Installation using pip
 ----------------------
-For easy installation, use *pip* (http://www.pip-installer.org/) as root::
+For easy installation, use *pip* (http://www.pip-installer.org/) as root:
 
  .. code-block:: bash
 
     $ [sudo] pip install DFO-LS
 
-or alternatively *easy_install*::
+or alternatively *easy_install*:
 
  .. code-block:: bash
 
     $ [sudo] easy_install DFO-LS
 
-If you do not have root privileges or you want to install DFO-LS for your private use, you can use::
+If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
 
  .. code-block:: bash
 
@@ -45,7 +45,7 @@ If you do not have root privileges or you want to install DFO-LS for your privat
 
 which will install DFO-LS in your home directory.
 
-Note that if an older install of DFO-LS is present on your system you can use::
+Note that if an older install of DFO-LS is present on your system you can use:
 
  .. code-block:: bash
 
@@ -76,7 +76,7 @@ If you do not have root privileges or you want to install DFO-LS for your privat
 
 instead.
 
-To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`setup.py`) and rerun the installation using :code:`pip`, as above:
+To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`pyproject.toml`) and rerun the installation using :code:`pip`, as above:
 
  .. code-block:: bash
 
@@ -85,13 +85,14 @@ To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.
 
 Testing
 -------
-If you installed DFO-LS manually, you can test your installation by running:
+If you installed DFO-LS manually, you can test your installation using the pytest package:
 
  .. code-block:: bash
 
-    $ python setup.py test
+    $ pip install pytest
+    $ python -m pytest --pyargs dfols
 
-Alternatively, the HTML documentation provides some simple examples of how to run DFO-LS.
+Alternatively, this documentation provides some simple examples of how to run DFO-LS.
 
 Uninstallation
 --------------

@@ -40,19 +40,19 @@ Cartis, C., Fiala, J., Marteau, B. and Roberts, L., `Improving the Flexibility a
 
 If you use DFO-LS for problems with constraints, including bound constraints, please also cite:
 
-Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).
+Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579.
 
 Requirements
 ------------
 DFO-LS requires the following software to be installed:
 
-* Python 2.7 or Python 3 (http://www.python.org/)
+* Python 3.9 or higher (http://www.python.org/)
 
 Additionally, the following python packages should be installed (these will be installed automatically if using *pip*, see `Installation using pip`_):
 
-* NumPy 1.11 or higher (http://www.numpy.org/)
-* SciPy 1.11 or higher (http://www.scipy.org/)
-* Pandas 0.17 or higher (http://pandas.pydata.org/)
+* NumPy (http://www.numpy.org/)
+* SciPy version 1.11 or higher (http://www.scipy.org/)
+* Pandas (http://pandas.pydata.org/)
 
 **Optional package:** DFO-LS versions 1.2 and higher also support the `trustregion <https://github.com/lindonroberts/trust-region>`_ package for fast trust-region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`_) and NumPy installed, then run :code:`pip install trustregion`. You do not have to have trustregion installed for DFO-LS to work, and it is not installed by default.
 
@@ -117,7 +117,7 @@ If you do not have root privileges or you want to install DFO-LS for your privat
 
 instead.
 
-To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`setup.py`) and rerun the installation using :code:`pip`, as above:
+To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`pyproject.toml`) and rerun the installation using :code:`pip`, as above:
 
  .. code-block:: bash
 
@@ -126,11 +126,12 @@ To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.
 
 Testing
 -------
-If you installed DFO-LS manually, you can test your installation by running:
+If you installed DFO-LS manually, you can test your installation using the pytest package:
 
  .. code-block:: bash
 
-    $ python setup.py test
+    $ pip install pytest
+    $ python -m pytest --pyargs dfols
 
 Alternatively, the HTML documentation provides some simple examples of how to run DFO-LS.
 
@@ -150,7 +151,7 @@ If DFO-LS was installed manually you have to remove the installed files by hand 
 
 Bugs
 ----
-Please report any bugs using GitHub's issue tracker.
+Please report any bugs using `GitHub's issue tracker <https://github.com/numericalalgorithmsgroup/dfols/issues>`_.
 
 License
 -------
