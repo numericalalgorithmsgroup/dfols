@@ -11,7 +11,7 @@ dependencies = [
     "scipy>=1.11",
     "pandas"
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     {name = "Lindon Roberts", email = "lindon.roberts@sydney.edu.au"}
 ]
@@ -34,7 +34,6 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
