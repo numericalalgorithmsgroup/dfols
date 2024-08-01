@@ -4,6 +4,14 @@
 \ifdefined\pdfpxdimen
    \let\sphinxpxdimen\pdfpxdimen\else\newdimen\sphinxpxdimen
 \fi \sphinxpxdimen=.75bp\relax
+\ifdefined\pdfimageresolution
+    \pdfimageresolution= \numexpr \dimexpr1in\relax/\sphinxpxdimen\relax
+\fi
+%% let collapsible pdf bookmarks panel have high depth per default
+\PassOptionsToPackage{bookmarksdepth=5}{hyperref}
+
+\PassOptionsToPackage{booktabs}{sphinx}
+\PassOptionsToPackage{colorrows}{sphinx}
 
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage[utf8]{inputenc}
@@ -28,34 +36,16 @@
 
 
 
-\usepackage{times}
-\expandafter\ifx\csname T@LGR\endcsname\relax
-\else
-% LGR was declared as font encoding
-  \substitutefont{LGR}{\rmdefault}{cmr}
-  \substitutefont{LGR}{\sfdefault}{cmss}
-  \substitutefont{LGR}{\ttdefault}{cmtt}
-\fi
-\expandafter\ifx\csname T@X2\endcsname\relax
-  \expandafter\ifx\csname T@T2A\endcsname\relax
-  \else
-  % T2A was declared as font encoding
-    \substitutefont{T2A}{\rmdefault}{cmr}
-    \substitutefont{T2A}{\sfdefault}{cmss}
-    \substitutefont{T2A}{\ttdefault}{cmtt}
-  \fi
-\else
-% X2 was declared as font encoding
-  \substitutefont{X2}{\rmdefault}{cmr}
-  \substitutefont{X2}{\sfdefault}{cmss}
-  \substitutefont{X2}{\ttdefault}{cmtt}
-\fi
+\usepackage{tgtermes}
+\usepackage{tgheros}
+\renewcommand{\ttdefault}{txtt}
+
 
 
 \usepackage[Bjarne]{fncychap}
 \usepackage{sphinx}
 
-\fvset{fontsize=\small}
+\fvset{fontsize=auto}
 \usepackage{geometry}
 
 
@@ -65,6 +55,7 @@
 \usepackage{hypcap}% it must be loaded after hyperref.
 % Set up styles of URL: it should be placed after hyperref.
 \urlstyle{same}
+
 \addto\captionsenglish{\renewcommand{\contentsname}{Contents:}}
 
 \usepackage{sphinxmessages}
@@ -73,13 +64,18 @@
 
 
 \title{DFO-LS Documentation}
-\date{10 January 2022}
-\release{1.3.0}
+\date{11 April 2024}
+\release{1.4.1}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
 \makeindex
 \begin{document}
+
+\ifdefined\shorthandoff
+  \ifnum\catcode`\=\string=\active\shorthandoff{=}\fi
+  \ifnum\catcode`\"=\active\shorthandoff{"}\fi
+\fi
 
 \pagestyle{empty}
 \sphinxmaketitle
@@ -89,42 +85,56 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
-\sphinxstylestrong{Release:} 1.3.0
+\sphinxAtStartPar
+\sphinxstylestrong{Release:} 1.4.1
 
-\sphinxstylestrong{Date:} 10 January 2022
+\sphinxAtStartPar
+\sphinxstylestrong{Date:} 11 April 2024
 
-\sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@anu.edu.au}{Lindon Roberts}
+\sphinxAtStartPar
+\sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@sydney.edu.au}{Lindon Roberts}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
 
+\sphinxAtStartPar
 That is, DFO\sphinxhyphen{}LS solves
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &\quad x \in C\\
             &\quad  a \leq x \leq b\end{split}
 \end{equation*}
+\sphinxAtStartPar
 The constraint set \(C\) is the intersection of multiple convex sets provided as input by the user. All constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
+\sphinxAtStartPar
 Full details of the DFO\sphinxhyphen{}LS algorithm are given in our papers:
 \begin{itemize}
 \item {} \begin{enumerate}
 \sphinxsetlistlabels{\Alph}{enumi}{enumii}{}{.}%
 \setcounter{enumi}{2}
 \item {} 
+\sphinxAtStartPar
 Cartis, J. Fiala, B. Marteau and L. Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]} .
 
 \end{enumerate}
 
 \item {} 
-Hough, M. and Roberts, L., \sphinxhref{https://arxiv.org/abs/2111.05443}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{arXiv preprint arXiv:2111.05443}, (2021).
+\sphinxAtStartPar
+Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
 
 \end{itemize}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is a more flexible version of \sphinxhref{https://github.com/numericalalgorithmsgroup/dfogn}{DFO\sphinxhyphen{}GN}.
 
+\sphinxAtStartPar
 If you are interested in solving general optimization problems (without a least\sphinxhyphen{}squares structure), you may wish to try \sphinxhref{https://github.com/numericalalgorithmsgroup/pybobyqa}{Py\sphinxhyphen{}BOBYQA}, which has many of the same features as DFO\sphinxhyphen{}LS.
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is released under the GNU General Public License. Please \sphinxhref{http://www.nag.com/content/worldwide-contact-information}{contact NAG} for alternative licensing.
+
+\sphinxstepscope
 
 
 \chapter{Installing DFO\sphinxhyphen{}LS}
@@ -132,140 +142,168 @@ DFO\sphinxhyphen{}LS is released under the GNU General Public License. Please \s
 
 \section{Requirements}
 \label{\detokenize{install:requirements}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS requires the following software to be installed:
 \begin{itemize}
 \item {} 
-Python 2.7 or Python 3 (\sphinxurl{http://www.python.org/})
+\sphinxAtStartPar
+Python 3.9 or higher (\sphinxurl{http://www.python.org/})
 
 \end{itemize}
 
+\sphinxAtStartPar
 Additionally, the following python packages should be installed (these will be installed automatically if using \sphinxstyleemphasis{pip}, see {\hyperref[\detokenize{install:installation-using-pip}]{\sphinxcrossref{Installation using pip}}}):
 \begin{itemize}
 \item {} 
-NumPy 1.11 or higher (\sphinxurl{http://www.numpy.org/})
+\sphinxAtStartPar
+NumPy (\sphinxurl{http://www.numpy.org/})
 
 \item {} 
-SciPy 0.18 or higher (\sphinxurl{http://www.scipy.org/})
+\sphinxAtStartPar
+SciPy version 1.11 or higher (\sphinxurl{http://www.scipy.org/})
 
 \item {} 
-Pandas 0.17 or higher (\sphinxurl{http://pandas.pydata.org/})
+\sphinxAtStartPar
+Pandas (\sphinxurl{http://pandas.pydata.org/})
 
 \end{itemize}
 
+\sphinxAtStartPar
 \sphinxstylestrong{Optional package:} DFO\sphinxhyphen{}LS versions 1.2 and higher also support the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package for fast trust\sphinxhyphen{}region subproblem solutions. To install this, make sure you have a Fortran compiler (e.g. \sphinxhref{https://gcc.gnu.org/wiki/GFortran}{gfortran}) and NumPy installed, then run \sphinxcode{\sphinxupquote{pip install trustregion}}. You do not have to have trustregion installed for DFO\sphinxhyphen{}LS to work, and it is not installed by default.
 
 
 \section{Installation using conda}
 \label{\detokenize{install:installation-using-conda}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS can be directly installed in Anaconda environments using \sphinxhref{https://anaconda.org/conda-forge/dfo-ls}{conda\sphinxhyphen{}forge}:
+\begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} conda install \PYGZhy{}c conda\PYGZhy{}forge dfo\PYGZhy{}ls
+\PYGZdl{}\PYG{+w}{ }conda\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}c\PYG{+w}{ }conda\PYGZhy{}forge\PYG{+w}{ }dfo\PYGZhy{}ls
 \end{sphinxVerbatim}
+\end{quote}
 
 
 \section{Installation using pip}
 \label{\detokenize{install:installation-using-pip}}
+\sphinxAtStartPar
 For easy installation, use \sphinxstyleemphasis{pip} (\sphinxurl{http://www.pip-installer.org/}) as root:
+\begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-.. code\PYGZhy{}block:: bash
-
-   \PYGZdl{} [sudo] pip install DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
+\end{quote}
 
+\sphinxAtStartPar
 or alternatively \sphinxstyleemphasis{easy\_install}:
+\begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-.. code\PYGZhy{}block:: bash
-
-   \PYGZdl{} [sudo] easy\PYGZus{}install DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }easy\PYGZus{}install\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
+\end{quote}
 
+\sphinxAtStartPar
 If you do not have root privileges or you want to install DFO\sphinxhyphen{}LS for your private use, you can use:
+\begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-.. code\PYGZhy{}block:: bash
-
-   \PYGZdl{} pip install \PYGZhy{}\PYGZhy{}user DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}user\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
+\end{quote}
 
+\sphinxAtStartPar
 which will install DFO\sphinxhyphen{}LS in your home directory.
 
+\sphinxAtStartPar
 Note that if an older install of DFO\sphinxhyphen{}LS is present on your system you can use:
+\begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-.. code\PYGZhy{}block:: bash
-
-   \PYGZdl{} [sudo] pip install \PYGZhy{}\PYGZhy{}upgrade DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}upgrade\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
+\end{quote}
 
+\sphinxAtStartPar
 to upgrade DFO\sphinxhyphen{}LS to the latest version.
 
 
 \section{Manual installation}
 \label{\detokenize{install:manual-installation}}
+\sphinxAtStartPar
 Alternatively, you can download the source code from \sphinxhref{https://github.com/numericalalgorithmsgroup/dfols}{Github} and unpack as follows:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} git clone https://github.com/numericalalgorithmsgroup/dfols
-\PYGZdl{} \PYG{n+nb}{cd} dfols
+\PYGZdl{}\PYG{+w}{ }git\PYG{+w}{ }clone\PYG{+w}{ }https://github.com/numericalalgorithmsgroup/dfols
+\PYGZdl{}\PYG{+w}{ }\PYG{n+nb}{cd}\PYG{+w}{ }dfols
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is written in pure Python and requires no compilation. It can be installed using:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} \PYG{o}{[}sudo\PYG{o}{]} pip install .
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 If you do not have root privileges or you want to install DFO\sphinxhyphen{}LS for your private use, you can use:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} pip install \PYGZhy{}\PYGZhy{}user .
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}user\PYG{+w}{ }.
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 instead.
 
-To upgrade DFO\sphinxhyphen{}LS to the latest version, navigate to the top\sphinxhyphen{}level directory (i.e. the one containing \sphinxcode{\sphinxupquote{setup.py}}) and rerun the installation using \sphinxcode{\sphinxupquote{pip}}, as above:
+\sphinxAtStartPar
+To upgrade DFO\sphinxhyphen{}LS to the latest version, navigate to the top\sphinxhyphen{}level directory (i.e. the one containing \sphinxcode{\sphinxupquote{pyproject.toml}}) and rerun the installation using \sphinxcode{\sphinxupquote{pip}}, as above:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} git pull
-\PYGZdl{} \PYG{o}{[}sudo\PYG{o}{]} pip install .  \PYG{c+c1}{\PYGZsh{} with admin privileges}
+\PYGZdl{}\PYG{+w}{ }git\PYG{+w}{ }pull
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.\PYG{+w}{  }\PYG{c+c1}{\PYGZsh{} with admin privileges}
 \end{sphinxVerbatim}
 \end{quote}
 
 
 \section{Testing}
 \label{\detokenize{install:testing}}
-If you installed DFO\sphinxhyphen{}LS manually, you can test your installation by running:
+\sphinxAtStartPar
+If you installed DFO\sphinxhyphen{}LS manually, you can test your installation using the pytest package:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} python setup.py \PYG{n+nb}{test}
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }pytest
+\PYGZdl{}\PYG{+w}{ }python\PYG{+w}{ }\PYGZhy{}m\PYG{+w}{ }pytest\PYG{+w}{ }\PYGZhy{}\PYGZhy{}pyargs\PYG{+w}{ }dfols
 \end{sphinxVerbatim}
 \end{quote}
 
-Alternatively, the HTML documentation provides some simple examples of how to run DFO\sphinxhyphen{}LS.
+\sphinxAtStartPar
+Alternatively, this documentation provides some simple examples of how to run DFO\sphinxhyphen{}LS.
 
 
 \section{Uninstallation}
 \label{\detokenize{install:uninstallation}}
+\sphinxAtStartPar
 If DFO\sphinxhyphen{}LS was installed using \sphinxstyleemphasis{pip} you can uninstall as follows:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{} \PYG{o}{[}sudo\PYG{o}{]} pip uninstall DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }uninstall\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 If DFO\sphinxhyphen{}LS was installed manually you have to remove the installed files by hand (located in your python site\sphinxhyphen{}packages directory).
+
+\sphinxstepscope
 
 
 \chapter{Overview}
@@ -273,49 +311,63 @@ If DFO\sphinxhyphen{}LS was installed manually you have to remove the installed 
 
 \section{When to use DFO\sphinxhyphen{}LS}
 \label{\detokenize{info:when-to-use-dfo-ls}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is designed to solve the nonlinear least\sphinxhyphen{}squares minimization problem (with optional convex constraints).
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &\quad x \in C\\
             &\quad  a \leq x \leq b\end{split}
 \end{equation*}
+\sphinxAtStartPar
 We call \(f(x)\) the objective function and \(r_i(x)\) the residual functions (or simply residuals).
 \(C\) is the intersection of multiple convex sets given as input by the user.
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is a \sphinxstyleemphasis{derivative\sphinxhyphen{}free} optimization algorithm, which means it does not require the user to provide the derivatives of \(f(x)\) or \(r_i(x)\), nor does it attempt to estimate them internally (by using finite differencing, for instance).
 
+\sphinxAtStartPar
 There are two main situations when using a derivative\sphinxhyphen{}free algorithm (such as DFO\sphinxhyphen{}LS) is preferable to a derivative\sphinxhyphen{}based algorithm (which is the vast majority of least\sphinxhyphen{}squares solvers).
 
+\sphinxAtStartPar
 If \sphinxstylestrong{the residuals are noisy}, then calculating or even estimating their derivatives may be impossible (or at least very inaccurate). By noisy, we mean that if we evaluate \(r_i(x)\) multiple times at the same value of \(x\), we get different results. This may happen when a Monte Carlo simulation is used, for instance, or \(r_i(x)\) involves performing a physical experiment.
 
+\sphinxAtStartPar
 If \sphinxstylestrong{the residuals are expensive to evaluate}, then estimating derivatives (which requires \(n\) evaluations of each \(r_i(x)\) for every point of interest \(x\)) may be prohibitively expensive. Derivative\sphinxhyphen{}free methods are designed to solve the problem with the fewest number of evaluations of the objective as possible.
 
+\sphinxAtStartPar
 \sphinxstylestrong{However, if you have provide (or a solver can estimate) derivatives} of \(r_i(x)\), then it is probably a good idea to use one of the many derivative\sphinxhyphen{}based solvers (such as \sphinxhref{https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least\_squares.html}{one from the SciPy library}).
 
 
 \section{Parameter Fitting}
 \label{\detokenize{info:parameter-fitting}}
+\sphinxAtStartPar
 A very common problem in many quantitative disciplines is fitting parameters to observed data. Typically, this means that we have developed a model for some proccess, which takes a vector of (known) inputs \(\mathrm{obs}\in\mathbb{R}^N\) and some model parameters \(x=(x_1, \ldots, x_n)\in\mathbb{R}^n\), and computes a (predicted) quantity of interest \(y\in\mathbb{R}\):
 \begin{equation*}
 \begin{split}y = \mathrm{model}(\mathrm{obs}, x)\end{split}
 \end{equation*}
+\sphinxAtStartPar
 For this model to be useful, we need to determine a suitable choice for the parameters \(x\), which typically cannot be directly observed. A common way of doing this is to calibrate from observed relationships.
 
+\sphinxAtStartPar
 Suppose we have some observations of the input\sphinxhyphen{}to\sphinxhyphen{}output relationship. That is, we have data
 \begin{equation*}
 \begin{split}(\mathrm{obs}_1, y_1), \ldots, (\mathrm{obs}_m, y_m)\end{split}
 \end{equation*}
+\sphinxAtStartPar
 Then, we try to find the parameters \(x\) which produce the best possible fit to these observations by minimizing the sum\sphinxhyphen{}of\sphinxhyphen{}squares of the prediction errors:
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  \quad  f(x) := \sum_{i=1}^{m}(y_i - \mathrm{model}(\mathrm{obs}_i, x))^2\end{split}
 \end{equation*}
+\sphinxAtStartPar
 which is in the least\sphinxhyphen{}squares form required by DFO\sphinxhyphen{}LS.
 
+\sphinxAtStartPar
 As described above, DFO\sphinxhyphen{}LS is a particularly good choice for parameter fitting when the model has noise (e.g. Monte Carlo simulation) or is expensive to evaluate.
 
 
 \section{Solving Nonlinear Systems of Equations}
 \label{\detokenize{info:solving-nonlinear-systems-of-equations}}
+\sphinxAtStartPar
 Suppose we wish to solve the system of nonlinear equations: find \(x\in\mathbb{R}^n\) satisfying
 \begin{equation*}
 \begin{split}r_1(x) &= 0 \\
@@ -323,56 +375,73 @@ r_2(x) &= 0 \\
 &\vdots \\
 r_m(x) &= 0\end{split}
 \end{equation*}
+\sphinxAtStartPar
 Such problems can have no solutions, one solution, or many solutions (possibly infinitely many). Often, but certainly not always, the number of solutions depends on whether there are more equations or unknowns: if \(m<n\) we say the system is underdetermined (and there are often multiple solutions), if \(m=n\) we say the system is square (and there is often only one solution), and if \(m>n\) we say the system is overdetermined (and there are often no solutions).
 
+\sphinxAtStartPar
 This is not always true \textendash{} there is no solution to the underdetermined system when \(m=1\) and \(n=2\) and we choose \(r_1(x)=\sin(x_1+x_2)-2\), for example.
 Similarly, if we take \(n=1\) and \(r_i(x)=i (x-1)(x-2)\), we can make \(m\) as large as we like while keeping \(x=1\) and \(x=2\) as solutions (to the overdetermined system).
 
+\sphinxAtStartPar
 If no solution exists, it makes sense to instead search for an \(x\) which approximately satisfies each equation. A common way to do this is to minimize the sum\sphinxhyphen{}of\sphinxhyphen{}squares of the left\sphinxhyphen{}hand\sphinxhyphen{}sides:
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  \quad  f(x) := \sum_{i=1}^{m}r_i(x)^2\end{split}
 \end{equation*}
+\sphinxAtStartPar
 which is the form required by DFO\sphinxhyphen{}LS.
 
+\sphinxAtStartPar
 If a solution does exist, then this formulation will also find this (where we will get \(f=0\) at the solution).
 
+\sphinxAtStartPar
 \sphinxstylestrong{Which solution?} DFO\sphinxhyphen{}LS, and most similar software, will only find one solution to a set of nonlinear equations. Which one it finds is very difficult to predict, and depends very strongly on the point where the solver is started from. Often it finds the closest solution, but there are no guarantees this will be the case. If you need to find all/multiple solutions for your problem, consider techniques such as \sphinxhref{http://www.sciencedirect.com/science/article/pii/0022247X83900550}{deflation}.
 
 
 \section{Details of the DFO\sphinxhyphen{}LS Algorithm}
 \label{\detokenize{info:details-of-the-dfo-ls-algorithm}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is a type of \sphinxstyleemphasis{trust\sphinxhyphen{}region} method, a common category of optimization algorithms for nonconvex problems. Given a current estimate of the solution \(x_k\), we compute a model which approximates the objective \(m_k(s)\approx f(x_k+s)\) (for small steps \(s\)), and maintain a value \(\Delta_k>0\) (called the \sphinxstyleemphasis{trust region radius}) which measures the size of \(s\) for which the approximation is good.
 
+\sphinxAtStartPar
 At each step, we compute a trial step \(s_k\) designed to make our approximation \(m_k(s)\) small (this task is called the \sphinxstyleemphasis{trust region subproblem}). We evaluate the objective at this new point, and if this provided a good decrease in the objective, we take the step (\(x_{k+1}=x_k+s_k\)), otherwise we stay put (\(x_{k+1}=x_k\)). Based on this information, we choose a new value \(\Delta_{k+1}\), and repeat the process.
 
+\sphinxAtStartPar
 In DFO\sphinxhyphen{}LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well\sphinxhyphen{}spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2021}.
+\sphinxAtStartPar
+A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
 
 
 \section{References}
 \label{\detokenize{info:references}}
+\sphinxstepscope
+
 
 \chapter{Using DFO\sphinxhyphen{}LS}
 \label{\detokenize{userguide:using-dfo-ls}}\label{\detokenize{userguide::doc}}
+\sphinxAtStartPar
 This section describes the main interface to DFO\sphinxhyphen{}LS and how to use it.
 
 
 \section{Nonlinear Least\sphinxhyphen{}Squares Minimization}
 \label{\detokenize{userguide:nonlinear-least-squares-minimization}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is designed to solve the local optimization problem
 \begin{equation*}
 \begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
 \text{s.t.} &\quad x \in C\end{split}
 \end{equation*}
+\sphinxAtStartPar
 where the set \(C\) is an optional non\sphinxhyphen{}empty, closed and convex constraint set. The constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS iteratively constructs an interpolation\sphinxhyphen{}based model for the objective, and determines a step using a trust\sphinxhyphen{}region framework.
-For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2021}.
+For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
 
 
 \section{How to use DFO\sphinxhyphen{}LS}
 \label{\detokenize{userguide:how-to-use-dfo-ls}}
+\sphinxAtStartPar
 The main interface to DFO\sphinxhyphen{}LS is via the function \sphinxcode{\sphinxupquote{solve}}
 \begin{quote}
 
@@ -381,73 +450,100 @@ The main interface to DFO\sphinxhyphen{}LS is via the function \sphinxcode{\sphi
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 The input \sphinxcode{\sphinxupquote{objfun}} is a Python function which takes an input \(x\in\mathbb{R}^n\) and returns the vector of residuals \([r_1(x)\: \cdots \: r_m(x)]\in\mathbb{R}^m\). Both the input and output of \sphinxcode{\sphinxupquote{objfun}} must be one\sphinxhyphen{}dimensional NumPy arrays (i.e. with \sphinxcode{\sphinxupquote{x.shape == (n,)}} and \sphinxcode{\sphinxupquote{objfun(x).shape == (m,)}}).
 
+\sphinxAtStartPar
 The input \sphinxcode{\sphinxupquote{x0}} is the starting point for the solver, and (where possible) should be set to be the best available estimate of the true solution \(x_{min}\in\mathbb{R}^n\). It should be specified as a one\sphinxhyphen{}dimensional NumPy array (i.e. with \sphinxcode{\sphinxupquote{x0.shape == (n,)}}).
 As DFO\sphinxhyphen{}LS is a local solver, providing different values for \sphinxcode{\sphinxupquote{x0}} may cause it to return different solutions, with possibly different objective values.
 
+\sphinxAtStartPar
 The output of \sphinxcode{\sphinxupquote{dfols.solve}} is an object containing:
 \begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.x}} \sphinxhyphen{} an estimate of the solution, \(x_{min}\in\mathbb{R}^n\), a one\sphinxhyphen{}dimensional NumPy array.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.resid}} \sphinxhyphen{} the vector of residuals at the calculated solution, \([r_1(x_{min})\:\cdots\: r_m(x_{min})]\), a one\sphinxhyphen{}dimensional NumPy array.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.f}} \sphinxhyphen{} the objective value at the calculated solution, \(f(x_{min})\), a Float.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.jacobian}} \sphinxhyphen{} an estimate of the Jacobian matrix of first derivatives of the residuals, \(J_{i,j} \approx \partial r_i(x_{min})/\partial x_j\), a NumPy array of size \(m\times n\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.nf}} \sphinxhyphen{} the number of evaluations of \sphinxcode{\sphinxupquote{objfun}} that the algorithm needed, an Integer.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.nx}} \sphinxhyphen{} the number of points \(x\) at which \sphinxcode{\sphinxupquote{objfun}} was evaluated, an Integer. This may be different to \sphinxcode{\sphinxupquote{soln.nf}} if sample averaging is used.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.nruns}} \sphinxhyphen{} the number of runs performed by DFO\sphinxhyphen{}LS (more than 1 if using multiple restarts), an Integer.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.flag}} \sphinxhyphen{} an exit flag, which can take one of several values (listed below), an Integer.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.msg}} \sphinxhyphen{} a description of why the algorithm finished, a String.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.diagnostic\_info}} \sphinxhyphen{} a table of diagnostic information showing the progress of the solver, a Pandas DataFrame.
 
 \end{itemize}
 
+\sphinxAtStartPar
 The possible values of \sphinxcode{\sphinxupquote{soln.flag}} are defined by the following variables:
 \begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_SUCCESS}} \sphinxhyphen{} DFO\sphinxhyphen{}LS terminated successfully (the objective value or trust region radius are sufficiently small).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_MAXFUN\_WARNING}} \sphinxhyphen{} maximum allowed objective evaluations reached. This is the most likely return value when using multiple restarts.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_SLOW\_WARNING}} \sphinxhyphen{} maximum number of slow iterations reached.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_FALSE\_SUCCESS\_WARNING}} \sphinxhyphen{} DFO\sphinxhyphen{}LS reached the maximum number of restarts which decreased the objective, but to a worse value than was found in a previous run.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_TR\_INCREASE\_WARNING}} \sphinxhyphen{} model increase when solving the trust region subproblem with multiple arbitrary constraints.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_INPUT\_ERROR}} \sphinxhyphen{} error in the inputs.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_TR\_INCREASE\_ERROR}} \sphinxhyphen{} error occurred when solving the trust region subproblem.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.EXIT\_LINALG\_ERROR}} \sphinxhyphen{} linear algebra error, e.g. the interpolation points produced a singular linear system.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{soln.EXIT\_EVAL\_ERROR}} \sphinxhyphen{} the objective function returned a NaN value when evaluating at a new trial point.
 
 \end{itemize}
 
+\sphinxAtStartPar
 These variables are defined in the \sphinxcode{\sphinxupquote{soln}} object, so can be accessed with, for example
 \begin{quote}
 
@@ -460,6 +556,7 @@ These variables are defined in the \sphinxcode{\sphinxupquote{soln}} object, so 
 
 \section{Optional Arguments}
 \label{\detokenize{userguide:optional-arguments}}
+\sphinxAtStartPar
 The \sphinxcode{\sphinxupquote{solve}} function has several optional arguments which the user may provide:
 \begin{quote}
 
@@ -472,63 +569,81 @@ The \sphinxcode{\sphinxupquote{solve}} function has several optional arguments w
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 These arguments are:
 \begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{args}} \sphinxhyphen{} a tuple of extra arguments passed to the objective function.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{bounds}} \sphinxhyphen{} a tuple \sphinxcode{\sphinxupquote{(lower, upper)}} with the vectors \(a\) and \(b\) of lower and upper bounds on \(x\) (default is \(a_i=-10^{20}\) and \(b_i=10^{20}\)). To set bounds for either \sphinxcode{\sphinxupquote{lower}} or \sphinxcode{\sphinxupquote{upper}}, but not both, pass a tuple \sphinxcode{\sphinxupquote{(lower, None)}} or \sphinxcode{\sphinxupquote{(None, upper)}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{projections}} \sphinxhyphen{} a list \sphinxcode{\sphinxupquote{{[}f1,f2,...,fn{]}}} of functions that each take as input a point \sphinxcode{\sphinxupquote{x}} and return a new point \sphinxcode{\sphinxupquote{y}}. The new point \sphinxcode{\sphinxupquote{y}} should be given by the projection of \sphinxcode{\sphinxupquote{x}} onto a closed convex set. The intersection of all sets corresponding to a function must be non\sphinxhyphen{}empty.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{npt}} \sphinxhyphen{} the number of interpolation points to use (default is \sphinxcode{\sphinxupquote{len(x0)+1}}). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in \sphinxcode{\sphinxupquote{user\_params}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{rhobeg}} \sphinxhyphen{} the initial value of the trust region radius (default is \(0.1\max(\|x_0\|_{\infty}, 1)\), or 0.1 if \sphinxcode{\sphinxupquote{scaling\_within\_bounds}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{rhoend}} \sphinxhyphen{} minimum allowed value of trust region radius, which determines when a successful termination occurs (default is \(10^{-8}\)).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{maxfun}} \sphinxhyphen{} the maximum number of objective evaluations the algorithm may request (default is \(\min(100(n+1),1000)\)).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{nsamples}} \sphinxhyphen{} a Python function \sphinxcode{\sphinxupquote{nsamples(delta, rho, iter, nrestarts)}} which returns the number of times to evaluate \sphinxcode{\sphinxupquote{objfun}} at a given point. This is only applicable for objectives with stochastic noise, when averaging multiple evaluations at the same point produces a more accurate value. The input parameters are the trust region radius (\sphinxcode{\sphinxupquote{delta}}), the lower bound on the trust region radius (\sphinxcode{\sphinxupquote{rho}}), how many iterations the algorithm has been running for (\sphinxcode{\sphinxupquote{iter}}), and how many restarts have been performed (\sphinxcode{\sphinxupquote{nrestarts}}). Default is no averaging (i.e. \sphinxcode{\sphinxupquote{nsamples(delta, rho, iter, nrestarts)=1}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{user\_params}} \sphinxhyphen{} a Python dictionary \sphinxcode{\sphinxupquote{\{\textquotesingle{}param1\textquotesingle{}: val1, \textquotesingle{}param2\textquotesingle{}:val2, ...\}}} of optional parameters. A full list of available options is given in the next section {\hyperref[\detokenize{advanced::doc}]{\sphinxcrossref{\DUrole{doc}{Advanced Usage}}}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{objfun\_has\_noise}} \sphinxhyphen{} a flag to indicate whether or not \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; i.e. will calling \sphinxcode{\sphinxupquote{objfun(x)}} multiple times at the same value of \sphinxcode{\sphinxupquote{x}} give different results? This is used to set some sensible default parameters (including using multiple restarts), all of which can be overridden by the values provided in \sphinxcode{\sphinxupquote{user\_params}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{scaling\_within\_bounds}} \sphinxhyphen{} a flag to indicate whether the algorithm should internally shift and scale the entries of \sphinxcode{\sphinxupquote{x}} so that the bounds become \(0 \leq x \leq 1\). This is useful is you are setting \sphinxcode{\sphinxupquote{bounds}} and the bounds have different orders of magnitude. If \sphinxcode{\sphinxupquote{scaling\_within\_bounds=True}}, the values of \sphinxcode{\sphinxupquote{rhobeg}} and \sphinxcode{\sphinxupquote{rhoend}} apply to the \sphinxstyleemphasis{shifted} variables.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{do\_logging}} \sphinxhyphen{} a flag to indicate whether logging output should be produced. This is not automatically visible unless you use the Python \sphinxhref{https://docs.python.org/3/library/logging.html}{logging} module (see below for simple usage).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{print\_progress}} \sphinxhyphen{} a flag to indicate whether to print a per\sphinxhyphen{}iteration progress log to terminal.
 
 \end{itemize}
 
+\sphinxAtStartPar
 In general when using optimization software, it is good practice to scale your variables so that moving each by a given amount has approximately the same impact on the objective function.
 The \sphinxcode{\sphinxupquote{scaling\_within\_bounds}} flag is designed to provide an easy way to achieve this, if you have set the bounds \sphinxcode{\sphinxupquote{lower}} and \sphinxcode{\sphinxupquote{upper}}.
 
 
 \section{A Simple Example}
 \label{\detokenize{userguide:a-simple-example}}
+\sphinxAtStartPar
 Suppose we wish to minimize the \sphinxhref{https://en.wikipedia.org/wiki/Rosenbrock\_function}{Rosenbrock test function}:
 \begin{equation*}
 \begin{split}\min_{(x_1,x_2)\in\mathbb{R}^2}  &\quad  100(x_2-x_1^2)^2 + (1-x_1)^2 \\\end{split}
 \end{equation*}
+\sphinxAtStartPar
 This function has exactly one local minimum \(f(x_{min})=0\) at \(x_{min}=(1,1)\). We can write this as a least\sphinxhyphen{}squares problem as:
 \begin{equation*}
 \begin{split}\min_{(x_1,x_2)\in\mathbb{R}^2}  &\quad  [10(x_2-x_1^2)]^2 + [1-x_1]^2 \\\end{split}
 \end{equation*}
+\sphinxAtStartPar
 A commonly\sphinxhyphen{}used starting point for testing purposes is \(x_0=(-1.2,1)\). The following script shows how to solve this problem using DFO\sphinxhyphen{}LS:
 \begin{quote}
 
@@ -553,6 +668,7 @@ A commonly\sphinxhyphen{}used starting point for testing purposes is \(x_0=(-1.2
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 Note that DFO\sphinxhyphen{}LS is a randomized algorithm: in its first phase, it builds an internal approximation to the objective function by sampling it along random directions. In the code above, we set NumPy’s random seed for reproducibility over multiple runs, but this is not required. The output of this script, showing that DFO\sphinxhyphen{}LS finds the correct solution, is
 \begin{quote}
 
@@ -570,11 +686,13 @@ Success: Objective is sufficiently small
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 This and all following problems can be found in the \sphinxhref{https://github.com/numericalalgorithmsgroup/dfols/tree/master/examples}{examples} directory on the DFO\sphinxhyphen{}LS Github page.
 
 
 \section{Adding Bounds and More Output}
 \label{\detokenize{userguide:adding-bounds-and-more-output}}
+\sphinxAtStartPar
 We can extend the above script to add constraints. To add bound constraints alone, we can add the lines
 \begin{quote}
 
@@ -588,6 +706,7 @@ We can extend the above script to add constraints. To add bound constraints alon
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS correctly finds the solution to the constrained problem:
 \begin{quote}
 
@@ -605,6 +724,7 @@ Success: rho has reached rhoend
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 However, we also get a warning that our starting point was outside of the bounds:
 \begin{quote}
 
@@ -613,8 +733,10 @@ RuntimeWarning: x0 above upper bound, adjusting
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS automatically fixes this, and moves \(x_0\) to a point within the bounds, in this case \(x_0=(-1.2,0.85)\).
 
+\sphinxAtStartPar
 We can also get DFO\sphinxhyphen{}LS to print out more detailed information about its progress using the \sphinxhref{https://docs.python.org/3/library/logging.html}{logging} module. To do this, we need to add the following lines:
 \begin{quote}
 
@@ -626,6 +748,7 @@ We can also get DFO\sphinxhyphen{}LS to print out more detailed information abou
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 And for the simple bounds example we can now see each evaluation of \sphinxcode{\sphinxupquote{objfun}}:
 \begin{quote}
 
@@ -641,6 +764,7 @@ Did a total of 1 run(s)
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 If we wanted to save this output to a file, we could replace the above call to \sphinxcode{\sphinxupquote{logging.basicConfig()}} with
 \begin{quote}
 
@@ -650,8 +774,10 @@ If we wanted to save this output to a file, we could replace the above call to \
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 If you have logging for some parts of your code and you want to deactivate all DFO\sphinxhyphen{}LS logging, you can use the optional argument \sphinxcode{\sphinxupquote{do\_logging=False}} in \sphinxcode{\sphinxupquote{dfols.solve()}}.
 
+\sphinxAtStartPar
 An alternative option available is to get DFO\sphinxhyphen{}LS to print to terminal progress information every iteration, by setting the optional argument \sphinxcode{\sphinxupquote{print\_progress=True}} in \sphinxcode{\sphinxupquote{dfols.solve()}}. If we do this for the above example, we get
 \begin{quote}
 
@@ -669,6 +795,7 @@ An alternative option available is to get DFO\sphinxhyphen{}LS to print to termi
 
 \section{Handling Arbitrary Convex Constraints}
 \label{\detokenize{userguide:handling-arbitrary-convex-constraints}}
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
 minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user\sphinxhyphen{}provided convex
 sets must be non\sphinxhyphen{}empty.
@@ -740,8 +867,10 @@ sets must be non\sphinxhyphen{}empty.
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 Note that for bound constraints one can choose to either implement them by defining a projection function as above, or by passing the bounds as input like in the example from the section on adding bound constraints.
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS correctly finds the solution to this constrained problem too. Note that we get a warning because the step computed in the trust region subproblem
 gave an increase in the model. This is common in the case where multiple constraints are active at the optimal point.
 \begin{quote}
@@ -763,6 +892,7 @@ Warning (trust region increase): Either multiple constraints are active or trust
 
 \section{Example: Noisy Objective Evaluation}
 \label{\detokenize{userguide:example-noisy-objective-evaluation}}
+\sphinxAtStartPar
 As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{Overview}}}}, derivative\sphinxhyphen{}free algorithms such as DFO\sphinxhyphen{}LS are particularly useful when \sphinxcode{\sphinxupquote{objfun}} has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to a derivative\sphinxhyphen{}based solver:
 \begin{quote}
 
@@ -811,6 +941,7 @@ As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 The output of this is:
 \begin{quote}
 
@@ -843,8 +974,10 @@ Exit flag = 3
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 DFO\sphinxhyphen{}LS is able to find the solution with 20 more function evaluations as in the noise\sphinxhyphen{}free case. However SciPy’s derivative\sphinxhyphen{}based solver, which has no trouble solving the noise\sphinxhyphen{}free problem, is unable to make any progress.
 
+\sphinxAtStartPar
 As noted above, DFO\sphinxhyphen{}LS has an input parameter \sphinxcode{\sphinxupquote{objfun\_has\_noise}} to indicate if \sphinxcode{\sphinxupquote{objfun}} has noise in it, which it does in this case. Therefore we can call DFO\sphinxhyphen{}LS with
 \begin{quote}
 
@@ -853,6 +986,7 @@ As noted above, DFO\sphinxhyphen{}LS has an input parameter \sphinxcode{\sphinxu
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 Using this setting, we find the correct solution faster:
 \begin{quote}
 
@@ -873,10 +1007,12 @@ Success: Objective is sufficiently small
 
 \section{Example: Parameter Estimation/Data Fitting}
 \label{\detokenize{userguide:example-parameter-estimation-data-fitting}}
+\sphinxAtStartPar
 Next, we show a short example of using DFO\sphinxhyphen{}LS to solve a parameter estimation problem (taken from \sphinxhref{https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html\#examples}{here}). Given some observations \((t_i,y_i)\), we wish to calibrate parameters \(x=(x_1,x_2)\) in the exponential decay model
 \begin{equation*}
 \begin{split}y(t) = x_1 \exp(x_2 t)\end{split}
 \end{equation*}
+\sphinxAtStartPar
 The code for this is:
 \begin{quote}
 
@@ -912,6 +1048,7 @@ The code for this is:
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 The output of this is (noting that DFO\sphinxhyphen{}LS moves \(x_0\) to be far away enough from the upper bound)
 \begin{quote}
 
@@ -938,10 +1075,12 @@ Success: rho has reached rhoend
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 This produces a good fit to the observations.
 
 \noindent{\hspace*{\fill}\sphinxincludegraphics[width=0.750\linewidth]{{data_fitting}.png}\hspace*{\fill}}
 
+\sphinxAtStartPar
 To generate this plot, run:
 \begin{quote}
 
@@ -966,11 +1105,13 @@ To generate this plot, run:
 
 \section{Example: Solving a Nonlinear System of Equations}
 \label{\detokenize{userguide:example-solving-a-nonlinear-system-of-equations}}
+\sphinxAtStartPar
 Lastly, we give an example of using DFO\sphinxhyphen{}LS to solve a nonlinear system of equations (taken from \sphinxhref{http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm\#imlug\_genstatexpls\_sect004.htm}{here}). We wish to solve the following set of equations
 \begin{equation*}
 \begin{split}x_1 + x_2 - x_1 x_2 + 2 &= 0, \\
 x_1 \exp(-x_2) - 1 &= 0.\end{split}
 \end{equation*}
+\sphinxAtStartPar
 The code for this is:
 \begin{quote}
 
@@ -1003,6 +1144,7 @@ The code for this is:
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 The output of this is
 \begin{quote}
 
@@ -1020,30 +1162,39 @@ Success: Objective is sufficiently small
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 Here, we see that both entries of the residual vector are very small, so both equations have been solved to high accuracy.
 
 
 \section{References}
 \label{\detokenize{userguide:references}}
+\sphinxstepscope
+
 
 \chapter{Advanced Usage}
 \label{\detokenize{advanced:advanced-usage}}\label{\detokenize{advanced::doc}}
+\sphinxAtStartPar
 This section describes different optional user parameters available in DFO\sphinxhyphen{}LS.
 
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2021}.
+\sphinxAtStartPar
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
 
+\sphinxAtStartPar
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; that is, whether evaluating \sphinxcode{\sphinxupquote{objfun(x)}} several times at the same \sphinxcode{\sphinxupquote{x}} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{\sphinxupquote{objfun\_has\_noise}} input to \sphinxcode{\sphinxupquote{dfols.solve()}} (and not by inspecting \sphinxcode{\sphinxupquote{objfun}}, for instance).
 
 
 \section{General Algorithm Parameters}
 \label{\detokenize{advanced:general-algorithm-parameters}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{general.rounding\_error\_constant}} \sphinxhyphen{} Internally, all interpolation points are stored with respect to a base point \(x_b\); that is, we store \(\{y_t-x_b\}\), which reduces the risk of roundoff errors. We shift \(x_b\) to \(x_k\) when \(\|s_k\| \leq \text{const}\|x_k-x_b\|\), where ‘const’ is this parameter. Default is 0.1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{general.safety\_step\_thresh}} \sphinxhyphen{} Threshold for when to call the safety step, \(\|s_k\| \leq \gamma_S \rho_k\). Default is \(\gamma_S =0.5\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{general.check\_objfun\_for\_overflow}} \sphinxhyphen{} Whether to cap the value of \(r_i(x)\) when they are large enough that an OverflowError will be encountered when trying to evaluate \(f(x)\). Default is \sphinxcode{\sphinxupquote{True}}.
 
 \end{itemize}
@@ -1052,18 +1203,23 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Logging and Output}
 \label{\detokenize{advanced:logging-and-output}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{logging.n\_to\_print\_whole\_x\_vector}} \sphinxhyphen{} If printing all function evaluations to screen/log file, the maximum \sphinxcode{\sphinxupquote{len(x)}} for which the full vector \sphinxcode{\sphinxupquote{x}} should be printed also. Default is 6.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{logging.save\_diagnostic\_info}} \sphinxhyphen{} Flag so save diagnostic information at each iteration. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{logging.save\_poisedness}} \sphinxhyphen{} If saving diagnostic information, whether to include the \(\Lambda\)\sphinxhyphen{}poisedness of \(Y_k\) in the diagnostic information. This is the most computationally expensive piece of diagnostic information. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{logging.save\_xk}} \sphinxhyphen{} If saving diagnostic information, whether to include the full vector \(x_k\). Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{logging.save\_rk}} \sphinxhyphen{} If saving diagnostic information, whether to include the full vector \([r_1(x_k)\:\cdots\:r_m(x_k)]\). The value \(f(x_k)\) is always included. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \end{itemize}
@@ -1072,12 +1228,15 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Initialization of Points}
 \label{\detokenize{advanced:initialization-of-points}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{init.random\_initial\_directions}} \sphinxhyphen{} Build the initial interpolation set using random directions (as opposed to coordinate directions). Default as of version 1.2 is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{init.random\_directions\_make\_orthogonal}} \sphinxhyphen{} If building initial interpolation set with random directions, whether or not these should be orthogonalized. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{init.run\_in\_parallel}} \sphinxhyphen{} If using random directions, whether or not to ask for all \sphinxcode{\sphinxupquote{objfun}} to be evaluated at all points without any intermediate processing. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \end{itemize}
@@ -1086,24 +1245,31 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Trust Region Management}
 \label{\detokenize{advanced:trust-region-management}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.eta1}} \sphinxhyphen{} Threshold for unsuccessful trust region iteration, \(\eta_1\). Default is 0.1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.eta2}} \sphinxhyphen{} Threshold for very successful trust region iteration, \(\eta_2\). Default is 0.7.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.gamma\_dec}} \sphinxhyphen{} Ratio to decrease \(\Delta_k\) in unsuccessful iteration, \(\gamma_{dec}\). Default is 0.5 for smooth problems or 0.98 for noisy problems (i.e. \sphinxcode{\sphinxupquote{objfun\_has\_noise = True}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.gamma\_inc}} \sphinxhyphen{} Ratio to increase \(\Delta_k\) in very successful iterations, \(\gamma_{inc}\). Default is 2.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.gamma\_inc\_overline}} \sphinxhyphen{} Ratio of \(\|s_k\|\) to increase \(\Delta_k\) by in very successful iterations, \(\overline{\gamma}_{inc}\). Default is 4.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.alpha1}} \sphinxhyphen{} Ratio to decrease \(\rho_k\) by when it is reduced, \(\alpha_1\). Default is 0.1 for smooth problems or 0.9 for noisy problems (i.e. \sphinxcode{\sphinxupquote{objfun\_has\_noise = True}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{tr\_radius.alpha2}} \sphinxhyphen{} Ratio of \(\rho_k\) to decrease \(\Delta_k\) by when \(\rho_k\) is reduced, \(\alpha_2\). Default is 0.5 for smooth problems or 0.95 for noisy problems (i.e. \sphinxcode{\sphinxupquote{objfun\_has\_noise = True}}).
 
 \end{itemize}
@@ -1112,9 +1278,11 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Termination on Small Objective Value}
 \label{\detokenize{advanced:termination-on-small-objective-value}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{model.abs\_tol}} \sphinxhyphen{} Tolerance on \(f(x_k)\); quit if \(f(x_k)\) is below this value. Default is \(10^{-12}\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{model.rel\_tol}} \sphinxhyphen{} Relative tolerance on \(f(x_k)\); quit if \(f(x_k)/f(x_0)\) is below this value. Default is \(10^{-20}\).
 
 \end{itemize}
@@ -1123,12 +1291,15 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Termination on Slow Progress}
 \label{\detokenize{advanced:termination-on-slow-progress}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{slow.history\_for\_slow}} \sphinxhyphen{} History used to determine whether the current iteration is ‘slow’. Default is 5.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{slow.thresh\_for\_slow}} \sphinxhyphen{} Threshold for objective decrease used to determine whether the current iteration is ‘slow’. Default is \(10^{-4}\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{slow.max\_slow\_iters}} \sphinxhyphen{} Number of consecutive slow successful iterations before termination (or restart). Default is \sphinxcode{\sphinxupquote{20*len(x0)}}.
 
 \end{itemize}
@@ -1137,15 +1308,19 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Stochastic Noise Information}
 \label{\detokenize{advanced:stochastic-noise-information}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{noise.quit\_on\_noise\_level}} \sphinxhyphen{} Flag to quit (or restart) if all \(f(y_t)\) are within noise level of \(f(x_k)\). Default is \sphinxcode{\sphinxupquote{False}} for smooth problems or \sphinxcode{\sphinxupquote{True}} for noisy problems.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{noise.scale\_factor\_for\_quit}} \sphinxhyphen{} Factor of noise level to use in termination criterion. Default is 1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{noise.multiplicative\_noise\_level}} \sphinxhyphen{} Multiplicative noise level in \(f\). Can only specify one of multiplicative or additive noise levels. Default is \sphinxcode{\sphinxupquote{None}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{noise.additive\_noise\_level}} \sphinxhyphen{} Additive noise level in \(f\). Can only specify one of multiplicative or additive noise levels. Default is \sphinxcode{\sphinxupquote{None}}.
 
 \end{itemize}
@@ -1154,9 +1329,11 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Interpolation Management}
 \label{\detokenize{advanced:interpolation-management}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation.precondition}} \sphinxhyphen{} whether or not to scale the interpolation linear system to improve conditioning. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation.throw\_error\_on\_nans}} \sphinxhyphen{} whether or not to throw \sphinxcode{\sphinxupquote{numpy.linalg.LinAlgError}} if trying to interpolate to NaN objective values. If \sphinxcode{\sphinxupquote{False}}, DFO\sphinxhyphen{}LS should terminate gracefully with an error flag. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \end{itemize}
@@ -1165,12 +1342,15 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Regression Model Management}
 \label{\detokenize{advanced:regression-model-management}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{regression.num\_extra\_steps}} \sphinxhyphen{} In successful iterations, the number of extra points (other than accepting the trust region step) to move, useful when \(|Y_k|>n+1\) (\(n\) is \sphinxcode{\sphinxupquote{len(x0)}}). Default is 0.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{regression.increase\_num\_extra\_steps\_with\_restart}} \sphinxhyphen{} The amount to increase \sphinxcode{\sphinxupquote{regression.num\_extra\_steps}} by with each restarts, for instance if increasing the number of points with each restart. Default is 0.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{regression.momentum\_extra\_steps}} \sphinxhyphen{} If moving extra points in successful iterations, whether to use the ‘momentum’ method. If not, uses geometry\sphinxhyphen{}improving steps. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \end{itemize}
@@ -1179,51 +1359,67 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Multiple Restarts}
 \label{\detokenize{advanced:multiple-restarts}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.use\_restarts}} \sphinxhyphen{} Whether to do restarts when \(\rho_k\) reaches \(\rho_{end}\), or (optionally) when all points are within noise level of \(f(x_k)\). Default is \sphinxcode{\sphinxupquote{False}} for smooth problems or \sphinxcode{\sphinxupquote{True}} for noisy problems.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.max\_unsuccessful\_restarts}} \sphinxhyphen{} Maximum number of consecutive unsuccessful restarts allowed (i.e.\textasciitilde{}restarts which did not reduce the objective further). Default is 10.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.rhoend\_scale}} \sphinxhyphen{} Factor to reduce \(\rho_{end}\) by with each restart. Default is 1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.use\_soft\_restarts}} \sphinxhyphen{} Whether to use soft or hard restarts. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.soft.num\_geom\_steps}} \sphinxhyphen{} For soft restarts, the number of points to move. Default is 3.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.soft.move\_xk}} \sphinxhyphen{} For soft restarts, whether to preserve \(x_k\), or move it to the best new point evaluated. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.increase\_npt}} \sphinxhyphen{} Whether to increase \(|Y_k|\) with each restart. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.increase\_npt\_amt}} \sphinxhyphen{} Amount to increase \(|Y_k|\) by with each restart. Default is 1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.hard.increase\_ndirs\_initial\_amt}} \sphinxhyphen{} Amount to increase \sphinxcode{\sphinxupquote{growing.ndirs\_initial}} by with each hard restart. To avoid a growing phase, it is best to set it to the same value as \sphinxcode{\sphinxupquote{restarts.increase\_npt\_amt}}. Default is 1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.hard.use\_old\_rk}} \sphinxhyphen{} If using hard restarts, whether or not to recycle the objective value at the best iterate found when performing a restart. This saves one objective evaluation. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.max\_npt}} \sphinxhyphen{} Maximum allowed value of \(|Y_k|\), useful if increasing with each restart. Default is \sphinxcode{\sphinxupquote{npt}}, the input parameter to \sphinxcode{\sphinxupquote{dfols.solve()}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.soft.max\_fake\_successful\_steps}} \sphinxhyphen{} The maximum number of successful steps in a given run where the new (smaller) objective value is larger than the best value found in a previous run. Default is \sphinxcode{\sphinxupquote{maxfun}}, the input to \sphinxcode{\sphinxupquote{dfols.solve()}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.auto\_detect}} \sphinxhyphen{} Whether or not to automatically determine when to restart. This is an extra condition, and restarts can still be triggered by small trust region radius, etc. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.auto\_detect.history}} \sphinxhyphen{} How many iterations of data on model changes and trust region radii to store. There are two criteria used: trust region radius decreases (no increases over the history, more decreases than no changes), and change in model Jacobian (consistently increasing trend as measured by slope and correlation coefficient of line of best fit). Default is 30.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.auto\_detect.min\_chgJ\_slope}} \sphinxhyphen{} Minimum rate of increase of \(\log(\|J_k-J_{k-1}\|_F)\) over the past iterations to cause a restart. Default is 0.015.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.auto\_detect.min\_correl}} \sphinxhyphen{} Minimum correlation of the data set \((k, \log(\|J_k-J_{k-1}\|_F))\) required to cause a restart. Default is 0.1.
 
 \end{itemize}
@@ -1232,51 +1428,67 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Dynamically Growing Initial Set}
 \label{\detokenize{advanced:dynamically-growing-initial-set}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.ndirs\_initial}} \sphinxhyphen{} Number of initial points to add (excluding \(x_k\)). This should only be changed to a value less than \(n\), and only if the default setup cost of \(n+1\) evaluations of \sphinxcode{\sphinxupquote{objfun}} is impractical. If this is set to be less than the default, the input value \sphinxcode{\sphinxupquote{npt}} should be set to \(n\). If the default is used, all the below parameters have no effect on DFO\sphinxhyphen{}LS. Default is \sphinxcode{\sphinxupquote{npt\sphinxhyphen{}1}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.full\_rank.use\_full\_rank\_interp}} \sphinxhyphen{} If \sphinxcode{\sphinxupquote{growing.ndirs\_initial}} is less than \sphinxcode{\sphinxupquote{npt}}, whether to perturb the interpolated \(J_k\) to make it full rank, allowing the trust region step to include components in the full search space. Default is \sphinxcode{\sphinxupquote{True}} if \(m\geq n\) and \sphinxcode{\sphinxupquote{False}} otherwise (opposite to \sphinxcode{\sphinxupquote{growing.perturb\_trust\_region\_step}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.perturb\_trust\_region\_step}} \sphinxhyphen{} Whether to perturb the trust region step by an orthogonal direction not yet searched. This is an alternative to \sphinxcode{\sphinxupquote{growing.full\_rank.use\_full\_rank\_interp}}. Default is \sphinxcode{\sphinxupquote{False}} if \(m\geq n\) and \sphinxcode{\sphinxupquote{True}} otherwise (opposite to \sphinxcode{\sphinxupquote{growing.full\_rank.use\_full\_rank\_interp}}).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.delta\_scale\_new\_dirns}} \sphinxhyphen{} When adding new search directions, the length of the step as a multiple of \(\Delta_k\). Default is 1, or 0.1 if \sphinxcode{\sphinxupquote{growing.perturb\_trust\_region\_step=True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.full\_rank.scale\_factor}} \sphinxhyphen{} Magnitude of extra components added to \(J_k\). Default is \(10^{-2}\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.full\_rank.svd\_scale\_factor}} \sphinxhyphen{} Floor singular values of \(J_k\) at this factor of the last nonzero value. Default is 1.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.full\_rank.min\_sing\_val}} \sphinxhyphen{} Absolute floor on singular values of \(J_k\). Default is \(10^{-6}\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.full\_rank.svd\_max\_jac\_cond}} \sphinxhyphen{} Cap on condition number of \(J_k\) after applying floors to singular values (effectively another floor on the smallest singular value, since the largest singular value is fixed). Default is \(10^8\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.do\_geom\_steps}} \sphinxhyphen{} While still growing the initial set, whether to do geometry\sphinxhyphen{}improving steps in the trust region algorithm, as per the usual algorithm. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.safety.do\_safety\_step}} \sphinxhyphen{} While still growing the initial set, whether to perform safety steps, or the regular trust region steps. Default is \sphinxcode{\sphinxupquote{True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.safety.reduce\_delta}} \sphinxhyphen{} While still growing the initial set, whether to reduce \(\Delta_k\) in safety steps. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.safety.full\_geom\_step}} \sphinxhyphen{} While still growing the initial set, whether to do a full geometry\sphinxhyphen{}improving step within safety steps (the same as the post\sphinxhyphen{}growing phase of the algorithm). Since this involves reducing \(\Delta_k\), cannot be \sphinxcode{\sphinxupquote{True}} if \sphinxcode{\sphinxupquote{growing.safety.reduce\_delta}} is \sphinxcode{\sphinxupquote{True}}. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.reset\_delta}} \sphinxhyphen{} Whether or not to reset trust region radius \(\Delta_k\) to its initial value at the end of the growing phase. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.reset\_rho}} \sphinxhyphen{} Whether or not to reset trust region radius lower bound \(\rho_k\) to its initial value at the end of the growing phase. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.gamma\_dec}} \sphinxhyphen{} Trust region decrease parameter during the growing phase. Default is \sphinxcode{\sphinxupquote{tr\_radius.gamma\_dec}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{growing.num\_new\_dirns\_each\_iter}} \sphinxhyphen{} Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 0, as this approach is not recommended.
 
 \end{itemize}
@@ -1285,9 +1497,11 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Dykstra’s Algorithm}
 \label{\detokenize{advanced:dykstra-s-algorithm}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{dykstra.d\_tol}} \sphinxhyphen{} Tolerance on the stopping conditions of Dykstra’s algorithm. Default is \(10^{-10}\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{dykstra.max\_iters}} \sphinxhyphen{} The maximum number of iterations Dykstra’s algorithm is allowed to take before stopping. Default is \(100\).
 
 \end{itemize}
@@ -1296,6 +1510,7 @@ The default values, used if no override is given, in some cases vary depending o
 \section{Checking Matrix Rank}
 \label{\detokenize{advanced:checking-matrix-rank}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{matrix\_rank.r\_tol}} \sphinxhyphen{} Tolerance on what is the smallest posisble diagonal entry value in the QR factorization before being considered zero. Default is \(10^{-18}\).
 
 \end{itemize}
@@ -1303,11 +1518,15 @@ The default values, used if no override is given, in some cases vary depending o
 
 \section{References}
 \label{\detokenize{advanced:references}}
+\sphinxstepscope
+
 
 \chapter{Diagnostic Information}
 \label{\detokenize{diagnostic:diagnostic-information}}\label{\detokenize{diagnostic::doc}}
+\sphinxAtStartPar
 In {\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}, we saw that the output of DFO\sphinxhyphen{}LS returns a container which includes diagnostic information about the progress of the algorithm (\sphinxcode{\sphinxupquote{soln.diagnostic\_info}}). This object is a \sphinxhref{http://pandas.pydata.org/}{Pandas} DataFrame, with one row per iteration of the algorithm. In this section, we explain the meaning of each type of output (the columns of the DataFrame).
 
+\sphinxAtStartPar
 To save this information to a CSV file, use:
 \begin{quote}
 
@@ -1325,18 +1544,22 @@ To save this information to a CSV file, use:
 \end{sphinxVerbatim}
 \end{quote}
 
+\sphinxAtStartPar
 Depending on exactly how DFO\sphinxhyphen{}LS terminates, the last row of results may not be fully populated.
 
 
 \section{Current Iterate}
 \label{\detokenize{diagnostic:current-iterate}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{xk}} \sphinxhyphen{} Best point found so far (current iterate). This is only saved if \sphinxcode{\sphinxupquote{user\_params{[}\textquotesingle{}logging.save\_xk\textquotesingle{}{]} = True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{rk}} \sphinxhyphen{} The vector of residuals at the current iterate. This is only saved if \sphinxcode{\sphinxupquote{user\_params{[}\textquotesingle{}logging.save\_rk\textquotesingle{}{]} = True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{fk}} \sphinxhyphen{} The value of \(f\) at the current iterate.
 
 \end{itemize}
@@ -1345,12 +1568,15 @@ Depending on exactly how DFO\sphinxhyphen{}LS terminates, the last row of result
 \section{Trust Region}
 \label{\detokenize{diagnostic:trust-region}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{rho}} \sphinxhyphen{} The lower bound on the trust region radius \(\rho_k\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{delta}} \sphinxhyphen{} The trust region radius \(\Delta_k\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{norm\_sk}} \sphinxhyphen{} The norm of the trust region step \(\|s_k\|\).
 
 \end{itemize}
@@ -1359,27 +1585,35 @@ Depending on exactly how DFO\sphinxhyphen{}LS terminates, the last row of result
 \section{Model Interpolation}
 \label{\detokenize{diagnostic:model-interpolation}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{npt}} \sphinxhyphen{} The number of interpolation points.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation\_error}} \sphinxhyphen{} The sum of squares of the interpolation errors from the interpolated model.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation\_condition\_number}} \sphinxhyphen{} The condition number of the matrix in the interpolation linear system.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation\_change\_J\_norm}} \sphinxhyphen{} The Frobenius norm of the change in Jacobian at this iteration, \(\|J_k-J_{k-1}\|_F\).
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{interpolation\_total\_residual}} \sphinxhyphen{} The total residual from the interpolation optimization problem.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{poisedness}} \sphinxhyphen{} The smallest value of \(\Lambda\) for which the current interpolation set \(Y_k\) is \(\Lambda\)\sphinxhyphen{}poised in the current trust region. This is the most expensive piece of information to compute, and is only computed if \sphinxcode{\sphinxupquote{user\_params{[}\textquotesingle{}logging.save\_poisedness\textquotesingle{} = True}}.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{max\_distance\_xk}} \sphinxhyphen{} The maximum distance from any interpolation point to the current iterate.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{norm\_gk}} \sphinxhyphen{} The norm of the model gradient \(\|g_k\|\).
 
 \end{itemize}
@@ -1388,21 +1622,27 @@ Depending on exactly how DFO\sphinxhyphen{}LS terminates, the last row of result
 \section{Iteration Count}
 \label{\detokenize{diagnostic:iteration-count}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{nruns}} \sphinxhyphen{} The number of times the algorithm has been restarted.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{nf}} \sphinxhyphen{} The number of objective evaluations so far (see \sphinxcode{\sphinxupquote{soln.nf}})
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{nx}} \sphinxhyphen{} The number of points at which the objective has been evaluated so far (see \sphinxcode{\sphinxupquote{soln.nx}})
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{nsamples}} \sphinxhyphen{} The total number of objective evaluations used for all current interpolation points.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{iter\_this\_run}} \sphinxhyphen{} The number of iterations since the last restart.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{iters\_total}} \sphinxhyphen{} The total number of iterations so far.
 
 \end{itemize}
@@ -1411,25 +1651,32 @@ Depending on exactly how DFO\sphinxhyphen{}LS terminates, the last row of result
 \section{Algorithm Progress}
 \label{\detokenize{diagnostic:algorithm-progress}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{iter\_type}} \sphinxhyphen{} A text description of what type of iteration we had (e.g. Successful, Safety, etc.)
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{ratio}} \sphinxhyphen{} The ratio of actual to predicted objective reduction in the trust region step.
 
 \item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{slow\_iter}} \sphinxhyphen{} Equal to 1 if the current iteration is successful but slow, 0 if is successful but not slow, and \sphinxhyphen{}1 if was not successful.
 
 \end{itemize}
 
+\sphinxstepscope
+
 
 \chapter{Version History}
 \label{\detokenize{history:version-history}}\label{\detokenize{history::doc}}
+\sphinxAtStartPar
 This section lists the different versions of DFO\sphinxhyphen{}LS and the updates between them.
 
 
 \section{Version 1.0 (6 Feb 2018)}
 \label{\detokenize{history:version-1-0-6-feb-2018}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Initial release of DFO\sphinxhyphen{}LS
 
 \end{itemize}
@@ -1438,6 +1685,7 @@ Initial release of DFO\sphinxhyphen{}LS
 \section{Version 1.0.1 (20 Feb 2018)}
 \label{\detokenize{history:version-1-0-1-20-feb-2018}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Minor bug fix to trust region subproblem solver (the output \sphinxcode{\sphinxupquote{crvmin}} is calculated correctly) \sphinxhyphen{} this has minimal impact on the performance of DFO\sphinxhyphen{}LS.
 
 \end{itemize}
@@ -1446,9 +1694,11 @@ Minor bug fix to trust region subproblem solver (the output \sphinxcode{\sphinxu
 \section{Version 1.0.2 (20 Jun 2018)}
 \label{\detokenize{history:version-1-0-2-20-jun-2018}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Extra optional input \sphinxcode{\sphinxupquote{args}} which passes through arguments for \sphinxcode{\sphinxupquote{objfun}}.
 
 \item {} 
+\sphinxAtStartPar
 Bug fixes: default parameters for reduced initialization cost regime, returning correct value if exiting from within a safety step, retrieving dependencies during installation.
 
 \end{itemize}
@@ -1457,9 +1707,11 @@ Bug fixes: default parameters for reduced initialization cost regime, returning 
 \section{Version 1.1 (16 Jan 2019)}
 \label{\detokenize{history:version-1-1-16-jan-2019}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Use different default reduced initialization cost method for inverse problems to ensure whole space is searched correctly.
 
 \item {} 
+\sphinxAtStartPar
 Bug fixes: default trust region radius when scaling feasible region, exit correctly when no Jacobian returned, handling overflow at initial value
 
 \end{itemize}
@@ -1468,6 +1720,7 @@ Bug fixes: default trust region radius when scaling feasible region, exit correc
 \section{Version 1.1.1 (5 Apr 2019)}
 \label{\detokenize{history:version-1-1-1-5-apr-2019}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Link code to Zenodo, to create DOI \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
 
 \end{itemize}
@@ -1476,24 +1729,31 @@ Link code to Zenodo, to create DOI \sphinxhyphen{} no changes to the DFO\sphinxh
 \section{Version 1.2 (12 Feb 2020)}
 \label{\detokenize{history:version-1-2-12-feb-2020}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Use deterministic initialisation by default (so it is no longer necessary to set a random seed for reproducibility of DFO\sphinxhyphen{}LS results).
 
 \item {} 
+\sphinxAtStartPar
 Full model Hessian stored rather than just upper triangular part \sphinxhyphen{} this improves the runtime of Hessian\sphinxhyphen{}based operations.
 
 \item {} 
+\sphinxAtStartPar
 Faster trust\sphinxhyphen{}region and geometry subproblem solutions in Fortran using the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package.
 
 \item {} 
+\sphinxAtStartPar
 Faster interpolation solution for multiple right\sphinxhyphen{}hand sides.
 
 \item {} 
+\sphinxAtStartPar
 Don’t adjust starting point if it is close to the bounds (as long as it is feasible).
 
 \item {} 
+\sphinxAtStartPar
 Option to stop default logging behavior and/or enable per\sphinxhyphen{}iteration printing.
 
 \item {} 
+\sphinxAtStartPar
 Bugfix: correctly handle 1\sphinxhyphen{}sided bounds as inputs, avoid divide\sphinxhyphen{}by\sphinxhyphen{}zero warnings when auto\sphinxhyphen{}detecting restarts.
 
 \end{itemize}
@@ -1502,6 +1762,7 @@ Bugfix: correctly handle 1\sphinxhyphen{}sided bounds as inputs, avoid divide\sp
 \section{Version 1.2.1 (13 Feb 2020)}
 \label{\detokenize{history:version-1-2-1-13-feb-2020}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Make the use of the \sphinxhref{https://github.com/lindonroberts/trust-region}{trustregion} package optional, not installed by default.
 
 \end{itemize}
@@ -1510,6 +1771,7 @@ Make the use of the \sphinxhref{https://github.com/lindonroberts/trust-region}{t
 \section{Version 1.2.2 (26 Feb 2021)}
 \label{\detokenize{history:version-1-2-2-26-feb-2021}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Minor update to remove NumPy deprecation warnings \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
 
 \end{itemize}
@@ -1518,6 +1780,7 @@ Minor update to remove NumPy deprecation warnings \sphinxhyphen{} no changes to 
 \section{Version 1.2.3 (1 Jun 2021)}
 \label{\detokenize{history:version-1-2-3-1-jun-2021}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Minor update to customise handling of NaNs in objective evaluations \sphinxhyphen{} no changes to the DFO\sphinxhyphen{}LS algorithm.
 
 \end{itemize}
@@ -1526,15 +1789,46 @@ Minor update to customise handling of NaNs in objective evaluations \sphinxhyphe
 \section{Version 1.3.0 (8 Nov 2021)}
 \label{\detokenize{history:version-1-3-0-8-nov-2021}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Handle finitely many arbitrary convex constraints in addition to simple bound constraints.
 
 \item {} 
+\sphinxAtStartPar
 Add module\sphinxhyphen{}level logging for more informative log outputs.
 
 \item {} 
+\sphinxAtStartPar
 Only new functionality is added, so there is no change to the solver for unconstrained/bound\sphinxhyphen{}constrained problems.
 
 \end{itemize}
+
+
+\section{Version 1.4.0 (29 Jan 2024)}
+\label{\detokenize{history:version-1-4-0-29-jan-2024}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Require newer SciPy version (at least 1.11) as a dependency \sphinxhyphen{} avoids occasional undetermined behavior but no changes to the DFO\sphinxhyphen{}LS algorithm.
+
+\item {} 
+\sphinxAtStartPar
+Gracefully handle NaN objective value from evaluation at a new trial point (trust\sphinxhyphen{}region step).
+
+\end{itemize}
+
+
+\section{Version 1.4.1 (11 Apr 2024)}
+\label{\detokenize{history:version-1-4-1-11-apr-2024}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Migrate package setup to pyproject.toml (required for Python version 3.12)
+
+\item {} 
+\sphinxAtStartPar
+Drop support for Python 2.7 and \textless{}=3.8 in line with SciPy \textgreater{}=1.11 dependency (introduced v1.4.0)
+
+\end{itemize}
+
+\sphinxstepscope
 
 
 \chapter{Contributors}
@@ -1543,7 +1837,8 @@ Only new functionality is added, so there is no change to the solver for unconst
 \section{Main author}
 \label{\detokenize{contributors:main-author}}\begin{itemize}
 \item {} 
-Lindon Roberts (Australian National University)
+\sphinxAtStartPar
+Lindon Roberts (University of Sydney)
 
 \end{itemize}
 
@@ -1551,6 +1846,7 @@ Lindon Roberts (Australian National University)
 \section{Contributors}
 \label{\detokenize{contributors:id1}}\begin{itemize}
 \item {} 
+\sphinxAtStartPar
 Matthew Hough (University of Waterloo): handle general convex constraints {[}version 1.3{]}
 
 \end{itemize}
@@ -1558,21 +1854,28 @@ Matthew Hough (University of Waterloo): handle general convex constraints {[}ver
 
 \chapter{Acknowledgements}
 \label{\detokenize{index:acknowledgements}}
+\sphinxAtStartPar
 This software was initially developed under the supervision of \sphinxhref{https://www.maths.ox.ac.uk/people/coralia.cartis}{Coralia Cartis}, and was supported by the EPSRC Centre For Doctoral Training in \sphinxhref{https://www.maths.ox.ac.uk/study-here/postgraduate-study/industrially-focused-mathematical-modelling-epsrc-cdt}{Industrially Focused Mathematical Modelling} (EP/L015803/1) in collaboration with the \sphinxhref{http://www.nag.com/}{Numerical Algorithms Group}.
 
 \begin{sphinxthebibliography}{CFMR2018}
 \bibitem[CFMR2018]{info:cfmr2018}
+\sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
-\bibitem[HR2021]{info:hr2021}
-Hough, M. and Roberts, L., \sphinxhref{https://arxiv.org/abs/2111.05443}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{arXiv preprint arXiv:2111.05443}, (2021).
+\bibitem[HR2022]{info:hr2022}
+\sphinxAtStartPar
+Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
 \bibitem[CFMR2018]{userguide:cfmr2018}
+\sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
-\bibitem[HR2021]{userguide:hr2021}
-Hough, M. and Roberts, L., \sphinxhref{https://arxiv.org/abs/2111.05443}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{arXiv preprint arXiv:2111.05443}, (2021).
+\bibitem[HR2022]{userguide:hr2022}
+\sphinxAtStartPar
+Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
 \bibitem[CFMR2018]{advanced:cfmr2018}
+\sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
-\bibitem[HR2021]{advanced:hr2021}
-Hough, M. and Roberts, L., \sphinxhref{https://arxiv.org/abs/2111.05443}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{arXiv preprint arXiv:2111.05443}, (2021).
+\bibitem[HR2022]{advanced:hr2022}
+\sphinxAtStartPar
+Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
 \end{sphinxthebibliography}
 
 

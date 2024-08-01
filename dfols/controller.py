@@ -41,7 +41,7 @@ from .util import *
 
 __all__ = ['Controller', 'ExitInformation', 'EXIT_SLOW_WARNING', 'EXIT_MAXFUN_WARNING', 'EXIT_SUCCESS',
            'EXIT_INPUT_ERROR', 'EXIT_TR_INCREASE_ERROR', 'EXIT_LINALG_ERROR', 'EXIT_FALSE_SUCCESS_WARNING',
-           'EXIT_AUTO_DETECT_RESTART_WARNING']
+           'EXIT_AUTO_DETECT_RESTART_WARNING', 'EXIT_EVAL_ERROR']
 
 module_logger = logging.getLogger(__name__) 
 
@@ -54,6 +54,7 @@ EXIT_SUCCESS = 0  # successful finish (rho=rhoend, sufficient objective reductio
 EXIT_INPUT_ERROR = -1  # error, bad inputs
 EXIT_TR_INCREASE_ERROR = -2  # error, trust region step increased model value
 EXIT_LINALG_ERROR = -3  # error, linalg error (singular matrix encountered)
+EXIT_EVAL_ERROR = -4  # error, objective evaluation error (e.g. nan result received)
 
 
 class ExitInformation(object):
@@ -83,11 +84,13 @@ class ExitInformation(object):
             return "Error (linear algebra): " + self.msg
         elif self.flag == EXIT_FALSE_SUCCESS_WARNING:
             return "Warning (max false good steps): " + self.msg
+        elif self.flag == EXIT_EVAL_ERROR:
+            return "Error (function evaluation): " + self.msg
         else:
             return "Unknown exit flag: " + self.msg
 
     def able_to_do_restart(self):
-        if self.flag in [EXIT_TR_INCREASE_ERROR, EXIT_TR_INCREASE_WARNING, EXIT_LINALG_ERROR, EXIT_SLOW_WARNING, EXIT_AUTO_DETECT_RESTART_WARNING]:
+        if self.flag in [EXIT_TR_INCREASE_ERROR, EXIT_TR_INCREASE_WARNING, EXIT_LINALG_ERROR, EXIT_SLOW_WARNING, EXIT_AUTO_DETECT_RESTART_WARNING, EXIT_EVAL_ERROR]:
             return True
         elif self.flag in [EXIT_MAXFUN_WARNING, EXIT_INPUT_ERROR]:
             return False

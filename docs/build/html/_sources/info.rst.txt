@@ -86,7 +86,7 @@ At each step, we compute a trial step :math:`s_k` designed to make our approxima
 
 In DFO-LS, we construct our approximation :math:`m_k(s)` by interpolating a linear approximation for each residual :math:`r_i(x)` at several points close to :math:`x_k`. To make sure our interpolated model is accurate, we need to regularly check that the points are well-spaced, and move them if they aren't (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO-LS algorithm is given in our papers [CFMR2018]_ and [HR2021]_.
+A complete description of the DFO-LS algorithm is given in our papers [CFMR2018]_ and [HR2022]_.
 
 References
 ----------
@@ -94,5 +94,5 @@ References
 .. [CFMR2018]   
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
-.. [HR2021]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).
+.. [HR2022]   
+   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].

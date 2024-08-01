@@ -14,7 +14,7 @@ DFO-LS is designed to solve the local optimization problem
 where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the papers [CFMR2018]_ and [HR2021]_.
+For an in-depth technical description of the algorithm see the papers [CFMR2018]_ and [HR2022]_.
 
 How to use DFO-LS
 -----------------
@@ -52,6 +52,7 @@ The possible values of :code:`soln.flag` are defined by the following variables:
 * :code:`soln.EXIT_INPUT_ERROR` - error in the inputs.
 * :code:`soln.EXIT_TR_INCREASE_ERROR` - error occurred when solving the trust region subproblem.
 * :code:`soln.EXIT_LINALG_ERROR` - linear algebra error, e.g. the interpolation points produced a singular linear system.
+* :code:`soln.EXIT_EVAL_ERROR` - the objective function returned a NaN value when evaluating at a new trial point.
 
 These variables are defined in the :code:`soln` object, so can be accessed with, for example
 
@@ -225,7 +226,7 @@ An alternative option available is to get DFO-LS to print to terminal progress i
         1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
 
 Handling Arbitrary Convex Constraints
------------------------------
+-------------------------------------
 DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
 minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
 sets must be non-empty.
@@ -569,5 +570,5 @@ References
 .. [CFMR2018]   
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
-.. [HR2021]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).
+.. [HR2022]   
+   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].

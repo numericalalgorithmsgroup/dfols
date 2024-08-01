@@ -9,7 +9,7 @@ DFO-LS: Derivative-Free Optimizer for Least-Squares Minimization
 
 **Date:** |today|
 
-**Author:** `Lindon Roberts <lindon.roberts@anu.edu.au>`_
+**Author:** `Lindon Roberts <lindon.roberts@sydney.edu.au>`_
 
 DFO-LS is a flexible package for finding local solutions to nonlinear least-squares minimization problems (with optional constraints), without requiring any derivatives of the objective. DFO-LS stands for Derivative-Free Optimizer for Least-Squares.
 
@@ -26,7 +26,7 @@ The constraint set :math:`C` is the intersection of multiple convex sets provide
 Full details of the DFO-LS algorithm are given in our papers: 
 
 * C. Cartis, J. Fiala, B. Marteau and L. Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] . 
-* Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://arxiv.org/abs/2111.05443>`_, *arXiv preprint arXiv:2111.05443*, (2021).
+* Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
 
 DFO-LS is a more flexible version of `DFO-GN <https://github.com/numericalalgorithmsgroup/dfogn>`_.
 

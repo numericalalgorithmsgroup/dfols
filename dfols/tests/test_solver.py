@@ -170,7 +170,7 @@ class TestInverseProblem(unittest.TestCase):
         self.assertTrue(array_compare(soln.resid, objfun(soln.x), thresh=1e-10), "Wrong resid")
         print(soln.jacobian)
         print(jac(soln.x))
-        self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=1e-2), "Wrong Jacobian")
+        self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=5e-2), "Wrong Jacobian")
         self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 

@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "DFO-LS"
+dynamic = ["version"]
+dependencies = [
+    "setuptools",
+    "numpy",
+    "scipy>=1.11",
+    "pandas"
+]
+requires-python = ">=3.9"
+authors = [
+    {name = "Lindon Roberts", email = "lindon.roberts@sydney.edu.au"}
+]
+maintainers = [
+    {name = "Lindon Roberts", email = "lindon.roberts@sydney.edu.au"}
+]
+description = "A flexible derivative-free solver for (bound constrained) nonlinear least-squares minimization"
+readme = "README.rst"
+license = {text = "GPL-3.0-or-later"}
+keywords = ["mathematics", "optimization", "least squares", "derivative free optimization", "nonlinear least squares"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Framework :: IPython",
+    "Framework :: Jupyter",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "Sphinx", "sphinx-rtd-theme"]
+trustregion = ["trustregion>=1.1"]
+
+[project.urls]
+Homepage = "https://github.com/numericalalgorithmsgroup/dfols"
+Download = "https://github.com/numericalalgorithmsgroup/dfols/releases/"
+"Bug Tracker" = "https://github.com/numericalalgorithmsgroup/dfols/issues/"
+Documentation = "https://numericalalgorithmsgroup.github.io/dfols/"
+"Source Code" = "https://github.com/numericalalgorithmsgroup/dfols"
+
+[tool.setuptools]
+packages = ["dfols"]
+
+[tool.setuptools.dynamic]
+version = {attr = "dfols.__version__"}
