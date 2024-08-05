@@ -1,4 +1,3 @@
-New Branch yanjun-dfols created by Yanjun Liu (ANU) on Feb 9, 2022.
 ===================================================
 DFO-LS: Derivative-Free Optimizer for Least-Squares
 ===================================================
