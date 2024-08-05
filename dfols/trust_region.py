@@ -79,7 +79,7 @@ except ImportError:
     # Fall back to Python implementation
     USE_FORTRAN = False
 
-from .util import dykstra, pball, pbox, sumsq, model_value
+from .util import dykstra, pball, pbox, sumsq, model_value, remove_scaling
 
 __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
@@ -135,7 +135,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         return p - xopt
 
     # general step
-    model_value_best = model_value(g, H, d, xopt, h, *argsh, scaling_changes)
+    model_value_best = model_value(g, H, d, xopt, h, argsh, scaling_changes)
     d_best = d.copy()
     for k in range(MAX_LOOP_ITERS):
         prev_d = d.copy()
@@ -148,7 +148,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         # SOLVED: (previously) make sfista decrease in each iteration (might have d = 0, criticality measure=0)
         # if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
         #     d = prev_d
-        new_model_value = model_value(g, H, d, xopt, h, *argsh, scaling_changes)
+        new_model_value = model_value(g, H, d, xopt, h, argsh, scaling_changes)
         if new_model_value < model_value_best:
             d_best = d.copy()
             model_value_best = new_model_value

@@ -1036,12 +1036,12 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
             x0 = xp.copy()
 
     # Enforce lower & upper bounds on x0
-    idx = (x0 <= xl)
+    idx = (x0 < xl)
     if np.any(idx):
         warnings.warn("x0 below lower bound, adjusting", RuntimeWarning)
     x0[idx] = xl[idx]
 
-    idx = (x0 >= xu)
+    idx = (x0 > xu)
     if np.any(idx):
         warnings.warn("x0 above upper bound, adjusting", RuntimeWarning)
     x0[idx] = xu[idx]

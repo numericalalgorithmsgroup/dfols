@@ -64,7 +64,7 @@ def eval_least_squares_with_regularisation(objfun, x, h=None, argsf=(), argsh=()
 
     # objective = least-squares + regularisation
     obj = f
-    if h != None:
+    if h is not None:
         # Evaluate regularisation term
         hvalue = h(x, *argsh)
         obj = f + hvalue
@@ -83,7 +83,7 @@ def model_value(g, H, s, xopt=(), h=None,argsh=(), scaling_changes=None):
     assert g.shape == s.shape, "g and s have incompatible sizes"
     Hs = H.dot(s)
     rtn = np.dot(s, g + 0.5*Hs)
-    if h != None:
+    if h is not None:
         hvalue = h(remove_scaling(xopt+s, scaling_changes), *argsh)
         rtn += hvalue
     return rtn
