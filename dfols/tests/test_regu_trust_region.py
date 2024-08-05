@@ -7,15 +7,15 @@ import unittest
 
 from dfols.trust_region import ctrsbox_sfista
 from dfols.util import model_value, pball, pbox
-from scipy.optimize import minimize
 
 # NOTE: S-FISTA slow because of the implicit form of prox_uh
 def prox_uh(x, u):
     # prox_uh(d) = min_{s} ||s-d||^2 / 2u + h(s) 
     # When h is 1-norm, we have the explicit solution
-    rtn = np.zeros(x.shape)
-    for i in range(x.shape[0]):
-        rtn[i] = np.sign(x[i])*max(abs(x[i])-u, 0)
+    #rtn = np.zeros(x.shape)
+    #for i in range(x.shape[0]):
+    #    rtn[i] = np.sign(x[i])*max(abs(x[i])-u, 0)
+    rtn = np.sign(x) * np.maximum(np.abs(x)-u, 0.0)
     return rtn
 
 class TestUncInternalCDFO(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestUncInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         func_tol = 1e-4
@@ -45,7 +45,7 @@ class TestUncBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
         func_tol = 1e-4
@@ -66,7 +66,7 @@ class TestUncHardCDFO(unittest.TestCase):
         g = np.array([0.0, 0.0, 1.0])
         H = np.array([[-2.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = sqrt(2.0)
         xopt = np.zeros((n,))
         func_tol = 1e-4
@@ -87,7 +87,7 @@ class TestConInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         sl = xopt + np.array([-0.5, -10.0, -10.0])
@@ -111,7 +111,7 @@ class TestConBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
         sl = xopt + np.array([-0.3, -0.01, -0.1])
@@ -135,7 +135,7 @@ class TestBoxBallInternalCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 2.0
         xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
         sl = xopt + np.array([-0.5, -10.0, -10.0])
@@ -160,7 +160,7 @@ class TestBoxBallBdryCDFO(unittest.TestCase):
         g = np.array([1.0, 0.0, 1.0])
         H = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
         h = lambda d: np.linalg.norm(d, 1)
-        L_h = sqrt(3)
+        L_h = sqrt(n)
         delta = 5.0 / 12.0
         xopt = np.zeros((n,))
         sl = xopt + np.array([-0.3, -0.01, -0.1])
