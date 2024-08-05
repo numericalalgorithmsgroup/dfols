@@ -1107,8 +1107,6 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
 
     if do_logging:
         module_logger.info("Did a total of %g run(s)" % nruns)
-    
-    ##print("xmin_ff", xmin)
 
     return results
 
