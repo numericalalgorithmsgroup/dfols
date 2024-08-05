@@ -78,13 +78,13 @@ def eval_least_squares_with_regularisation(objfun, x, h=None, argsf=(), argsh=()
     return fvec, obj
 
 
-def model_value(g, H, s, xopt=(), h=None,argsh=()):
+def model_value(g, H, s, xopt=(), h=None,argsh=(), scaling_changes=None):
     # Calculate model value (s^T * g + 0.5* s^T * H * s) + h(xopt + s) = s^T * (gopt + 0.5 * H*s) + h(xopt + s)
     assert g.shape == s.shape, "g and s have incompatible sizes"
     Hs = H.dot(s)
     rtn = np.dot(s, g + 0.5*Hs)
     if h != None:
-        hvalue = h(xopt+s, *argsh)
+        hvalue = h(remove_scaling(xopt+s, scaling_changes), *argsh)
         rtn += hvalue
     return rtn
 

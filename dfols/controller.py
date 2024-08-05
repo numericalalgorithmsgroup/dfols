@@ -445,6 +445,13 @@ class Controller(object):
         # TODO: add comment for calculation of criticality measure, need h != None
         # Build model for full least squares function
         gopt, H = self.model.build_full_model()
+        
+        if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+            module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_sfista (criticality measure calc)")
+            # d = np.zeros(gopt.shape)
+            # gnew = gopt.copy()
+            # crvmin = -1
+            return np.inf
         ##print("gopt", gopt)
         ##print("H", H)
         # NOTE: smaller params here to get more iterations in S-FISTA
@@ -453,17 +460,19 @@ class Controller(object):
         if self.model.projections:
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), self.model.projections, 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
-                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                scaling_changes=self.scaling_changes)
         else:
             # NOTE: alternative way if using trsbox
             # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), [proj], 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
-                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                scaling_changes=self.scaling_changes)
         
         # Calculate criticality measure
-        criticality_measure = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, np.zeros(H.shape), d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
+        criticality_measure = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, np.zeros(H.shape), d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)
         ##print("d (criticality measure): ", d)
         ##print("model value (criticality measure): ", model_value(gopt, 2*H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh))
         return criticality_measure
@@ -479,23 +488,40 @@ class Controller(object):
 
         if self.h is None:
             if self.model.projections:
-                d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                # Running PGD/SFISTA is generally slower than trsbox, so don't do this if gopt or H have bad values
+                # (this will ultimately lead to a manual setting of d=0 and calling a safety step anyway)
+                if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+                    module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_pgd")
+                    d = np.zeros(gopt.shape)
+                    gnew = gopt.copy()
+                    crvmin = -1
+                else:
+                    d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             else:
                 d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
         else:
-            if self.model.projections:
+            # Running PGD/SFISTA is generally slower than trsbox, so don't do this if gopt or H have bad values
+            # (this will ultimately lead to a manual setting of d=0 and calling a safety step anyway)
+            if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+                module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_sfista")
+                d = np.zeros(gopt.shape)
+                gnew = gopt.copy()
+                crvmin = -1
+            elif self.model.projections:
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
-                                     max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                     max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                     scaling_changes=self.scaling_changes)
             else:
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
                 proj = lambda x: pbox(x, self.model.sl, self.model.su)
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
                                       self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol,
-                                      max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+                                      max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                      scaling_changes=self.scaling_changes)
             # NOTE: check sufficient decrease. If increase in the model, set zero step
-            pred_reduction = self.h(self.model.xopt(abs_coordinates=True), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh)
+            pred_reduction = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)
             ##("pred_reduction", pred_reduction)
             if pred_reduction < 0.0:
                 ##print("bad d", d)
@@ -544,9 +570,9 @@ class Controller(object):
         # pred_reduction = - calculate_model_value(gopt, H, d)
         pred_reduction = - model_value(gopt, H, d)
         if self.h is not None:
-            obj += self.h(x, *self.argsh)
+            obj += self.h(remove_scaling(x, self.scaling_changes), *self.argsh)
             # since m(0) = h(x)
-            pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
+            pred_reduction = self.h(remove_scaling(x, self.scaling_changes), *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh, self.scaling_changes)
         actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
@@ -690,9 +716,9 @@ class Controller(object):
         pred_reduction = - model_value(gopt, H, d)
         if self.h is not None:
             # QUESTION: x+d here correct? rvec_list takes mean value
-            obj += self.h(x+d, *self.argsh) 
+            obj += self.h(remove_scaling(x+d, self.scaling_changes), *self.argsh) 
             # since m(0) = h(x)
-            pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
+            pred_reduction = self.h(remove_scaling(x, self.scaling_changes), *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh, self.scaling_changes)
         actual_reduction = self.model.objopt() - obj
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!

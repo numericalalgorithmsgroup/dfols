@@ -85,7 +85,7 @@ __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbo
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN, scaling_changes=None):
     n = xopt.size
     # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
@@ -120,7 +120,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
     # TODO: Add instruction to prox_uh
     # SOLVED: bug here, previous: g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
-        return g + H @ d + (xopt + d - prox_uh(xopt + d, u, *argsprox)) / u
+        return g + H @ d + (xopt + d - prox_uh(remove_scaling(xopt + d, scaling_changes), u, *argsprox)) / u
 
     # Lipschitz constant of gradient_Fu
     l = k_H + 1 / u 
@@ -138,7 +138,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         return p - xopt
 
     # general step
-    model_value_best = model_value(g, H, d, xopt, h, *argsh)
+    model_value_best = model_value(g, H, d, xopt, h, *argsh, scaling_changes)
     d_best = d.copy()
     for k in range(MAX_LOOP_ITERS):
         prev_d = d.copy()
@@ -151,9 +151,9 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         # SOLVED: (previously) make sfista decrease in each iteration (might have d = 0, criticality measure=0)
         # if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
         #     d = prev_d
-        if model_value(g, H, d, xopt, h, *argsh) < model_value_best:
+        if model_value(g, H, d, xopt, h, *argsh, scaling_changes) < model_value_best:
             d_best = d
-            model_value_best =  model_value(g, H, d, xopt, h, *argsh)
+            model_value_best =  model_value(g, H, d, xopt, h, *argsh, scaling_changes)
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version

@@ -41,9 +41,6 @@ from .diagnostic_info import *
 from .params import *
 from .util import *
 
-# NOTE: import for time tests
-import time
-
 __all__ = ['solve']
 
 module_logger = logging.getLogger(__name__) 
@@ -286,9 +283,14 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             # Calculate criticality measure
             criticality_measure = control.evaluate_criticality_measure(params)
             # Trust region step
-            time_tr_start = time.time()
             d, gopt, H, gnew, crvmin = control.trust_region_step(params, criticality_measure)
-            tau = min(criticality_measure/(LA.norm(gopt)+lh),1.0)
+            try:
+                tau = min(criticality_measure/(LA.norm(gopt)+lh), 1.0)
+            except ValueError:
+                # In some instances, gopt can have nan/inf values -- this ultimately calls a safety step and is generally fine
+                # but we need to set a value for tau nonetheless
+                tau = 1.0
+        
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
         
