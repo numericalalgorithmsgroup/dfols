@@ -555,11 +555,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 break  # quit
 
             # Estimate f in order to compute 'actual reduction'
-            ##print("d before calcualte_ratio: ", d)
-            ##print("xopt before calcualte_ratio: ", control.model.xopt(abs_coordinates=True))
-            # NOTE: be careful abour x in calculate_ratio
             ratio, exit_info = control.calculate_ratio(control.model.xopt(abs_coordinates=True), current_iter, rvec_list[:num_samples_run, :], d, gopt, H)
-            ##print("ratio: ", ratio)
             if exit_info is not None:
                 if exit_info.able_to_do_restart() and params("restarts.use_restarts") and params(
                         "restarts.use_soft_restarts"):
@@ -607,7 +603,6 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                                         params("tr_radius.gamma_inc_overline") * dnorm), 1.0e10)
                 if params("logging.save_diagnostic_info"):
                     diagnostic_info.update_iter_type(ITER_VERY_SUCCESSFUL)
-            # QUESTION: previously: control.delta <= 1.5 * control.rho, why use 1.5 here?
             if control.delta <= 1.5 * control.rho:  # cap trust region radius at rho
                 control.delta = control.rho
 

@@ -100,7 +100,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     y = np.zeros(n)
     t = 1
     k_H = np.linalg.norm(H, 2) # SOLVED: use ||H||_2 <= ||H||_F, might be better than maxhessian
-    # QUESTION: difference expression for u from MAX_LOP_ITERS
+    # QUESTION: different expression for u from MAX_LOOP_ITERS
     #u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
     crvmin = -1.0
     # NOTE: iterataion depends on delta/func_tol
@@ -109,14 +109,11 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     except ValueError:
         MAX_LOOP_ITERS = max_iters
     u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
-    ##print("smoothing parameter", u)
-    ##print("number of iterations", MAX_LOOP_ITERS)
 
     def gradient_Fu(xopt, g, H, u, prox_uh, d):
     # Calculate gradient_Fu,
-    # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of
-    # h.
-    # We assume that h is global Lipschitz continous with constant L_h,
+    # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of h.
+    # We assume that h is globally Lipschitz continous with constant L_h,
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
     # TODO: Add instruction to prox_uh
     # SOLVED: bug here, previous: g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
@@ -151,9 +148,10 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
         # SOLVED: (previously) make sfista decrease in each iteration (might have d = 0, criticality measure=0)
         # if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
         #     d = prev_d
-        if model_value(g, H, d, xopt, h, *argsh, scaling_changes) < model_value_best:
-            d_best = d
-            model_value_best =  model_value(g, H, d, xopt, h, *argsh, scaling_changes)
+        new_model_value = model_value(g, H, d, xopt, h, *argsh, scaling_changes)
+        if new_model_value < model_value_best:
+            d_best = d.copy()
+            model_value_best = new_model_value
 
         # update true gradient
         # FIXME: gnew is the gradient of the smoothed version
