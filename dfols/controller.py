@@ -477,7 +477,7 @@ class Controller(object):
         func_tol = (1-params("func_tol.tr_step")) * 1 * max(criticality_measure,1) * min(self.delta, max(criticality_measure,1) / max(np.linalg.norm(H, 2),1))
         ##print("function tolerance (trust region step)", func_tol)
 
-        if self.h == None:
+        if self.h is None:
             if self.model.projections:
                 d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
             else:
@@ -543,7 +543,7 @@ class Controller(object):
         obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) # estimate actual objective value
         # pred_reduction = - calculate_model_value(gopt, H, d)
         pred_reduction = - model_value(gopt, H, d)
-        if self.h != None:
+        if self.h is not None:
             obj += self.h(x, *self.argsh)
             # since m(0) = h(x)
             pred_reduction = self.h(x, *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh)
@@ -597,7 +597,7 @@ class Controller(object):
 
         # Check if the average value was below our threshold
         # QUESTION: how to choose x in h when using averaged values
-        if self.h == None:
+        if self.h is None:
             if num_samples_run > 0 and \
                             sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
                 exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
@@ -688,7 +688,7 @@ class Controller(object):
         obj = sumsq(np.mean(rvec_list, axis=0))
         # pred_reduction = - calculate_model_value(gopt, H, d)
         pred_reduction = - model_value(gopt, H, d)
-        if self.h != None:
+        if self.h is not None:
             # QUESTION: x+d here correct? rvec_list takes mean value
             obj += self.h(x+d, *self.argsh) 
             # since m(0) = h(x)

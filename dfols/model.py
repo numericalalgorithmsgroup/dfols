@@ -78,7 +78,7 @@ class Model(object):
         
         self.objval = np.inf * np.ones((npt, ))  # overall objective value for each xpt
         self.objval[0] = sumsq(r0)
-        if h != None:
+        if h is not None:
             self.objval[0] += h(x0, *argsh)
         self.kopt = 0  # index of current iterate (should be best value so far)
         self.nsamples = np.zeros((npt,), dtype=int)  # number of samples used to evaluate objective at each point
@@ -184,7 +184,7 @@ class Model(object):
         self.points[k, :] = x.copy()
         self.fval_v[k, :] = rvec.copy()
         self.objval[k] = sumsq(rvec)
-        if self.h != None:
+        if self.h is not None:
             self.objval[k] += self.h(self.xbase + x, *self.argsh)
         self.nsamples[k] = 1
         self.factorisation_current = False
@@ -211,7 +211,7 @@ class Model(object):
         self.fval_v[k, :] = t * self.fval_v[k, :] + (1 - t) * rvec_extra
         # NOTE: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
         self.objval[k] = sumsq(self.fval_v[k, :])
-        if self.h != None:
+        if self.h is not None:
             self.objval[k] += self.h(self.xbase + self.points[k, :], *self.argsh)
         self.nsamples[k] += 1
 
@@ -222,7 +222,7 @@ class Model(object):
         self.points = np.append(self.points, x.reshape((1, self.n())), axis=0)  # append row to xpt
         self.fval_v = np.append(self.fval_v, rvec.reshape((1, self.m())), axis=0)  # append row to fval_v
         obj = sumsq(rvec)
-        if self.h != None:
+        if self.h is not None:
             obj += self.h(self.xbase + x, *self.argsh)
         self.objval = np.append(self.objval, obj)  # append entry to fval
         self.nsamples = np.append(self.nsamples, 1)  # add new sample number
@@ -251,7 +251,7 @@ class Model(object):
     def save_point(self, x, rvec, nsamples, x_in_abs_coords=True):
         xabs = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
         obj = sumsq(rvec)
-        if self.h != None:
+        if self.h is not None:
             obj += self.h(xabs, *self.argsh)
         if self.objsave is None or obj <= self.objsave:
             self.xsave = xabs

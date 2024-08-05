@@ -138,7 +138,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
         r0_avg = np.mean(rvec_list[:num_samples_run, :], axis=0)
         # NOTE: modify objvalue here
-        if h == None:
+        if h is None:
             if sumsq(r0_avg) <= params("model.abs_tol"):
                 exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
         else:
@@ -278,39 +278,21 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 nruns_so_far += 1
                 break  # quit
 
-        tau = 1 # ratio used in the safety phase
-        if h == None:
+        tau = 1.0 # ratio used in the safety phase
+        if h is None:
             # Trust region step
             d, gopt, H, gnew, crvmin = control.trust_region_step(params)
         else:
             # Calculate criticality measure
-            # output for time tests
-            ##print("="*76)
-            ##print("iteration: ", current_iter)
-            ##print("tr_radius", control.delta)
-            # NOTE: test time for criticality measure
-            time_cr_start = time.time()
             criticality_measure = control.evaluate_criticality_measure(params)
-            time_cr_end = time.time()
-            time_cr_taken = time_cr_end - time_cr_start
-            ##print("criticality value: ", criticality_measure)
-            ##print("criticality time: ", time_cr_taken)
-            ##print("*"*60)
-
             # Trust region step
-            # SOLVED: modify for speed: slow when 1e-6, use max(func_tol, 1e-5) cause Exit flag = -2 
-            # Error (trust region increase): Either rust region step gave model increase
             time_tr_start = time.time()
             d, gopt, H, gnew, crvmin = control.trust_region_step(params, criticality_measure)
-            time_tr_end = time.time()
-            time_tr_taken = time_tr_end-time_tr_start
-            tau = min(criticality_measure/(LA.norm(gopt)+lh),1)
-            ##print("trust region time: ", time_tr_taken)
-            ##print("="*76)
+            tau = min(criticality_measure/(LA.norm(gopt)+lh),1.0)
         if do_logging:
             module_logger.debug("Trust region step is d = " + str(d))
+        
         xnew = control.model.xopt() + d
-        ##print("xnew in relative coordinate (after trust_region_step): ", xnew)
         dnorm = min(LA.norm(d), control.delta)
 
         if print_progress:
@@ -975,7 +957,7 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
 
     exit_info = None
     # Input & parameter checks
-    if exit_info is None and h != None and (lh == None or lh <= 0.0):
+    if exit_info is None and h is not None and (lh is None or lh <= 0.0):
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh is not None and lh must be positive")
 
     if exit_info is None and npt < n + 1:
