@@ -112,7 +112,7 @@ class Controller(object):
         self.argsprox = argsprox
         self.maxfun = maxfun
         self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, h=self.h, argsh = argsh, precondition=params("interpolation.precondition"),
-                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
+                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging, scaling_changes=scaling_changes)
         self.nf = nf
         self.nx = nx
         self.rhobeg = rhobeg
