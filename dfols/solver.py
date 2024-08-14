@@ -954,16 +954,21 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
 
     exit_info = None
     # Input & parameter checks
-    if exit_info is None and h is not None and (lh is None or lh <= 0.0):
-        exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh is not None and lh must be positive")
+    if exit_info is None and h is not None:
+        if prox_uh is None:
+            exit_info = ExitInformation(EXIT_INPUT_ERROR, "Must provide prox_uh input if h is not None")
+        elif lh is None:
+            exit_info = ExitInformation(EXIT_INPUT_ERROR, "Must provide lh input if h is not None")
+        elif lh <= 0.0:
+            exit_info = ExitInformation(EXIT_INPUT_ERROR, "lh must be strictly positive")
 
     if exit_info is None and npt < n + 1:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "npt must be >= n+1 for linear models with inexact interpolation")
 
-    if exit_info is None and rhobeg < 0.0:
+    if exit_info is None and rhobeg <= 0.0:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "rhobeg must be strictly positive")
 
-    if exit_info is None and rhoend < 0.0:
+    if exit_info is None and rhoend <= 0.0:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "rhoend must be strictly positive")
 
     if exit_info is None and rhobeg <= rhoend:
