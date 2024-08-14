@@ -87,7 +87,6 @@ ZERO_THRESH = 1e-14
 
 def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN, scaling_changes=None):
     n = xopt.size
-    # NOTE: L_h, prox_uh unable to check, add instruction to prox_uh
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
     assert len(H.shape) == 2, "H must be a matrix"
@@ -99,13 +98,17 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     d = np.zeros(n) # start with zero vector
     y = np.zeros(n)
     t = 1
-    k_H = np.linalg.norm(H, 2) # SOLVED: use ||H||_2 <= ||H||_F, might be better than maxhessian
-    # QUESTION: different expression for u from MAX_LOOP_ITERS
-    #u = 2 * func_tol / (L_h * (L_h + sqrt(L_h * L_h + 2 * k_H * func_tol))) # smoothing parameter
+    k_H = np.linalg.norm(H, 2)
     crvmin = -1.0
-    # NOTE: iterataion depends on delta/func_tol
+    
+    # Number of iterations & smoothing parameter, from Theorem 10.57 in 
+    #   [A. Beck. First-order methods in optimization, SIAM, 2017]
+    # We do not use the values of k and mu given in the theorem statement, but rather the intermediate
+    # results on p313 (K1 for number of iterations, and the immediate next line for mu)
+    # Note: in the book's notation, Gamma=delta^2, alpha=1, beta=L_h^2/2, Lf=k_H [alpha and beta from Thm 10.51]
     try:
-        MAX_LOOP_ITERS =  ceil(min(delta*(2 * L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol, max_iters)) # maximum number of iterations
+        MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol)
+        MAX_LOOP_ITERS = min(MAX_LOOP_ITERS, max_iters)
     except ValueError:
         MAX_LOOP_ITERS = max_iters
     u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
@@ -114,9 +117,7 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     # Calculate gradient_Fu,
     # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of h.
     # We assume that h is globally Lipschitz continous with constant L_h,
-    # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.  
-    # TODO: Add instruction to prox_uh
-    # SOLVED: bug here, previous: g + H @ d + (d - prox_uh(xopt, u, d, *argsprox)) / u
+    # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.
         return g + H @ d + (xopt + d - prox_uh(remove_scaling(xopt + d, scaling_changes), u, *argsprox)) / u
 
     # Lipschitz constant of gradient_Fu
@@ -145,20 +146,16 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
 
         # main update step
         d = proj(y - g_Fu / l)
-        # SOLVED: (previously) make sfista decrease in each iteration (might have d = 0, criticality measure=0)
-        # if model_value(g, H, d, xopt, h, *argsh) > model_value(g, H, prev_d, xopt, h, *argsh):
-        #     d = prev_d
         new_model_value = model_value(g, H, d, xopt, h, argsh, scaling_changes)
         if new_model_value < model_value_best:
             d_best = d.copy()
             model_value_best = new_model_value
 
         # update true gradient
-        # FIXME: gnew is the gradient of the smoothed version
+        # gnew is the gradient of the smoothed function
         gnew = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
 
         # update CRVMIN
-        # NOTE: crvmin is the Hessian term
         crv = d.dot(H).dot(d)/sumsq(d) if sumsq(d) >= ZERO_THRESH else crvmin
         crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
         
