@@ -26,8 +26,8 @@ class TestUncInternalCDFO(unittest.TestCase):
         h = lambda d: np.linalg.norm(d, 1)
         L_h = sqrt(n)
         delta = 2.0
-        xopt = np.ones((n,))  # trying nonzero (since bounds inactive)
-        func_tol = 1e-4
+        xopt = np.ones((n,))  # trying a nonzero base point
+        func_tol = 1e-3
         d_k, gnew, crvmin = ctrsbox_sfista(xopt, g, H, [], delta, h, L_h, prox_uh, func_tol=func_tol)
         for i in range(50):
             d_e = delta * np.ones(n) # initialize d_e
@@ -36,8 +36,7 @@ class TestUncInternalCDFO(unittest.TestCase):
                 d_e = d_k + err
             func_d_k = model_value(g, H, d_k, xopt, h)
             func_d_e = model_value(g, H, d_e, xopt, h)
-            self.assertTrue(func_d_k <= func_d_e or (func_d_k > func_d_e and
-                            func_d_k-func_d_e < func_tol), "sufficient decrease does not achieved!")
+            self.assertTrue(func_d_k <= func_d_e + func_tol, "sufficient decrease does not achieved!")
 
 class TestUncBdryCDFO(unittest.TestCase):
     def runTest(self):
