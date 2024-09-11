@@ -34,13 +34,15 @@ See manual.pdf or `here <https://numericalalgorithmsgroup.github.io/dfols/>`_.
 
 Citation
 --------
-If you use DFO-LS in a paper, please cite:
+The development of DFO-LS is outlined over several publications:
 
-Cartis, C., Fiala, J., Marteau, B. and Roberts, L., `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41.
+1. C. Cartis, J. Fiala, B. Marteau and L. Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] . 
+2. M. Hough, and L. Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+3. Y. Liu, K. H. Lam and L. Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:arXiv:2407.14915*, 2024.
 
-If you use DFO-LS for problems with constraints, including bound constraints, please also cite:
-
-Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579.
+If you use DFO-LS in a paper, please cite [1]. 
+If your problem has constraints, including bound constraints, please cite [1,2].
+If your problem includes a regularizer, please cite [1,3].
 
 Requirements
 ------------
@@ -70,27 +72,13 @@ For easy installation, use `pip <http://www.pip-installer.org/>`_ as root:
 
 .. code-block:: bash
 
-    $ [sudo] pip install DFO-LS
-
-or alternatively *easy_install*:
-
-.. code-block:: bash
-
-    $ [sudo] easy_install DFO-LS
-
-If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
-
-.. code-block:: bash
-
-    $ pip install --user DFO-LS
-
-which will install DFO-LS in your home directory.
+    $ pip install DFO-LS
 
 Note that if an older install of DFO-LS is present on your system you can use:
 
 .. code-block:: bash
 
-    $ [sudo] pip install --upgrade DFO-LS
+    $ pip install --upgrade DFO-LS
 
 to upgrade DFO-LS to the latest version.
 
@@ -107,22 +95,14 @@ DFO-LS is written in pure Python and requires no compilation. It can be installe
 
  .. code-block:: bash
 
-    $ [sudo] pip install .
-
-If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
-
- .. code-block:: bash
-
-    $ pip install --user .
-
-instead.
+    $ pip install .
 
 To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`pyproject.toml`) and rerun the installation using :code:`pip`, as above:
 
  .. code-block:: bash
 
     $ git pull
-    $ [sudo] pip install .  # with admin privileges
+    $ pip install .
 
 Testing
 -------
@@ -145,7 +125,7 @@ If DFO-LS was installed using *pip* you can uninstall as follows:
 
  .. code-block:: bash
 
-    $ [sudo] pip uninstall DFO-LS
+    $ pip uninstall DFO-LS
 
 If DFO-LS was installed manually you have to remove the installed files by hand (located in your python site-packages directory).
 

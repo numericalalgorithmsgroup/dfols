@@ -59,7 +59,7 @@ To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.
  .. code-block:: bash
 
     $ git pull
-    $ pip install .  # with admin privileges
+    $ pip install .
 
 Testing
 -------

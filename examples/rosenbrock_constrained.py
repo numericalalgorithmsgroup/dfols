@@ -1,21 +1,4 @@
-'''
-DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints
-
-This example defines two functions pball(x) and pbox(x) that project onto ball and
-box constraint sets respectively. It then passes both these functions to the DFO-LS
-solver so that it can find a constrained minimizer to the Rosenbrock function.
-Such a minimizer must lie in the intersection of constraint sets corresponding to
-projection functions pball(x) and pbox(x). The description of the problem is as follows:
-
-    min rosenbrock(x)
-    s.t.
-        -2 <= x[0] <= 1.1,
-        1.1 <= x[1] <= 3,
-        norm(x-c) <= 0.4
-
-where c = [0.7, 1.5] is the centre of the ball.
-'''
-from __future__ import print_function
+# DFO-LS example: minimize the Rosenbrock function with bounds and ball constraint
 import numpy as np
 import dfols
 
@@ -26,37 +9,37 @@ def rosenbrock(x):
 # Define the starting point
 x0 = np.array([-1.2, 1])
 
-'''
-Define ball projection function
-Projects the input x onto a ball with
-centre point (0.7,1.5) and radius 0.4.
-'''
-def pball(x):
-    c = np.array([0.7,1.5]) # ball centre
-    r = 0.4 # ball radius
-    return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
+# Define bound constraints (lower <= x <= upper)
+lower = np.array([-2.0, 1.1])
+upper = np.array([0.9, 3.0])
+# Note: the corresponding projection operator bound constraints is:
+#     bounds_proj = lambda x: np.minimum(np.maximum(x, lower), upper)
+# but since DFO-LS supports bounds natively, this is not recommended.
 
-'''
-Define box projection function
-Projects the input x onto a box
-such that -2 <= x[0] <= 0.9 and
-1.1 <= x[1] <= 3.
+# Define a Euclidean ball constraint, ||x-center|| <= radius
+# This is provided to DFO-LS via a projection operator, which given a point x returns
+# the closest point to x which satisfies the constraint
+center = np.array([0.7, 1.5])
+radius = 0.4
+# The projection operator for this constraint is:
+ball_proj = lambda x: center + (radius/max(np.linalg.norm(x-center), radius)) * (x-center)
 
-Note: One could equivalently add bound
-constraints as a separate input to the solver
-instead.
-'''
-def pbox(x):
-    l = np.array([-2, 1.1]) # lower bound
-    u = np.array([0.9, 3]) # upper bound
-    return np.minimum(np.maximum(x,l), u)
+# Many common types of constraints have simple projection operators.
+# e.g. lower/upper bounds (but DFO-LS supports this natively, not recommended to use projections)
+#      Euclidean balls
+#      Linear inequalities, np.dot(a, x) >= b
+#      Unit simplex, np.all(x) >= 0 and np.sum(x) <= 1
+# For more examples, see
+# - https://proximity-operator.net/indicatorfunctions.html
+# - Section 6.4.6 (pp. 155-156) of the book: A. Beck, First-Order Methods in Optimization, SIAM (2017)
+
 
 # For optional extra output details
 # import logging
 # logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Call DFO-LS
-soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
+soln = dfols.solve(rosenbrock, x0, bounds=(lower, upper), projections=[ball_proj])  # provide list of projection operators
 
 # Display output
 print(soln)

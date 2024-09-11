@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{11 April 2024}
-\release{1.4.1}
+\date{11 September 2024}
+\release{1.5.0}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,44 +86,62 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.4.1
+\sphinxstylestrong{Release:} 1.5.0
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 11 April 2024
+\sphinxstylestrong{Date:} 11 September 2024
 
 \sphinxAtStartPar
-\sphinxstylestrong{Author:} \sphinxhref{mailto:lindon.roberts@sydney.edu.au}{Lindon Roberts}
+\sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
 
 \sphinxAtStartPar
-DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
+DFO\sphinxhyphen{}LS is a flexible package for finding local solutions to nonlinear least\sphinxhyphen{}squares minimization problems (with optional regularizer and constraints), without requiring any derivatives of the objective. DFO\sphinxhyphen{}LS stands for Derivative\sphinxhyphen{}Free Optimizer for Least\sphinxhyphen{}Squares.
 
 \sphinxAtStartPar
 That is, DFO\sphinxhyphen{}LS solves
 \begin{equation*}
-\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad x \in C\\
-            &\quad  a \leq x \leq b\end{split}
+\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+\text{s.t.} &\quad  a \leq x \leq b\\
+            &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}\\\end{split}
 \end{equation*}
 \sphinxAtStartPar
-The constraint set \(C\) is the intersection of multiple convex sets provided as input by the user. All constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
+The optional regularizer \(h(x)\) is a Lipschitz continuous and convex, but possibly non\sphinxhyphen{}differentiable function that is typically used to avoid overfitting.
+A common choice is \(h(x)=\lambda \|x\|_1\) (called L1 regularization or LASSO) for \(\lambda>0\).
+Note that in the case of Tikhonov regularization/ridge regression, \(h(x)=\lambda\|x\|_2^2\) is not Lipschitz continuous, so should instead be incorporated by adding an extra term into the least\sphinxhyphen{}squares sum, \(r_{m+1}(x)=\sqrt{\lambda} \|x\|_2\).
+The (optional) constraint set \(C\) is the intersection of multiple convex sets provided as input by the user. All constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible), although the general constraints \(x\in C\) may be slightly violated from rounding errors.
 
 \sphinxAtStartPar
 Full details of the DFO\sphinxhyphen{}LS algorithm are given in our papers:
-\begin{itemize}
+\begin{enumerate}
+\sphinxsetlistlabels{\arabic}{enumi}{enumii}{}{.}%
 \item {} \begin{enumerate}
-\sphinxsetlistlabels{\Alph}{enumi}{enumii}{}{.}%
-\setcounter{enumi}{2}
+\sphinxsetlistlabels{\Alph}{enumii}{enumiii}{}{.}%
+\setcounter{enumii}{2}
 \item {} 
 \sphinxAtStartPar
 Cartis, J. Fiala, B. Marteau and L. Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]} .
 
 \end{enumerate}
 
+\item {} \begin{enumerate}
+\sphinxsetlistlabels{\Alph}{enumii}{enumiii}{}{.}%
+\setcounter{enumii}{12}
 \item {} 
 \sphinxAtStartPar
-Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+Hough, and L. Roberts, \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
 
-\end{itemize}
+\end{enumerate}
+
+\item {} \begin{enumerate}
+\sphinxsetlistlabels{\Alph}{enumii}{enumiii}{}{.}%
+\setcounter{enumii}{24}
+\item {} 
+\sphinxAtStartPar
+Liu, K. H. Lam and L. Roberts, \sphinxhref{http://arxiv.org/abs/2407.14915}{Black\sphinxhyphen{}box Optimization Algorithms for Regularized Least\sphinxhyphen{}squares Problems}, \sphinxstyleemphasis{arXiv preprint arXiv:arXiv:2407.14915}, 2024.
+
+\end{enumerate}
+
+\end{enumerate}
 
 \sphinxAtStartPar
 DFO\sphinxhyphen{}LS is a more flexible version of \sphinxhref{https://github.com/numericalalgorithmsgroup/dfogn}{DFO\sphinxhyphen{}GN}.
@@ -191,37 +209,16 @@ For easy installation, use \sphinxstyleemphasis{pip} (\sphinxurl{http://www.pip-
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
 \end{quote}
-
-\sphinxAtStartPar
-or alternatively \sphinxstyleemphasis{easy\_install}:
-\begin{quote}
-
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }easy\PYGZus{}install\PYG{+w}{ }DFO\PYGZhy{}LS
-\end{sphinxVerbatim}
-\end{quote}
-
-\sphinxAtStartPar
-If you do not have root privileges or you want to install DFO\sphinxhyphen{}LS for your private use, you can use:
-\begin{quote}
-
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}user\PYG{+w}{ }DFO\PYGZhy{}LS
-\end{sphinxVerbatim}
-\end{quote}
-
-\sphinxAtStartPar
-which will install DFO\sphinxhyphen{}LS in your home directory.
 
 \sphinxAtStartPar
 Note that if an older install of DFO\sphinxhyphen{}LS is present on your system you can use:
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}upgrade\PYG{+w}{ }DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}upgrade\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
 \end{quote}
 
@@ -246,21 +243,9 @@ DFO\sphinxhyphen{}LS is written in pure Python and requires no compilation. It c
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.
 \end{sphinxVerbatim}
 \end{quote}
-
-\sphinxAtStartPar
-If you do not have root privileges or you want to install DFO\sphinxhyphen{}LS for your private use, you can use:
-\begin{quote}
-
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}user\PYG{+w}{ }.
-\end{sphinxVerbatim}
-\end{quote}
-
-\sphinxAtStartPar
-instead.
 
 \sphinxAtStartPar
 To upgrade DFO\sphinxhyphen{}LS to the latest version, navigate to the top\sphinxhyphen{}level directory (i.e. the one containing \sphinxcode{\sphinxupquote{pyproject.toml}}) and rerun the installation using \sphinxcode{\sphinxupquote{pip}}, as above:
@@ -268,7 +253,7 @@ To upgrade DFO\sphinxhyphen{}LS to the latest version, navigate to the top\sphin
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYGZdl{}\PYG{+w}{ }git\PYG{+w}{ }pull
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.\PYG{+w}{  }\PYG{c+c1}{\PYGZsh{} with admin privileges}
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }.
 \end{sphinxVerbatim}
 \end{quote}
 
@@ -296,7 +281,7 @@ If DFO\sphinxhyphen{}LS was installed using \sphinxstyleemphasis{pip} you can un
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYGZdl{}\PYG{+w}{ }\PYG{o}{[}sudo\PYG{o}{]}\PYG{+w}{ }pip\PYG{+w}{ }uninstall\PYG{+w}{ }DFO\PYGZhy{}LS
+\PYGZdl{}\PYG{+w}{ }pip\PYG{+w}{ }uninstall\PYG{+w}{ }DFO\PYGZhy{}LS
 \end{sphinxVerbatim}
 \end{quote}
 
@@ -314,12 +299,12 @@ If DFO\sphinxhyphen{}LS was installed manually you have to remove the installed 
 \sphinxAtStartPar
 DFO\sphinxhyphen{}LS is designed to solve the nonlinear least\sphinxhyphen{}squares minimization problem (with optional convex constraints).
 \begin{equation*}
-\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad x \in C\\
-            &\quad  a \leq x \leq b\end{split}
+\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+\text{s.t.} &\quad  a \leq x \leq b\\
+            &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}\end{split}
 \end{equation*}
 \sphinxAtStartPar
-We call \(f(x)\) the objective function and \(r_i(x)\) the residual functions (or simply residuals).
+We call \(f(x)\) the objective function, \(r_i(x)\) the residual functions (or simply residuals), and \(h(x)\) the regularizer.
 \(C\) is the intersection of multiple convex sets given as input by the user.
 
 \sphinxAtStartPar
@@ -409,7 +394,7 @@ At each step, we compute a trial step \(s_k\) designed to make our approximation
 In DFO\sphinxhyphen{}LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well\sphinxhyphen{}spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
 \sphinxAtStartPar
-A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
+A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
 
 
 \section{References}
@@ -428,15 +413,19 @@ This section describes the main interface to DFO\sphinxhyphen{}LS and how to use
 \sphinxAtStartPar
 DFO\sphinxhyphen{}LS is designed to solve the local optimization problem
 \begin{equation*}
-\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &\quad x \in C\end{split}
+\begin{split}\min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+\text{s.t.} &\quad  a \leq x \leq b\\
+            &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}\end{split}
 \end{equation*}
 \sphinxAtStartPar
-where the set \(C\) is an optional non\sphinxhyphen{}empty, closed and convex constraint set. The constraints are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point that is not feasible).
+where the bound constraints \(a \leq x \leq b\) and general convex constraints \(x\in C\) are optional. The upper and lower bounds on the variables are non\sphinxhyphen{}relaxable (i.e. DFO\sphinxhyphen{}LS will never ask to evaluate a point outside the bounds). The general convex constraints are also non\sphinxhyphen{}relaxable, but they may be slightly violated at some points from rounding errors.
+The function \(h(x)\) is an optional regularizer, often used to avoid overfitting, and must be Lipschitz continuous and convex (but possibly non\sphinxhyphen{}differentiable).
+A common choice is \(h(x)=\lambda \|x\|_1\) (called L1 regularization or LASSO) for \(\lambda>0\).
+Note that in the case of Tikhonov regularization/ridge regression, \(h(x)=\lambda\|x\|_2^2\) is not Lipschitz continuous, so should instead be incorporated by adding an extra term into the least\sphinxhyphen{}squares sum, \(r_{m+1}(x)=\sqrt{\lambda} \|x\|_2\).
 
 \sphinxAtStartPar
 DFO\sphinxhyphen{}LS iteratively constructs an interpolation\sphinxhyphen{}based model for the objective, and determines a step using a trust\sphinxhyphen{}region framework.
-For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
+For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
 
 
 \section{How to use DFO\sphinxhyphen{}LS}
@@ -561,7 +550,10 @@ The \sphinxcode{\sphinxupquote{solve}} function has several optional arguments w
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{objfun}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{args}\PYG{o}{=}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{p}{]}\PYG{p}{,} \PYG{n}{npt}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{rhobeg}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,}
+\PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{objfun}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,}
+            \PYG{n}{h}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{lh}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{prox\PYGZus{}uh}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,}
+            \PYG{n}{argsf}\PYG{o}{=}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{argsh}\PYG{o}{=}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{argsprox}\PYG{o}{=}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,}
+            \PYG{n}{bounds}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{p}{]}\PYG{p}{,} \PYG{n}{npt}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{rhobeg}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,}
             \PYG{n}{rhoend}\PYG{o}{=}\PYG{l+m+mf}{1e\PYGZhy{}8}\PYG{p}{,} \PYG{n}{maxfun}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{nsamples}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,}
             \PYG{n}{user\PYGZus{}params}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,} \PYG{n}{objfun\PYGZus{}has\PYGZus{}noise}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,}
             \PYG{n}{scaling\PYGZus{}within\PYGZus{}bounds}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,}
@@ -574,7 +566,27 @@ These arguments are:
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{args}} \sphinxhyphen{} a tuple of extra arguments passed to the objective function.
+\sphinxcode{\sphinxupquote{h}} \sphinxhyphen{} the regularizer function which takes an input \(x\in\mathbb{R}^n\) and returns \(h(x)\).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{lh}} \sphinxhyphen{} the \sphinxhref{https://en.wikipedia.org/wiki/Lipschitz\_continuity}{Lipschitz constant} (with respect to the Euclidean norm on \(\mathbb{R}^n\)) of \(h(x)\), a positive number if \sphinxcode{\sphinxupquote{h}} given. For example, if \(h(x)=\lambda \|x\|_1\) for \(\lambda>0\), then \(L_h=\lambda \sqrt{n}\).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{prox\_uh}} \sphinxhyphen{} the \sphinxhref{https://en.wikipedia.org/wiki/Proximal\_operator}{proximal operator} of \(h(x)\). This function has the form \sphinxcode{\sphinxupquote{prox\_uh(x, u)}}, where \(x\in \mathbb{R}^n\) and \(u>0\), and returns \(\operatorname{prox}_{uh}(x)\). For example, if \(h(x)=\lambda \|x\|_1\) for \(\lambda>0\), then \sphinxcode{\sphinxupquote{prox\_uh(x, u) = np.sign(x) * np.maximum(np.abs(x) \sphinxhyphen{} lambda*u, 0)}}. More examples of proximal operators may be found on \sphinxhref{https://proximity-operator.net/}{this page}.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{argsf}} \sphinxhyphen{} a tuple of extra arguments passed to the objective function \sphinxcode{\sphinxupquote{objfun(x, *argsf)}}.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{argsh}} \sphinxhyphen{} a tuple of extra arguments passed to the regularizer \sphinxcode{\sphinxupquote{h(x, *argsh)}}.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{argsprox}} \sphinxhyphen{} a tuple of extra arguments passed to the proximal operator \sphinxcode{\sphinxupquote{prox\_uh(x, u, *argsprox)}}.
 
 \item {} 
 \sphinxAtStartPar
@@ -793,33 +805,54 @@ An alternative option available is to get DFO\sphinxhyphen{}LS to print to termi
 \end{quote}
 
 
-\section{Handling Arbitrary Convex Constraints}
-\label{\detokenize{userguide:handling-arbitrary-convex-constraints}}
+\section{Adding General Convex Constraints}
+\label{\detokenize{userguide:adding-general-convex-constraints}}
 \sphinxAtStartPar
-DFO\sphinxhyphen{}LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
-minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user\sphinxhyphen{}provided convex
-sets must be non\sphinxhyphen{}empty.
+We can also add more general convex constraints \(x \in C := C_1 \cap \cdots \cap C_n\) to our problem, where
+each \(C_i\) is a convex set. To do this, we need to know the Euclidean projection operator for each \(C_i\):
+\begin{equation*}
+\begin{split}\operatorname{proj}_{C_i}(x) := \operatorname{argmin}_{y\in C_i} \|y-x\|_2^2.\end{split}
+\end{equation*}
+\sphinxAtStartPar
+i.e. given a point \(x\), return the closest point to \(x\) in the set \(C_i\).
+There are many examples of simple convex sets \(C_i\) for which this function has a known, simple form, such as:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Bound constraints (but since DFO\sphinxhyphen{}LS supports this directly, it is better to give these explicitly via the \sphinxcode{\sphinxupquote{bounds}} input, as above)
+
+\item {} 
+\sphinxAtStartPar
+Euclidean ball constraints: \(\|x-c\|_2 \leq r\)
+
+\item {} 
+\sphinxAtStartPar
+Unit simplex: \(x_i \geq 0\) and \(\sum_{i=1}^{n} x_i \leq 1\)
+
+\item {} 
+\sphinxAtStartPar
+Linear inequalities: \(a^T x \geq b\)
+
+\end{itemize}
+
+\sphinxAtStartPar
+Note the intersection of the user\sphinxhyphen{}provided convex sets must be non\sphinxhyphen{}empty.
+
+\sphinxAtStartPar
+In DFO\sphinxhyphen{}LS, set the input \sphinxcode{\sphinxupquote{projections}} to be a list of projection functions, one per \(C_i\).
+Internally, DFO\sphinxhyphen{}LS computes the projection onto the intersection of these sets and the bound constraints
+using \sphinxhref{https://en.wikipedia.org/wiki/Dykstra\%27s\_projection\_algorithm}{Dykstra’s projection algorithm}.
+
+\sphinxAtStartPar
+For the explicit expressions for the above projections, and more examples, see for example \sphinxhref{https://proximity-operator.net/indicatorfunctions.html}{this online database}
+or Section 6.4.6 of the textbook \sphinxcite{userguide:b2017}.
+
+\sphinxAtStartPar
+As an example, let’s minimize the above Rosenbrock function with different bounds, and with a Euclidean
+ball constraint, namely \((x_1-0.7)^2 + (x_2-1.5)^2 \leq 0.4^2\).
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{l+s+sd}{DFO\PYGZhy{}LS example: minimize the Rosenbrock function with arbitrary convex constraints}
-
-\PYG{l+s+sd}{This example defines two functions pball(x) and pbox(x) that project onto ball and}
-\PYG{l+s+sd}{box constraint sets respectively. It then passes both these functions to the DFO\PYGZhy{}LS}
-\PYG{l+s+sd}{solver so that it can find a constrained minimizer to the Rosenbrock function.}
-\PYG{l+s+sd}{Such a minimizer must lie in the intersection of constraint sets corresponding to}
-\PYG{l+s+sd}{projection functions pball(x) and pbox(x). The description of the problem is as follows:}
-
-\PYG{l+s+sd}{    min rosenbrock(x)}
-\PYG{l+s+sd}{    s.t.}
-\PYG{l+s+sd}{        \PYGZhy{}2 \PYGZlt{}= x[0] \PYGZlt{}= 1.1,}
-\PYG{l+s+sd}{        1.1 \PYGZlt{}= x[1] \PYGZlt{}= 3,}
-\PYG{l+s+sd}{        norm(x\PYGZhy{}c) \PYGZlt{}= 0.4}
-
-\PYG{l+s+sd}{where c = [0.7, 1.5] is the centre of the ball.}
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
 \PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
 \PYG{k+kn}{import} \PYG{n+nn}{dfols}
 
@@ -830,37 +863,20 @@ sets must be non\sphinxhyphen{}empty.
 \PYG{c+c1}{\PYGZsh{} Define the starting point}
 \PYG{n}{x0} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.2}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
 
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{l+s+sd}{Define ball projection function}
-\PYG{l+s+sd}{Projects the input x onto a ball with}
-\PYG{l+s+sd}{centre point (0.7,1.5) and radius 0.4.}
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{k}{def} \PYG{n+nf}{pball}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
-    \PYG{n}{c} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.7}\PYG{p}{,}\PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} ball centre}
-    \PYG{n}{r} \PYG{o}{=} \PYG{l+m+mf}{0.4} \PYG{c+c1}{\PYGZsh{} ball radius}
-    \PYG{k}{return} \PYG{n}{c} \PYG{o}{+} \PYG{p}{(}\PYG{n}{r}\PYG{o}{/}\PYG{n}{np}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}\PYG{p}{,}\PYG{n}{r}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Define bound constraints (lower \PYGZlt{}= x \PYGZlt{}= upper)}
+\PYG{n}{lower} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{l+m+mf}{1.1}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{upper} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mf}{3.0}\PYG{p}{]}\PYG{p}{)}
 
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{l+s+sd}{Define box projection function}
-\PYG{l+s+sd}{Projects the input x onto a box}
-\PYG{l+s+sd}{such that \PYGZhy{}2 \PYGZlt{}= x[0] \PYGZlt{}= 0.9 and}
-\PYG{l+s+sd}{1.1 \PYGZlt{}= x[1] \PYGZlt{}= 3.}
+\PYG{c+c1}{\PYGZsh{} Define the ball constraint ||x\PYGZhy{}center|| \PYGZlt{}= radius, and its projection operator}
+\PYG{n}{center} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.7}\PYG{p}{,} \PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{radius} \PYG{o}{=} \PYG{l+m+mf}{0.4}
+\PYG{n}{ball\PYGZus{}proj} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{n}{center} \PYG{o}{+} \PYG{p}{(}\PYG{n}{radius}\PYG{o}{/}\PYG{n+nb}{max}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{center}\PYG{p}{)}\PYG{p}{,} \PYG{n}{radius}\PYG{p}{)}\PYG{p}{)} \PYG{o}{*} \PYG{p}{(}\PYG{n}{x}\PYG{o}{\PYGZhy{}}\PYG{n}{center}\PYG{p}{)}
 
-\PYG{l+s+sd}{Note: One could equivalently add bound}
-\PYG{l+s+sd}{constraints as a separate input to the solver}
-\PYG{l+s+sd}{instead.}
-\PYG{l+s+sd}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
-\PYG{k}{def} \PYG{n+nf}{pbox}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
-    \PYG{n}{l} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mf}{1.1}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} lower bound}
-    \PYG{n}{u} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} upper bound}
-    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{minimum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{maximum}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{l}\PYG{p}{)}\PYG{p}{,} \PYG{n}{u}\PYG{p}{)}
-
-\PYG{c+c1}{\PYGZsh{} For optional extra output details}
-\PYG{k+kn}{import} \PYG{n+nn}{logging}
-\PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{DEBUG}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
-
-\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
-\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{rosenbrock}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{n}{pball}\PYG{p}{,}\PYG{n}{pbox}\PYG{p}{]}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS (with bounds and projection operator)}
+\PYG{c+c1}{\PYGZsh{} Note: it is better to provide bounds explicitly, instead of using the corresponding}
+\PYG{c+c1}{\PYGZsh{}       projection function}
+\PYG{c+c1}{\PYGZsh{} Note: input \PYGZsq{}projections\PYGZsq{} must be a list of projection functions}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{rosenbrock}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{bounds}\PYG{o}{=}\PYG{p}{(}\PYG{n}{lower}\PYG{p}{,} \PYG{n}{upper}\PYG{p}{)}\PYG{p}{,} \PYG{n}{projections}\PYG{o}{=}\PYG{p}{[}\PYG{n}{ball\PYGZus{}proj}\PYG{p}{]}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Display output}
 \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
@@ -888,6 +904,103 @@ Warning (trust region increase): Either multiple constraints are active or trust
 ****************************
 \end{sphinxVerbatim}
 \end{quote}
+
+\sphinxAtStartPar
+Just like for bound constraints, DFO\sphinxhyphen{}LS will automatically ensure the starting point is feasible with respect to all constraints (bounds and general convex constraints).
+
+
+\section{Adding a Regularizer}
+\label{\detokenize{userguide:adding-a-regularizer}}
+\sphinxAtStartPar
+We can add a convex, Lipschitz continuous, but potentially non\sphinxhyphen{}differentiable regularizer to our objective function, to encourage the solution \(x\) to have certain properties.
+This is most commonly used to avoid overfitting.
+A very common choice of regularizer is \(h(x)=\lambda\|x\|_2^2\) for \(\lambda>0\) (called Tikhonov regularization or ridge regression), but this is not Lipschitz continuous. For this regularizer, you can add a new residual function \(r_{m+1}(x)=\sqrt{\lambda}\|x\|_2\) to the objective.
+
+\sphinxAtStartPar
+A suitable and widely used regularizer is the L1 norm (i.e. L1 regularization or LASSO), \(h(x)=\lambda\|x\|_1\) for \(\lambda>0\).
+This encourages the solution \(x\) to be sparse (i.e. many entries are zero).
+To use \(h(x)\) in DFO\sphinxhyphen{}LS, we need to know its \sphinxhref{https://en.wikipedia.org/wiki/Lipschitz\_continuity}{Lipschitz constant} and \sphinxhref{https://en.wikipedia.org/wiki/Proximal\_operator}{proximal operator}.
+
+\sphinxAtStartPar
+In this case, the Lipschitz constant of \(h(x)\) may be computed via
+\begin{equation*}
+\begin{split}|h(x) - h(x)| = \lambda\|x\|_1 - \lambda\|y\|_1 \leq \lambda\|x-y\|_1 \leq \lambda\sqrt{n} \|x-y\|_2\end{split}
+\end{equation*}
+\sphinxAtStartPar
+using the reverse triangle inequality to get the first inequality. Hence the Lipschitz constant of \(h(x)\) is \(\lambda\sqrt{n}\).
+
+\sphinxAtStartPar
+The proximal operator for \(h(x)\) with a parameter \(u>0\) is defined as
+\begin{equation*}
+\begin{split}\operatorname{prox}_{uh}(x) := \operatorname{argmin}_{y\in\mathbb{R}^n} h(y) + \frac{1}{2u}\|y-x\|_2^2\end{split}
+\end{equation*}
+\sphinxAtStartPar
+There are many regularizers with known proximal operators. See for example \sphinxhref{https://proximity-operator.net/}{this online database}
+or Section 6.9 of the textbook \sphinxcite{userguide:b2017}.
+In the case of \(h(x)=\lambda\|x\|_1\), the proximal operator is the soft\sphinxhyphen{}thresholding function, defined element\sphinxhyphen{}wise as
+\begin{equation*}
+\begin{split}[\operatorname{prox}_{uh}(x)]_i = \max(|x_i|-\lambda u, 0) \operatorname{sign}(x_i)\end{split}
+\end{equation*}
+\sphinxAtStartPar
+We can use DFO\sphinxhyphen{}LS to solve a simple regularized linear least\sphinxhyphen{}squares problem (with artificially generated data) as follows:
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} DFO\PYGZhy{}LS example: regularized least\PYGZhy{}squares regression}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{5}  \PYG{c+c1}{\PYGZsh{} dimension of x}
+\PYG{n}{m} \PYG{o}{=} \PYG{l+m+mi}{10}  \PYG{c+c1}{\PYGZsh{} number of residuals, i.e. dimension of b}
+
+\PYG{c+c1}{\PYGZsh{} Generate some artificial data for A and b}
+\PYG{n}{A} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{n}{m}\PYG{o}{*}\PYG{n}{n}\PYG{p}{)}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{p}{(}\PYG{n}{m}\PYG{p}{,}\PYG{n}{n}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{b} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{n}{m}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{objfun} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{n}{A} \PYG{o}{@} \PYG{n}{x} \PYG{o}{\PYGZhy{}} \PYG{n}{b}
+
+\PYG{c+c1}{\PYGZsh{} L1 regularizer: h(x) = lda*||x||\PYGZus{}1 for some lda\PYGZgt{}0}
+\PYG{n}{lda} \PYG{o}{=} \PYG{l+m+mf}{1.0}
+\PYG{n}{h} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{n}{lda} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{norm}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{n}{Lh} \PYG{o}{=} \PYG{n}{lda} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Lipschitz constant of h(x)}
+\PYG{n}{prox\PYGZus{}uh} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{,} \PYG{n}{u}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sign}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{maximum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{lda}\PYG{o}{*}\PYG{n}{u}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{)}
+
+
+\PYG{n}{x0} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,}\PYG{p}{)}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} arbitrary starting point}
+
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{objfun}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{,} \PYG{n}{h}\PYG{o}{=}\PYG{n}{h}\PYG{p}{,} \PYG{n}{lh}\PYG{o}{=}\PYG{n}{Lh}\PYG{p}{,} \PYG{n}{prox\PYGZus{}uh}\PYG{o}{=}\PYG{n}{prox\PYGZus{}uh}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Display output}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+The solution found by DFO\sphinxhyphen{}LS is:
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+****** DFO\PYGZhy{}LS Results ******
+Solution xmin = [\PYGZhy{}6.85049254e\PYGZhy{}02 \PYGZhy{}7.03534168e\PYGZhy{}11  1.19957812e\PYGZhy{}15  7.47953030e\PYGZhy{}11
+  1.30074165e\PYGZhy{}01]
+Residual vector = [ 0.52029666 \PYGZhy{}0.17185715 \PYGZhy{}0.27822451 \PYGZhy{}0.28821556 \PYGZhy{}0.24831856 \PYGZhy{}0.17654034
+ \PYGZhy{}0.08211591  0.02946872  0.1546391   0.29091242]
+Objective value f(xmin) = 0.8682829845
+Needed 34 objective evaluations (at 34 points)
+Approximate Jacobian = [[\PYGZhy{}1.75619848e\PYGZhy{}09  1.00000000e+00  2.00000000e+00  3.00000000e+00
+   4.00000000e+00]
+ ...
+ [ 4.50000000e+01  4.60000000e+01  4.70000000e+01  4.80000000e+01
+   4.90000000e+01]]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+We can see that 3 of the 5 components of the solution are very close to zero.
+Note that many LASSO\sphinxhyphen{}type algorithms can produce a solution with many entries being exactly zero, but DFO\sphinxhyphen{}LS can only make them very small (related to how it calculates a new point with trust\sphinxhyphen{}region constraints).
 
 
 \section{Example: Noisy Objective Evaluation}
@@ -1177,7 +1290,7 @@ Here, we see that both entries of the residual vector are very small, so both eq
 This section describes different optional user parameters available in DFO\sphinxhyphen{}LS.
 
 \sphinxAtStartPar
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{userguide:cfmr2018} and \sphinxcite{userguide:hr2022}.
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
 
 \sphinxAtStartPar
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; that is, whether evaluating \sphinxcode{\sphinxupquote{objfun(x)}} several times at the same \sphinxcode{\sphinxupquote{x}} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{\sphinxupquote{objfun\_has\_noise}} input to \sphinxcode{\sphinxupquote{dfols.solve()}} (and not by inspecting \sphinxcode{\sphinxupquote{objfun}}, for instance).
@@ -1516,6 +1629,27 @@ The default values, used if no override is given, in some cases vary depending o
 \end{itemize}
 
 
+\section{Handling regularizer}
+\label{\detokenize{advanced:handling-regularizer}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{func\_tol.criticality\_measure}} \sphinxhyphen{} scale factor (of the current trust\sphinxhyphen{}region radius) to determine the accuracy of the calculated  criticality/stationarity measure (smaller means more accurate). Default is \(10^{-3}\).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{func\_tol.tr\_step}} \sphinxhyphen{} scale factor to determine the accuracy of the trust\sphinxhyphen{}region step (smaller is less accurate). Default is \(0.9\).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{func\_tol.max\_iters}} \sphinxhyphen{} maximum number of subproblem (S\sphinxhyphen{}FISTA) iterations. Default is 500.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{sfista.max\_iters\_scaling}} \sphinxhyphen{} by what factor to increase the minimum number of subproblem (S\sphinxhyphen{}FISTA) iterations. Must be at least 1. Default is 2.
+
+\end{itemize}
+
+
 \section{References}
 \label{\detokenize{advanced:references}}
 \sphinxstepscope
@@ -1828,6 +1962,19 @@ Drop support for Python 2.7 and \textless{}=3.8 in line with SciPy \textgreater{
 
 \end{itemize}
 
+
+\section{Version 1.5.0 (11 Sep 2024)}
+\label{\detokenize{history:version-1-5-0-11-sep-2024}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Add support for (possibly nonsmooth) regularizer term.
+
+\item {} 
+\sphinxAtStartPar
+Drop warning about infeasible initial point if the point is on an upper/lower bound.
+
+\end{itemize}
+
 \sphinxstepscope
 
 
@@ -1838,7 +1985,7 @@ Drop support for Python 2.7 and \textless{}=3.8 in line with SciPy \textgreater{
 \label{\detokenize{contributors:main-author}}\begin{itemize}
 \item {} 
 \sphinxAtStartPar
-Lindon Roberts (University of Sydney)
+\sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts} (University of Sydney)
 
 \end{itemize}
 
@@ -1849,13 +1996,21 @@ Lindon Roberts (University of Sydney)
 \sphinxAtStartPar
 Matthew Hough (University of Waterloo): handle general convex constraints {[}version 1.3{]}
 
+\item {} 
+\sphinxAtStartPar
+Yanjun Liu (Princeton University): nonsmooth regularizer {[}version 1.5{]}
+
+\item {} 
+\sphinxAtStartPar
+Kevin Lam (Australian National University): nonsmooth regularizer {[}version 1.5{]}
+
 \end{itemize}
 
 
 \chapter{Acknowledgements}
 \label{\detokenize{index:acknowledgements}}
 \sphinxAtStartPar
-This software was initially developed under the supervision of \sphinxhref{https://www.maths.ox.ac.uk/people/coralia.cartis}{Coralia Cartis}, and was supported by the EPSRC Centre For Doctoral Training in \sphinxhref{https://www.maths.ox.ac.uk/study-here/postgraduate-study/industrially-focused-mathematical-modelling-epsrc-cdt}{Industrially Focused Mathematical Modelling} (EP/L015803/1) in collaboration with the \sphinxhref{http://www.nag.com/}{Numerical Algorithms Group}.
+This software was initially developed under the supervision of \sphinxhref{https://www.maths.ox.ac.uk/people/coralia.cartis}{Coralia Cartis}, and was supported by the EPSRC Centre For Doctoral Training in \sphinxhref{https://www.maths.ox.ac.uk/study-here/postgraduate-study/industrially-focused-mathematical-modelling-epsrc-cdt}{Industrially Focused Mathematical Modelling} (EP/L015803/1) in collaboration with the \sphinxhref{http://www.nag.com/}{Numerical Algorithms Group}. Development of DFO\sphinxhyphen{}LS has also been supported by the Australian Research Council (DE240100006).
 
 \begin{sphinxthebibliography}{CFMR2018}
 \bibitem[CFMR2018]{info:cfmr2018}
@@ -1863,19 +2018,31 @@ This software was initially developed under the supervision of \sphinxhref{https
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
 \bibitem[HR2022]{info:hr2022}
 \sphinxAtStartPar
-Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+Matthew Hough and Lindon Roberts, \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+\bibitem[LLR2024]{info:llr2024}
+\sphinxAtStartPar
+Yanjun Liu, Kevin H. Lam and Lindon Roberts, \sphinxhref{http://arxiv.org/abs/2407.14915}{Black\sphinxhyphen{}box Optimization Algorithms for Regularized Least\sphinxhyphen{}squares Problems}, \sphinxstyleemphasis{arXiv preprint arXiv:2407.14915} (2024).
 \bibitem[CFMR2018]{userguide:cfmr2018}
 \sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
 \bibitem[HR2022]{userguide:hr2022}
 \sphinxAtStartPar
-Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+Matthew Hough and Lindon Roberts, \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+\bibitem[LLR2024]{userguide:llr2024}
+\sphinxAtStartPar
+Yanjun Liu, Kevin H. Lam and Lindon Roberts, \sphinxhref{http://arxiv.org/abs/2407.14915}{Black\sphinxhyphen{}box Optimization Algorithms for Regularized Least\sphinxhyphen{}squares Problems}, \sphinxstyleemphasis{arXiv preprint arXiv:2407.14915} (2024).
+\bibitem[B2017]{userguide:b2017}
+\sphinxAtStartPar
+Amir Beck, \sphinxhref{https://doi.org/10.1137/1.9781611974997}{First\sphinxhyphen{}Order Methods in Optimization}, SIAM (2017).
 \bibitem[CFMR2018]{advanced:cfmr2018}
 \sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
 \bibitem[HR2022]{advanced:hr2022}
 \sphinxAtStartPar
-Hough, M. and Roberts, L., \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+Matthew Hough and Lindon Roberts, \sphinxhref{https://doi.org/10.1137/21M1460971}{Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Methods for Convex\sphinxhyphen{}Constrained Optimization}, \sphinxstyleemphasis{SIAM Journal on Optimization}, 21:4 (2022), pp. 2552\sphinxhyphen{}2579 {[}\sphinxhref{https://arxiv.org/abs/2111.05443}{preprint}{]}.
+\bibitem[LLR2024]{advanced:llr2024}
+\sphinxAtStartPar
+Yanjun Liu, Kevin H. Lam and Lindon Roberts, \sphinxhref{http://arxiv.org/abs/2407.14915}{Black\sphinxhyphen{}box Optimization Algorithms for Regularized Least\sphinxhyphen{}squares Problems}, \sphinxstyleemphasis{arXiv preprint arXiv:2407.14915} (2024).
 \end{sphinxthebibliography}
 
 
