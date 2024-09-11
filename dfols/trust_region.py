@@ -85,7 +85,7 @@ __all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbo
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN, scaling_changes=None):
+def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN, scaling_changes=None, sfista_iters_scale=1.0):
     n = xopt.size
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
@@ -107,11 +107,12 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     # results on p313 (K1 for number of iterations, and the immediate next line for mu)
     # Note: in the book's notation, Gamma=delta^2, alpha=1, beta=L_h^2/2, Lf=k_H [alpha and beta from Thm 10.51]
     try:
-        MAX_LOOP_ITERS = ceil(delta*(L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol)
+        MAX_LOOP_ITERS = ceil(sfista_iters_scale * delta * (L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol)
         MAX_LOOP_ITERS = min(MAX_LOOP_ITERS, max_iters)
     except ValueError:
         MAX_LOOP_ITERS = max_iters
     u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
+    # u = 2 * func_tol / (L_h ** 2 + L_h * sqrt(L_h ** 2 + 2 * k_H * func_tol))  # the above choice works better in practice
 
     def gradient_Fu(xopt, g, H, u, prox_uh, d):
     # Calculate gradient_Fu,

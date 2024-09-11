@@ -460,13 +460,13 @@ class Controller(object):
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), self.model.projections, 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
-                                scaling_changes=self.scaling_changes)
+                                scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
         else:
             proj = lambda x: pbox(x, self.model.sl, self.model.su)
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), [proj], 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
-                                scaling_changes=self.scaling_changes)
+                                scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
         
         # Calculate criticality measure
         criticality_measure = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, np.zeros(H.shape), d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)
@@ -505,7 +505,7 @@ class Controller(object):
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                      max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
-                                     scaling_changes=self.scaling_changes)
+                                     scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
             else:
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
@@ -513,7 +513,7 @@ class Controller(object):
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
                                       self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol,
                                       max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
-                                      scaling_changes=self.scaling_changes)
+                                      scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
             
             # NOTE: check sufficient decrease. If increase in the model, set zero step
             pred_reduction = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)

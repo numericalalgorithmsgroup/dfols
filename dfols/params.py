@@ -109,15 +109,20 @@ class ParameterList(object):
         self.params["growing.full_rank.min_sing_val"] = 1e-6  # absolute floor on singular values
         self.params["growing.full_rank.svd_max_jac_cond"] = 1e8  # maximum condition number of Jacobian
         self.params["growing.perturb_trust_region_step"] = False  # add random direction onto TRS solution?
+        
         # Dykstra's algorithm
         self.params["dykstra.d_tol"] = 1e-10
         self.params["dykstra.max_iters"] = 100
+        
         # Matrix rank algorithm
         self.params["matrix_rank.r_tol"] = 1e-18
+        
         # Function tolerance when applying S-FISTA method
         self.params["func_tol.criticality_measure"] = 1e-3
         self.params["func_tol.tr_step"] = 1-1e-1
         self.params["func_tol.max_iters"] = 500
+        self.params["sfista.max_iters_scaling"] = 2.0
+        
         self.params_changed = {}
         for p in self.params:
             self.params_changed[p] = False
@@ -277,6 +282,8 @@ class ParameterList(object):
             type_str, nonetype_ok, lower, upper = 'float', False, 0.0, 1.0
         elif key == "func_tol.max_iters":
             type_str, nonetype_ok, lower, upper = 'int', False, 0, None
+        elif key == "sfista.max_iters_scaling":
+            type_str, nonetype_ok, lower, upper = 'float', False, 1.0, None
         else:
             assert False, "ParameterList.param_type() has unknown key: %s" % key
         return type_str, nonetype_ok, lower, upper
