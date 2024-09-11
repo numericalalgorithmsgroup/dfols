@@ -36,9 +36,9 @@ Citation
 --------
 The development of DFO-LS is outlined over several publications:
 
-1. C. Cartis, J. Fiala, B. Marteau and L. Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] . 
-2. M. Hough, and L. Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
-3. Y. Liu, K. H. Lam and L. Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:arXiv:2407.14915*, 2024.
+1. C Cartis, J Fiala, B Marteau and L Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] . 
+2. M Hough, and L Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+3. Y Liu, K H Lam and L Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:arXiv:2407.14915*, 2024.
 
 If you use DFO-LS in a paper, please cite [1]. 
 If your problem has constraints, including bound constraints, please cite [1,2].
