@@ -67,6 +67,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dynamically-growing-initial-set">Dynamically Growing Initial Set</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dykstra-s-algorithm">Dykstra’s Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checking-matrix-rank">Checking Matrix Rank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-regularizer">Handling regularizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
@@ -234,6 +235,15 @@
 <h2>Checking Matrix Rank<a class="headerlink" href="#checking-matrix-rank" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">matrix_rank.r_tol</span></code> - Tolerance on what is the smallest posisble diagonal entry value in the QR factorization before being considered zero. Default is <span class="math notranslate nohighlight">\(10^{-18}\)</span>.</p></li>
+</ul>
+</section>
+<section id="handling-regularizer">
+<h2>Handling regularizer<a class="headerlink" href="#handling-regularizer" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">func_tol.criticality_measure</span></code> - scale factor (of the current trust-region radius) to determine the accuracy of the calculated  criticality/stationarity measure (smaller means more accurate). Default is <span class="math notranslate nohighlight">\(10^{-3}\)</span>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">func_tol.tr_step</span></code> - scale factor to determine the accuracy of the trust-region step (smaller is less accurate). Default is <span class="math notranslate nohighlight">\(0.9\)</span>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">func_tol.max_iters</span></code> - maximum number of subproblem (S-FISTA) iterations. Default is 500.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">sfista.max_iters_scaling</span></code> - by what factor to increase the minimum number of subproblem (S-FISTA) iterations. Must be at least 1. Default is 2.</p></li>
 </ul>
 </section>
 <section id="references">

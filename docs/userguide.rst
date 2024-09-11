@@ -8,13 +8,17 @@ DFO-LS is designed to solve the local optimization problem
 
 .. math::
 
-   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad x \in C
+   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+   \text{s.t.} &\quad  a \leq x \leq b\\
+               &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}
 
-where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
+where the bound constraints :math:`a \leq x \leq b` and general convex constraints :math:`x\in C` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds). The general convex constraints are also non-relaxable, but they may be slightly violated at some points from rounding errors. 
+The function :math:`h(x)` is an optional regularizer, often used to avoid overfitting, and must be Lipschitz continuous and convex (but possibly non-differentiable). 
+A common choice is :math:`h(x)=\lambda \|x\|_1` (called L1 regularization or LASSO) for :math:`\lambda>0`. 
+Note that in the case of Tikhonov regularization/ridge regression, :math:`h(x)=\lambda\|x\|_2^2` is not Lipschitz continuous, so should instead be incorporated by adding an extra term into the least-squares sum, :math:`r_{m+1}(x)=\sqrt{\lambda} \|x\|_2`.
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the papers [CFMR2018]_ and [HR2022]_.
+For an in-depth technical description of the algorithm see the papers [CFMR2018]_, [HR2022]_ and [LLR2024]_.
 
 How to use DFO-LS
 -----------------
@@ -67,7 +71,10 @@ The :code:`solve` function has several optional arguments which the user may pro
 
   .. code-block:: python
   
-      dfols.solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=None, 
+      dfols.solve(objfun, x0, 
+                  h=None, lh=None, prox_uh=None, 
+                  argsf=(), argsh=(), argsprox=(), 
+                  bounds=None, projections=[], npt=None, rhobeg=None, 
                   rhoend=1e-8, maxfun=None, nsamples=None, 
                   user_params=None, objfun_has_noise=False, 
                   scaling_within_bounds=False,
@@ -75,7 +82,12 @@ The :code:`solve` function has several optional arguments which the user may pro
 
 These arguments are:
 
-* :code:`args` - a tuple of extra arguments passed to the objective function. 
+* :code:`h` - the regularizer function which takes an input :math:`x\in\mathbb{R}^n` and returns :math:`h(x)`. 
+* :code:`lh` - the `Lipschitz constant <https://en.wikipedia.org/wiki/Lipschitz_continuity>`_ (with respect to the Euclidean norm on :math:`\mathbb{R}^n`) of :math:`h(x)`, a positive number if :code:`h` given. For example, if :math:`h(x)=\lambda \|x\|_1` for :math:`\lambda>0`, then :math:`L_h=\lambda \sqrt{n}`.
+* :code:`prox_uh` - the `proximal operator <https://en.wikipedia.org/wiki/Proximal_operator>`_ of :math:`h(x)`. This function has the form :code:`prox_uh(x, u)`, where :math:`x\in \mathbb{R}^n` and :math:`u>0`, and returns :math:`\operatorname{prox}_{uh}(x)`. For example, if :math:`h(x)=\lambda \|x\|_1` for :math:`\lambda>0`, then :code:`prox_uh(x, u) = np.sign(x) * np.maximum(np.abs(x) - lambda*u, 0)`. More examples of proximal operators may be found on `this page <https://proximity-operator.net/>`_. 
+* :code:`argsf` - a tuple of extra arguments passed to the objective function :code:`objfun(x, *argsf)`.
+* :code:`argsh` - a tuple of extra arguments passed to the regularizer :code:`h(x, *argsh)`. 
+* :code:`argsprox` - a tuple of extra arguments passed to the proximal operator :code:`prox_uh(x, u, *argsprox)`. 
 * :code:`bounds` - a tuple :code:`(lower, upper)` with the vectors :math:`a` and :math:`b` of lower and upper bounds on :math:`x` (default is :math:`a_i=-10^{20}` and :math:`b_i=10^{20}`). To set bounds for either :code:`lower` or :code:`upper`, but not both, pass a tuple :code:`(lower, None)` or :code:`(None, upper)`.
 * :code:`projections` - a list :code:`[f1,f2,...,fn]` of functions that each take as input a point :code:`x` and return a new point :code:`y`. The new point :code:`y` should be given by the projection of :code:`x` onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.
 * :code:`npt` - the number of interpolation points to use (default is :code:`len(x0)+1`). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in :code:`user_params`).
@@ -571,4 +583,7 @@ References
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
 .. [HR2022]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+   Matthew Hough and Lindon Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+
+.. [LLR2024]   
+   Yanjun Liu, Kevin H. Lam and Lindon Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:2407.14915* (2024).

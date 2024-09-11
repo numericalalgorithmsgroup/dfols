@@ -7,11 +7,11 @@ DFO-LS is designed to solve the nonlinear least-squares minimization problem (wi
 
 .. math::
 
-   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad x \in C\\
-               &\quad  a \leq x \leq b
+   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+   \text{s.t.} &\quad  a \leq x \leq b\\
+               &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}
 
-We call :math:`f(x)` the objective function and :math:`r_i(x)` the residual functions (or simply residuals).
+We call :math:`f(x)` the objective function, :math:`r_i(x)` the residual functions (or simply residuals), and :math:`h(x)` the regularizer.
 :math:`C` is the intersection of multiple convex sets given as input by the user.
 
 DFO-LS is a *derivative-free* optimization algorithm, which means it does not require the user to provide the derivatives of :math:`f(x)` or :math:`r_i(x)`, nor does it attempt to estimate them internally (by using finite differencing, for instance). 
@@ -86,7 +86,7 @@ At each step, we compute a trial step :math:`s_k` designed to make our approxima
 
 In DFO-LS, we construct our approximation :math:`m_k(s)` by interpolating a linear approximation for each residual :math:`r_i(x)` at several points close to :math:`x_k`. To make sure our interpolated model is accurate, we need to regularly check that the points are well-spaced, and move them if they aren't (i.e. improve the geometry of our interpolation points).
 
-A complete description of the DFO-LS algorithm is given in our papers [CFMR2018]_ and [HR2022]_.
+A complete description of the DFO-LS algorithm is given in our papers [CFMR2018]_, [HR2022]_ and [LLR2024]_.
 
 References
 ----------
@@ -95,4 +95,7 @@ References
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
 .. [HR2022]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+   Matthew Hough and Lindon Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+
+.. [LLR2024]   
+   Yanjun Liu, Kevin H. Lam and Lindon Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:2407.14915* (2024).
