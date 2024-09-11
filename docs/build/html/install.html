@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installing DFO-LS &mdash; DFO-LS v1.4.1 documentation</title>
+  <title>Installing DFO-LS &mdash; DFO-LS v1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=350a9c04"></script>
+        <script src="_static/documentation_options.js?v=e0a75244"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -37,7 +37,7 @@
             DFO-LS
           </a>
               <div class="version">
-                1.4.1
+                1.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -119,26 +119,13 @@
 <h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Link to this heading"></a></h2>
 <p>For easy installation, use <em>pip</em> (<a class="reference external" href="http://www.pip-installer.org/">http://www.pip-installer.org/</a>) as root:</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>DFO-LS
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
 </div></blockquote>
-<p>or alternatively <em>easy_install</em>:</p>
-<blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>easy_install<span class="w"> </span>DFO-LS
-</pre></div>
-</div>
-</div></blockquote>
-<p>If you do not have root privileges or you want to install DFO-LS for your private use, you can use:</p>
-<blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>DFO-LS
-</pre></div>
-</div>
-</div></blockquote>
-<p>which will install DFO-LS in your home directory.</p>
 <p>Note that if an older install of DFO-LS is present on your system you can use:</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>DFO-LS
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
 </div></blockquote>
@@ -155,21 +142,14 @@ $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>dfols
 </div></blockquote>
 <p>DFO-LS is written in pure Python and requires no compilation. It can be installed using:</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 </div></blockquote>
-<p>If you do not have root privileges or you want to install DFO-LS for your private use, you can use:</p>
-<blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>.
-</pre></div>
-</div>
-</div></blockquote>
-<p>instead.</p>
 <p>To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing <code class="code docutils literal notranslate"><span class="pre">pyproject.toml</span></code>) and rerun the installation using <code class="code docutils literal notranslate"><span class="pre">pip</span></code>, as above:</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>pull
-$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="w">  </span><span class="c1"># with admin privileges</span>
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 </div></blockquote>
@@ -189,7 +169,7 @@ $<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span
 <h2>Uninstallation<a class="headerlink" href="#uninstallation" title="Link to this heading"></a></h2>
 <p>If DFO-LS was installed using <em>pip</em> you can uninstall as follows:</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="o">[</span>sudo<span class="o">]</span><span class="w"> </span>pip<span class="w"> </span>uninstall<span class="w"> </span>DFO-LS
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>uninstall<span class="w"> </span>DFO-LS
 </pre></div>
 </div>
 </div></blockquote>

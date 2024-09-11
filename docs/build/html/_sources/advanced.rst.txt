@@ -2,7 +2,7 @@ Advanced Usage
 ==============
 This section describes different optional user parameters available in DFO-LS.
 
-In the last section (:doc:`userguide`), we introduced :code:`dfols.solve()`, which has the optional input :code:`user_params`. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers [CFMR2018]_ and [HR2022]_.
+In the last section (:doc:`userguide`), we introduced :code:`dfols.solve()`, which has the optional input :code:`user_params`. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers [CFMR2018]_, [HR2022]_ and [LLR2024]_.
 
 The default values, used if no override is given, in some cases vary depending on whether :code:`objfun` has stochastic noise; that is, whether evaluating :code:`objfun(x)` several times at the same :code:`x` gives the same result or not. Whether or not this is the case is determined by the :code:`objfun_has_noise` input to :code:`dfols.solve()` (and not by inspecting :code:`objfun`, for instance).
 
@@ -104,13 +104,21 @@ Dynamically Growing Initial Set
 * :code:`growing.num_new_dirns_each_iter` - Number of new search directions to add with each iteration where we do not have a full set of search directions. Default is 0, as this approach is not recommended. 
 
 Dykstra's Algorithm
--------------------------------
+-------------------
 * :code:`dykstra.d_tol` - Tolerance on the stopping conditions of Dykstra's algorithm. Default is :math:`10^{-10}`. 
 * :code:`dykstra.max_iters` - The maximum number of iterations Dykstra's algorithm is allowed to take before stopping. Default is :math:`100`. 
 
 Checking Matrix Rank
--------------------------------
+--------------------
 * :code:`matrix_rank.r_tol` - Tolerance on what is the smallest posisble diagonal entry value in the QR factorization before being considered zero. Default is :math:`10^{-18}`. 
+
+Handling regularizer
+--------------------
+* :code:`func_tol.criticality_measure` - scale factor (of the current trust-region radius) to determine the accuracy of the calculated  criticality/stationarity measure (smaller means more accurate). Default is :math:`10^{-3}`. 
+* :code:`func_tol.tr_step` - scale factor to determine the accuracy of the trust-region step (smaller is less accurate). Default is :math:`0.9`. 
+* :code:`func_tol.max_iters` - maximum number of subproblem (S-FISTA) iterations. Default is 500. 
+* :code:`sfista.max_iters_scaling` - by what factor to increase the minimum number of subproblem (S-FISTA) iterations. Must be at least 1. Default is 2. 
+
 
 
 References
@@ -120,4 +128,7 @@ References
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
 .. [HR2022]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+   Matthew Hough and Lindon Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+
+.. [LLR2024]   
+   Yanjun Liu, Kevin H. Lam and Lindon Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:2407.14915* (2024).

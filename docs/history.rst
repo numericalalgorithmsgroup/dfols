@@ -61,3 +61,8 @@ Version 1.4.1 (11 Apr 2024)
 ---------------------------
 * Migrate package setup to pyproject.toml (required for Python version 3.12)
 * Drop support for Python 2.7 and <=3.8 in line with SciPy >=1.11 dependency (introduced v1.4.0)
+
+Version 1.5.0 (11 Sep 2024)
+---------------------------
+* Add support for (possibly nonsmooth) regularizer term.
+* Drop warning about infeasible initial point if the point is on an upper/lower bound.

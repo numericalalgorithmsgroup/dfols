@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using DFO-LS &mdash; DFO-LS v1.4.1 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=350a9c04"></script>
+        <script src="_static/documentation_options.js?v=e0a75244"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -38,7 +38,7 @@
             DFO-LS
           </a>
               <div class="version">
-                1.4.1
+                1.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -58,7 +58,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#optional-arguments">Optional Arguments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-simple-example">A Simple Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-bounds-and-more-output">Adding Bounds and More Output</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#handling-arbitrary-convex-constraints">Handling Arbitrary Convex Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-general-convex-constraints">Adding General Convex Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-a-regularizer">Adding a Regularizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-noisy-objective-evaluation">Example: Noisy Objective Evaluation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-parameter-estimation-data-fitting">Example: Parameter Estimation/Data Fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-solving-a-nonlinear-system-of-equations">Example: Solving a Nonlinear System of Equations</a></li>
@@ -102,11 +103,15 @@
 <h2>Nonlinear Least-Squares Minimization<a class="headerlink" href="#nonlinear-least-squares-minimization" title="Link to this heading"></a></h2>
 <p>DFO-LS is designed to solve the local optimization problem</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-\text{s.t.} &amp;\quad x \in C\end{split}\]</div>
-<p>where the set <span class="math notranslate nohighlight">\(C\)</span> is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).</p>
+\[\begin{split}\min_{x\in\mathbb{R}^n}  &amp;\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+\text{s.t.} &amp;\quad  a \leq x \leq b\\
+            &amp;\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}\end{split}\]</div>
+<p>where the bound constraints <span class="math notranslate nohighlight">\(a \leq x \leq b\)</span> and general convex constraints <span class="math notranslate nohighlight">\(x\in C\)</span> are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds). The general convex constraints are also non-relaxable, but they may be slightly violated at some points from rounding errors.
+The function <span class="math notranslate nohighlight">\(h(x)\)</span> is an optional regularizer, often used to avoid overfitting, and must be Lipschitz continuous and convex (but possibly non-differentiable).
+A common choice is <span class="math notranslate nohighlight">\(h(x)=\lambda \|x\|_1\)</span> (called L1 regularization or LASSO) for <span class="math notranslate nohighlight">\(\lambda&gt;0\)</span>.
+Note that in the case of Tikhonov regularization/ridge regression, <span class="math notranslate nohighlight">\(h(x)=\lambda\|x\|_2^2\)</span> is not Lipschitz continuous, so should instead be incorporated by adding an extra term into the least-squares sum, <span class="math notranslate nohighlight">\(r_{m+1}(x)=\sqrt{\lambda} \|x\|_2\)</span>.</p>
 <p>DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the papers <a class="reference internal" href="#cfmr2018" id="id1"><span>[CFMR2018]</span></a> and <a class="reference internal" href="#hr2022" id="id2"><span>[HR2022]</span></a>.</p>
+For an in-depth technical description of the algorithm see the papers <a class="reference internal" href="#cfmr2018" id="id1"><span>[CFMR2018]</span></a>, <a class="reference internal" href="#hr2022" id="id2"><span>[HR2022]</span></a> and <a class="reference internal" href="#llr2024" id="id3"><span>[LLR2024]</span></a>.</p>
 </section>
 <section id="how-to-use-dfo-ls">
 <h2>How to use DFO-LS<a class="headerlink" href="#how-to-use-dfo-ls" title="Link to this heading"></a></h2>
@@ -156,7 +161,10 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <h2>Optional Arguments<a class="headerlink" href="#optional-arguments" title="Link to this heading"></a></h2>
 <p>The <code class="code docutils literal notranslate"><span class="pre">solve</span></code> function has several optional arguments which the user may provide:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projections</span><span class="o">=</span><span class="p">[],</span> <span class="n">npt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhobeg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span>
+            <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prox_uh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">argsf</span><span class="o">=</span><span class="p">(),</span> <span class="n">argsh</span><span class="o">=</span><span class="p">(),</span> <span class="n">argsprox</span><span class="o">=</span><span class="p">(),</span>
+            <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projections</span><span class="o">=</span><span class="p">[],</span> <span class="n">npt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rhobeg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">rhoend</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxfun</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nsamples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">user_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">objfun_has_noise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">scaling_within_bounds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -166,7 +174,12 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 </div></blockquote>
 <p>These arguments are:</p>
 <ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">args</span></code> - a tuple of extra arguments passed to the objective function.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">h</span></code> - the regularizer function which takes an input <span class="math notranslate nohighlight">\(x\in\mathbb{R}^n\)</span> and returns <span class="math notranslate nohighlight">\(h(x)\)</span>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">lh</span></code> - the <a class="reference external" href="https://en.wikipedia.org/wiki/Lipschitz_continuity">Lipschitz constant</a> (with respect to the Euclidean norm on <span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>) of <span class="math notranslate nohighlight">\(h(x)\)</span>, a positive number if <code class="code docutils literal notranslate"><span class="pre">h</span></code> given. For example, if <span class="math notranslate nohighlight">\(h(x)=\lambda \|x\|_1\)</span> for <span class="math notranslate nohighlight">\(\lambda&gt;0\)</span>, then <span class="math notranslate nohighlight">\(L_h=\lambda \sqrt{n}\)</span>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">prox_uh</span></code> - the <a class="reference external" href="https://en.wikipedia.org/wiki/Proximal_operator">proximal operator</a> of <span class="math notranslate nohighlight">\(h(x)\)</span>. This function has the form <code class="code docutils literal notranslate"><span class="pre">prox_uh(x,</span> <span class="pre">u)</span></code>, where <span class="math notranslate nohighlight">\(x\in \mathbb{R}^n\)</span> and <span class="math notranslate nohighlight">\(u&gt;0\)</span>, and returns <span class="math notranslate nohighlight">\(\operatorname{prox}_{uh}(x)\)</span>. For example, if <span class="math notranslate nohighlight">\(h(x)=\lambda \|x\|_1\)</span> for <span class="math notranslate nohighlight">\(\lambda&gt;0\)</span>, then <code class="code docutils literal notranslate"><span class="pre">prox_uh(x,</span> <span class="pre">u)</span> <span class="pre">=</span> <span class="pre">np.sign(x)</span> <span class="pre">*</span> <span class="pre">np.maximum(np.abs(x)</span> <span class="pre">-</span> <span class="pre">lambda*u,</span> <span class="pre">0)</span></code>. More examples of proximal operators may be found on <a class="reference external" href="https://proximity-operator.net/">this page</a>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">argsf</span></code> - a tuple of extra arguments passed to the objective function <code class="code docutils literal notranslate"><span class="pre">objfun(x,</span> <span class="pre">*argsf)</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">argsh</span></code> - a tuple of extra arguments passed to the regularizer <code class="code docutils literal notranslate"><span class="pre">h(x,</span> <span class="pre">*argsh)</span></code>.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">argsprox</span></code> - a tuple of extra arguments passed to the proximal operator <code class="code docutils literal notranslate"><span class="pre">prox_uh(x,</span> <span class="pre">u,</span> <span class="pre">*argsprox)</span></code>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">bounds</span></code> - a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> with the vectors <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> of lower and upper bounds on <span class="math notranslate nohighlight">\(x\)</span> (default is <span class="math notranslate nohighlight">\(a_i=-10^{20}\)</span> and <span class="math notranslate nohighlight">\(b_i=10^{20}\)</span>). To set bounds for either <code class="code docutils literal notranslate"><span class="pre">lower</span></code> or <code class="code docutils literal notranslate"><span class="pre">upper</span></code>, but not both, pass a tuple <code class="code docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">None)</span></code> or <code class="code docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">upper)</span></code>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">projections</span></code> - a list <code class="code docutils literal notranslate"><span class="pre">[f1,f2,...,fn]</span></code> of functions that each take as input a point <code class="code docutils literal notranslate"><span class="pre">x</span></code> and return a new point <code class="code docutils literal notranslate"><span class="pre">y</span></code>. The new point <code class="code docutils literal notranslate"><span class="pre">y</span></code> should be given by the projection of <code class="code docutils literal notranslate"><span class="pre">x</span></code> onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">npt</span></code> - the number of interpolation points to use (default is <code class="code docutils literal notranslate"><span class="pre">len(x0)+1</span></code>). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in <code class="code docutils literal notranslate"><span class="pre">user_params</span></code>).</p></li>
@@ -308,31 +321,30 @@ Did a total of 1 run(s)
 </div>
 </div></blockquote>
 </section>
-<section id="handling-arbitrary-convex-constraints">
-<h2>Handling Arbitrary Convex Constraints<a class="headerlink" href="#handling-arbitrary-convex-constraints" title="Link to this heading"></a></h2>
-<p>DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
-minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
-sets must be non-empty.</p>
+<section id="adding-general-convex-constraints">
+<h2>Adding General Convex Constraints<a class="headerlink" href="#adding-general-convex-constraints" title="Link to this heading"></a></h2>
+<p>We can also add more general convex constraints <span class="math notranslate nohighlight">\(x \in C := C_1 \cap \cdots \cap C_n\)</span> to our problem, where
+each <span class="math notranslate nohighlight">\(C_i\)</span> is a convex set. To do this, we need to know the Euclidean projection operator for each <span class="math notranslate nohighlight">\(C_i\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\operatorname{proj}_{C_i}(x) := \operatorname{argmin}_{y\in C_i} \|y-x\|_2^2.\]</div>
+<p>i.e. given a point <span class="math notranslate nohighlight">\(x\)</span>, return the closest point to <span class="math notranslate nohighlight">\(x\)</span> in the set <span class="math notranslate nohighlight">\(C_i\)</span>.
+There are many examples of simple convex sets <span class="math notranslate nohighlight">\(C_i\)</span> for which this function has a known, simple form, such as:</p>
+<ul class="simple">
+<li><p>Bound constraints (but since DFO-LS supports this directly, it is better to give these explicitly via the <code class="code docutils literal notranslate"><span class="pre">bounds</span></code> input, as above)</p></li>
+<li><p>Euclidean ball constraints: <span class="math notranslate nohighlight">\(\|x-c\|_2 \leq r\)</span></p></li>
+<li><p>Unit simplex: <span class="math notranslate nohighlight">\(x_i \geq 0\)</span> and <span class="math notranslate nohighlight">\(\sum_{i=1}^{n} x_i \leq 1\)</span></p></li>
+<li><p>Linear inequalities: <span class="math notranslate nohighlight">\(a^T x \geq b\)</span></p></li>
+</ul>
+<p>Note the intersection of the user-provided convex sets must be non-empty.</p>
+<p>In DFO-LS, set the input <code class="code docutils literal notranslate"><span class="pre">projections</span></code> to be a list of projection functions, one per <span class="math notranslate nohighlight">\(C_i\)</span>.
+Internally, DFO-LS computes the projection onto the intersection of these sets and the bound constraints
+using <a class="reference external" href="https://en.wikipedia.org/wiki/Dykstra%27s_projection_algorithm">Dykstra’s projection algorithm</a>.</p>
+<p>For the explicit expressions for the above projections, and more examples, see for example <a class="reference external" href="https://proximity-operator.net/indicatorfunctions.html">this online database</a>
+or Section 6.4.6 of the textbook <a class="reference internal" href="#b2017" id="id5"><span>[B2017]</span></a>.</p>
+<p>As an example, let’s minimize the above Rosenbrock function with different bounds, and with a Euclidean
+ball constraint, namely <span class="math notranslate nohighlight">\((x_1-0.7)^2 + (x_2-1.5)^2 \leq 0.4^2\)</span>.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints</span>
-
-<span class="sd">This example defines two functions pball(x) and pbox(x) that project onto ball and</span>
-<span class="sd">box constraint sets respectively. It then passes both these functions to the DFO-LS</span>
-<span class="sd">solver so that it can find a constrained minimizer to the Rosenbrock function.</span>
-<span class="sd">Such a minimizer must lie in the intersection of constraint sets corresponding to</span>
-<span class="sd">projection functions pball(x) and pbox(x). The description of the problem is as follows:</span>
-
-<span class="sd">    min rosenbrock(x)</span>
-<span class="sd">    s.t.</span>
-<span class="sd">        -2 &lt;= x[0] &lt;= 1.1,</span>
-<span class="sd">        1.1 &lt;= x[1] &lt;= 3,</span>
-<span class="sd">        norm(x-c) &lt;= 0.4</span>
-
-<span class="sd">where c = [0.7, 1.5] is the centre of the ball.</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
@@ -342,37 +354,20 @@ sets must be non-empty.</p>
 <span class="c1"># Define the starting point</span>
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Define ball projection function</span>
-<span class="sd">Projects the input x onto a ball with</span>
-<span class="sd">centre point (0.7,1.5) and radius 0.4.</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="k">def</span> <span class="nf">pball</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">1.5</span><span class="p">])</span> <span class="c1"># ball centre</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="c1"># ball radius</span>
-    <span class="k">return</span> <span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">),</span><span class="n">r</span><span class="p">]))</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">c</span><span class="p">)</span>
+<span class="c1"># Define bound constraints (lower &lt;= x &lt;= upper)</span>
+<span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span>
+<span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Define box projection function</span>
-<span class="sd">Projects the input x onto a box</span>
-<span class="sd">such that -2 &lt;= x[0] &lt;= 0.9 and</span>
-<span class="sd">1.1 &lt;= x[1] &lt;= 3.</span>
+<span class="c1"># Define the ball constraint ||x-center|| &lt;= radius, and its projection operator</span>
+<span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">])</span>
+<span class="n">radius</span> <span class="o">=</span> <span class="mf">0.4</span>
+<span class="n">ball_proj</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">center</span> <span class="o">+</span> <span class="p">(</span><span class="n">radius</span><span class="o">/</span><span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">center</span><span class="p">),</span> <span class="n">radius</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">center</span><span class="p">)</span>
 
-<span class="sd">Note: One could equivalently add bound</span>
-<span class="sd">constraints as a separate input to the solver</span>
-<span class="sd">instead.</span>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="k">def</span> <span class="nf">pbox</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span> <span class="c1"># lower bound</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c1"># upper bound</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">l</span><span class="p">),</span> <span class="n">u</span><span class="p">)</span>
-
-<span class="c1"># For optional extra output details</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
-
-<span class="c1"># Call DFO-LS</span>
-<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">projections</span><span class="o">=</span><span class="p">[</span><span class="n">pball</span><span class="p">,</span><span class="n">pbox</span><span class="p">])</span>
+<span class="c1"># Call DFO-LS (with bounds and projection operator)</span>
+<span class="c1"># Note: it is better to provide bounds explicitly, instead of using the corresponding</span>
+<span class="c1">#       projection function</span>
+<span class="c1"># Note: input &#39;projections&#39; must be a list of projection functions</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rosenbrock</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">),</span> <span class="n">projections</span><span class="o">=</span><span class="p">[</span><span class="n">ball_proj</span><span class="p">])</span>
 
 <span class="c1"># Display output</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
@@ -396,6 +391,81 @@ Warning (trust region increase): Either multiple constraints are active or trust
 </pre></div>
 </div>
 </div></blockquote>
+<p>Just like for bound constraints, DFO-LS will automatically ensure the starting point is feasible with respect to all constraints (bounds and general convex constraints).</p>
+</section>
+<section id="adding-a-regularizer">
+<h2>Adding a Regularizer<a class="headerlink" href="#adding-a-regularizer" title="Link to this heading"></a></h2>
+<p>We can add a convex, Lipschitz continuous, but potentially non-differentiable regularizer to our objective function, to encourage the solution <span class="math notranslate nohighlight">\(x\)</span> to have certain properties.
+This is most commonly used to avoid overfitting.
+A very common choice of regularizer is <span class="math notranslate nohighlight">\(h(x)=\lambda\|x\|_2^2\)</span> for <span class="math notranslate nohighlight">\(\lambda&gt;0\)</span> (called Tikhonov regularization or ridge regression), but this is not Lipschitz continuous. For this regularizer, you can add a new residual function <span class="math notranslate nohighlight">\(r_{m+1}(x)=\sqrt{\lambda}\|x\|_2\)</span> to the objective.</p>
+<p>A suitable and widely used regularizer is the L1 norm (i.e. L1 regularization or LASSO), <span class="math notranslate nohighlight">\(h(x)=\lambda\|x\|_1\)</span> for <span class="math notranslate nohighlight">\(\lambda&gt;0\)</span>.
+This encourages the solution <span class="math notranslate nohighlight">\(x\)</span> to be sparse (i.e. many entries are zero).
+To use <span class="math notranslate nohighlight">\(h(x)\)</span> in DFO-LS, we need to know its <a class="reference external" href="https://en.wikipedia.org/wiki/Lipschitz_continuity">Lipschitz constant</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Proximal_operator">proximal operator</a>.</p>
+<p>In this case, the Lipschitz constant of <span class="math notranslate nohighlight">\(h(x)\)</span> may be computed via</p>
+<div class="math notranslate nohighlight">
+\[|h(x) - h(x)| = \lambda\|x\|_1 - \lambda\|y\|_1 \leq \lambda\|x-y\|_1 \leq \lambda\sqrt{n} \|x-y\|_2\]</div>
+<p>using the reverse triangle inequality to get the first inequality. Hence the Lipschitz constant of <span class="math notranslate nohighlight">\(h(x)\)</span> is <span class="math notranslate nohighlight">\(\lambda\sqrt{n}\)</span>.</p>
+<p>The proximal operator for <span class="math notranslate nohighlight">\(h(x)\)</span> with a parameter <span class="math notranslate nohighlight">\(u&gt;0\)</span> is defined as</p>
+<div class="math notranslate nohighlight">
+\[\operatorname{prox}_{uh}(x) := \operatorname{argmin}_{y\in\mathbb{R}^n} h(y) + \frac{1}{2u}\|y-x\|_2^2\]</div>
+<p>There are many regularizers with known proximal operators. See for example <a class="reference external" href="https://proximity-operator.net/">this online database</a>
+or Section 6.9 of the textbook <a class="reference internal" href="#b2017" id="id9"><span>[B2017]</span></a>.
+In the case of <span class="math notranslate nohighlight">\(h(x)=\lambda\|x\|_1\)</span>, the proximal operator is the soft-thresholding function, defined element-wise as</p>
+<div class="math notranslate nohighlight">
+\[[\operatorname{prox}_{uh}(x)]_i = \max(|x_i|-\lambda u, 0) \operatorname{sign}(x_i)\]</div>
+<p>We can use DFO-LS to solve a simple regularized linear least-squares problem (with artificially generated data) as follows:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: regularized least-squares regression</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">dfols</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># dimension of x</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># number of residuals, i.e. dimension of b</span>
+
+<span class="c1"># Generate some artificial data for A and b</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+<span class="n">objfun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">b</span>
+
+<span class="c1"># L1 regularizer: h(x) = lda*||x||_1 for some lda&gt;0</span>
+<span class="n">lda</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">h</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">Lh</span> <span class="o">=</span> <span class="n">lda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="c1"># Lipschitz constant of h(x)</span>
+<span class="n">prox_uh</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">lda</span><span class="o">*</span><span class="n">u</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>  <span class="c1"># arbitrary starting point</span>
+
+<span class="c1"># Call DFO-LS</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">h</span><span class="p">,</span> <span class="n">lh</span><span class="o">=</span><span class="n">Lh</span><span class="p">,</span> <span class="n">prox_uh</span><span class="o">=</span><span class="n">prox_uh</span><span class="p">)</span>
+
+<span class="c1"># Display output</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The solution found by DFO-LS is:</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>****** DFO-LS Results ******
+Solution xmin = [-6.85049254e-02 -7.03534168e-11  1.19957812e-15  7.47953030e-11
+  1.30074165e-01]
+Residual vector = [ 0.52029666 -0.17185715 -0.27822451 -0.28821556 -0.24831856 -0.17654034
+ -0.08211591  0.02946872  0.1546391   0.29091242]
+Objective value f(xmin) = 0.8682829845
+Needed 34 objective evaluations (at 34 points)
+Approximate Jacobian = [[-1.75619848e-09  1.00000000e+00  2.00000000e+00  3.00000000e+00
+   4.00000000e+00]
+ ...
+ [ 4.50000000e+01  4.60000000e+01  4.70000000e+01  4.80000000e+01
+   4.90000000e+01]]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+</pre></div>
+</div>
+</div></blockquote>
+<p>We can see that 3 of the 5 components of the solution are very close to zero.
+Note that many LASSO-type algorithms can produce a solution with many entries being exactly zero, but DFO-LS can only make them very small (related to how it calculates a new point with trust-region constraints).</p>
 </section>
 <section id="example-noisy-objective-evaluation">
 <h2>Example: Noisy Objective Evaluation<a class="headerlink" href="#example-noisy-objective-evaluation" title="Link to this heading"></a></h2>
@@ -644,7 +714,16 @@ Success: Objective is sufficiently small
 </div>
 <div class="citation" id="hr2022" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">HR2022</a><span class="fn-bracket">]</span></span>
-<p>Hough, M. and Roberts, L., <a class="reference external" href="https://doi.org/10.1137/21M1460971">Model-Based Derivative-Free Methods for Convex-Constrained Optimization</a>, <em>SIAM Journal on Optimization</em>, 21:4 (2022), pp. 2552-2579 [<a class="reference external" href="https://arxiv.org/abs/2111.05443">preprint</a>].</p>
+<p>Matthew Hough and Lindon Roberts, <a class="reference external" href="https://doi.org/10.1137/21M1460971">Model-Based Derivative-Free Methods for Convex-Constrained Optimization</a>, <em>SIAM Journal on Optimization</em>, 21:4 (2022), pp. 2552-2579 [<a class="reference external" href="https://arxiv.org/abs/2111.05443">preprint</a>].</p>
+</div>
+<div class="citation" id="llr2024" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">LLR2024</a><span class="fn-bracket">]</span></span>
+<p>Yanjun Liu, Kevin H. Lam and Lindon Roberts, <a class="reference external" href="http://arxiv.org/abs/2407.14915">Black-box Optimization Algorithms for Regularized Least-squares Problems</a>, <em>arXiv preprint arXiv:2407.14915</em> (2024).</p>
+</div>
+<div class="citation" id="b2017" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>B2017<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
+<p>Amir Beck, <a class="reference external" href="https://doi.org/10.1137/1.9781611974997">First-Order Methods in Optimization</a>, SIAM (2017).</p>
 </div>
 </div>
 </section>

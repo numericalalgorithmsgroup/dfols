@@ -74,7 +74,7 @@ class TestRosenbrockGeneric(unittest.TestCase):
         self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
         # print(soln.jacobian, rosenbrock_jacobian(soln.x))
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=2e-1), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 
 class TestRosenbrockBounds(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestRosenbrockBounds(unittest.TestCase):
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
         self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=1e-2), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")
+        self.assertTrue(abs(soln.obj - fmin) < 1e-4, "Wrong fmin")
 
 
 class TestRosenbrockBounds2(unittest.TestCase):
@@ -107,7 +107,7 @@ class TestRosenbrockBounds2(unittest.TestCase):
         soln = dfols.solve(rosenbrock, x0, bounds=(lower, upper))
         print(soln.x)
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
-        self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")
+        self.assertTrue(abs(soln.obj - fmin) < 1e-4, "Wrong fmin")
         self.assertTrue(array_compare(soln.jacobian, jacmin, thresh=2e-2), "Wrong jacobian")
 
 
@@ -126,7 +126,7 @@ class TestLinear(unittest.TestCase):
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
         self.assertTrue(array_compare(soln.resid, objfun(soln.x), thresh=1e-10), "Wrong resid")
         self.assertTrue(array_compare(soln.jacobian, A, thresh=1e-2), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")
+        self.assertTrue(abs(soln.obj - fmin) < 1e-4, "Wrong fmin")
 
 
 class TestRosenbrockRegression(unittest.TestCase):
@@ -138,7 +138,7 @@ class TestRosenbrockRegression(unittest.TestCase):
         self.assertTrue(array_compare(soln.x, np.array([1.0, 1.0]), thresh=1e-4), "Wrong xmin")
         self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=1.5e-1), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 
 class TestRosenbrockGrowing(unittest.TestCase):
@@ -152,7 +152,7 @@ class TestRosenbrockGrowing(unittest.TestCase):
         print(soln.jacobian)
         print(rosenbrock_jacobian(soln.x))
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=3e-0), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 
 class TestInverseProblem(unittest.TestCase):
@@ -171,7 +171,7 @@ class TestInverseProblem(unittest.TestCase):
         print(soln.jacobian)
         print(jac(soln.x))
         self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=5e-2), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 
 class TestInverseProblemGrowing(unittest.TestCase):
@@ -190,7 +190,7 @@ class TestInverseProblemGrowing(unittest.TestCase):
         print(soln.jacobian)
         print(jac(soln.x))
         self.assertTrue(array_compare(soln.jacobian, jac(soln.x), thresh=1e-1), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f) < 1e-10, "Wrong fmin")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
 
 
 class TestRosenbrockBoxBall(unittest.TestCase):
@@ -209,4 +209,4 @@ class TestRosenbrockBoxBall(unittest.TestCase):
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
         self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=1e-2), "Wrong Jacobian")
-        self.assertTrue(abs(soln.f - fmin) < 1e-4, "Wrong fmin")
+        self.assertTrue(abs(soln.obj - fmin) < 1e-4, "Wrong fmin")

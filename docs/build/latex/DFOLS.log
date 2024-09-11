@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.11)  11 APR 2024 16:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.11)  11 SEP 2024 15:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -848,26 +848,23 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \tf@toc=\write6
 \openout6 = `DFOLS.toc'.
 
- [2]
-LaTeX Font Info:    Trying to load font information for TS1+qtm on input line 1
-13.
-
-(/usr/share/texmf/tex/latex/tex-gyre/ts1qtm.fd
-File: ts1qtm.fd 2009/09/25 v1.2 font definition file for TS1/qtm
-) [1
+ [2] [1
 
 ] [2
 
 ]
 Chapter 1.
+LaTeX Font Info:    Trying to load font information for TS1+qtm on input line 1
+66.
+(/usr/share/texmf/tex/latex/tex-gyre/ts1qtm.fd
+File: ts1qtm.fd 2009/09/25 v1.2 font definition file for TS1/qtm
+)
 LaTeX Font Info:    Trying to load font information for T1+txtt on input line 1
-72.
+90.
+
 (/usr/share/texlive/texmf-dist/tex/latex/txfonts/t1txtt.fd
 File: t1txtt.fd 2000/12/15 v3.1
-) [3]
-LaTeX Font Info:    Font shape `T1/txtt/m/it' in size <10> not available
-(Font)              Font shape `T1/txtt/m/sl' tried instead on input line 271.
- [4]
+) [3] [4]
 Chapter 2.
 [5
 
@@ -877,9 +874,9 @@ Chapter 2.
 Chapter 3.
 [9]
 LaTeX Font Info:    Font shape `T1/txtt/b/n' in size <10> not available
-(Font)              Font shape `T1/txtt/bx/n' tried instead on input line 551.
+(Font)              Font shape `T1/txtt/bx/n' tried instead on input line 540.
  [10]
-Underfull \hbox (badness 7704) in paragraph at lines 592--594
+Underfull \hbox (badness 7704) in paragraph at lines 604--606
 []\T1/txtt/m/n/10 rhobeg \T1/qtm/m/n/10 - the ini-tial value of the trust re-gi
 on ra-dius (de-fault is $\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 1 [
 ](\OMS/cmsy/m/n/10 k\OML/cmm/m/it/10 x[]\OMS/cmsy/m/n/10 k[]\OML/cmm/m/it/10 ; 
@@ -890,69 +887,69 @@ LaTeX Font Info:    Trying to load font information for TS1+txtt on input line
 1.
 (/usr/share/texlive/texmf-dist/tex/latex/txfonts/ts1txtt.fd
 File: ts1txtt.fd 2000/12/15 v3.1
-) [11] [12] [13]
+) [11]
+LaTeX Font Info:    Font shape `T1/txtt/m/it' in size <10> not available
+(Font)              Font shape `T1/txtt/m/sl' tried instead on input line 663.
+ [12] [13]
+[14]
 LaTeX Font Info:    Font shape `TS1/txtt/m/it' in size <10> not available
-(Font)              Font shape `TS1/txtt/m/sl' tried instead on input line 805.
+(Font)              Font shape `TS1/txtt/m/sl' tried instead on input line 878.
 
-
-Overfull \vbox (0.98232pt too high) detected at line 867
+ [15] [16] [17]
+Underfull \vbox (badness 1226) detected at line 1087
  []
 
-[14] [15]
-Underfull \vbox (badness 1226) detected at line 974
- []
-
-[16] [17]
-<data_fitting.png, id=473, 524.6802pt x 403.2666pt>
+[18] [19]
+<data_fitting.png, id=518, 524.6802pt x 403.2666pt>
 File: data_fitting.png Graphic file (type png)
 <use data_fitting.png>
-Package pdftex.def Info: data_fitting.png  used on input line 1081.
+Package pdftex.def Info: data_fitting.png  used on input line 1194.
 (pdftex.def)             Requested size: 352.31625pt x 270.79639pt.
- [18] [19 <./data_fitting.png>] [20]
+ [20] [21 <./data_fitting.png>] [22]
 Chapter 4.
-[21
+[23
 
-] [22]
-Underfull \hbox (badness 6725) in paragraph at lines 1349--1351
+] [24]
+Underfull \hbox (badness 6725) in paragraph at lines 1462--1464
 []\T1/txtt/m/n/10 regression.increase_num_extra_steps_with_restart \T1/qtm/m/n/
 10 - The amount to in-crease \T1/txtt/m/n/10 regression.
  []
 
-[23] [24] [25] [26
-
-]
+[25] [26] [27] [28]
 Chapter 5.
-[27] [28]
-Chapter 6.
 [29
 
-] [30] [31] [32
+] [30]
+Chapter 6.
+[31
+
+] [32] [33] [34
 
 ]
 Chapter 7.
-[33] [34
+[35] [36
 
 ]
 Chapter 8.
-[35] [36
+[37] [38
 
-] (./DFOLS.ind) [37
+] (./DFOLS.ind) [39
 
 ] (./DFOLS.aux)
 Package rerunfilecheck Info: File `DFOLS.out' has not changed.
-(rerunfilecheck)             Checksum: 37886C0A6604D6449EA1E218DE9AB733;10717.
+(rerunfilecheck)             Checksum: 326FF725BF04624B3E78417D192E7E35;11227.
  ) 
 Here is how much of TeX's memory you used:
- 16235 strings out of 480247
- 270935 string characters out of 5896151
- 631948 words of memory out of 5000000
- 33670 multiletter control sequences out of 15000+600000
+ 16259 strings out of 480247
+ 271299 string characters out of 5896151
+ 621275 words of memory out of 5000000
+ 33680 multiletter control sequences out of 15000+600000
  526530 words of font info for 75 fonts, out of 8000000 for 9000
  15 hyphenation exceptions out of 8191
- 70i,17n,76p,887b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 70i,20n,76p,887b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf/
-fonts/enc/dvips/tex-gyre/q-ec.enc}{/usr/share/texmf/fonts/enc/dvips/tex-gyre/q-
-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
+fonts/enc/dvips/tex-gyre/q-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/tex-gyre/q
+-ec.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pf
 b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texliv
@@ -971,10 +968,10 @@ f-dist/fonts/type1/public/txfonts/t1xbtt.pfb></usr/share/texlive/texmf-dist/fon
 ts/type1/public/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
 blic/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfont
 s/tcxtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on DFOLS.pdf (41 pages, 367156 bytes).
+Output written on DFOLS.pdf (43 pages, 383527 bytes).
 PDF statistics:
- 702 PDF objects out of 1000 (max. 8388607)
- 617 compressed objects within 7 object streams
- 112 named destinations out of 1000 (max. 500000)
- 530 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 761 PDF objects out of 1000 (max. 8388607)
+ 674 compressed objects within 7 object streams
+ 126 named destinations out of 1000 (max. 500000)
+ 554 words of extra memory for PDF output out of 10000 (max. 10000000)
 

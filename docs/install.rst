@@ -29,27 +29,13 @@ For easy installation, use *pip* (http://www.pip-installer.org/) as root:
 
  .. code-block:: bash
 
-    $ [sudo] pip install DFO-LS
-
-or alternatively *easy_install*:
-
- .. code-block:: bash
-
-    $ [sudo] easy_install DFO-LS
-
-If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
-
- .. code-block:: bash
-
-    $ pip install --user DFO-LS
-
-which will install DFO-LS in your home directory.
+    $ pip install DFO-LS
 
 Note that if an older install of DFO-LS is present on your system you can use:
 
  .. code-block:: bash
 
-    $ [sudo] pip install --upgrade DFO-LS
+    $ pip install --upgrade DFO-LS
 
 to upgrade DFO-LS to the latest version.
 
@@ -66,22 +52,14 @@ DFO-LS is written in pure Python and requires no compilation. It can be installe
 
  .. code-block:: bash
 
-    $ [sudo] pip install .
-
-If you do not have root privileges or you want to install DFO-LS for your private use, you can use:
-
- .. code-block:: bash
-
-    $ pip install --user .
-
-instead.
+    $ pip install .
 
 To upgrade DFO-LS to the latest version, navigate to the top-level directory (i.e. the one containing :code:`pyproject.toml`) and rerun the installation using :code:`pip`, as above:
 
  .. code-block:: bash
 
     $ git pull
-    $ [sudo] pip install .  # with admin privileges
+    $ pip install .
 
 Testing
 -------
@@ -100,7 +78,7 @@ If DFO-LS was installed using *pip* you can uninstall as follows:
 
  .. code-block:: bash
 
-    $ [sudo] pip uninstall DFO-LS
+    $ pip uninstall DFO-LS
 
 If DFO-LS was installed manually you have to remove the installed files by hand (located in your python site-packages directory).
 

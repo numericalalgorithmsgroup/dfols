@@ -8,13 +8,17 @@ DFO-LS is designed to solve the local optimization problem
 
 .. math::
 
-   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 \\
-   \text{s.t.} &\quad x \in C
+   \min_{x\in\mathbb{R}^n}  &\quad  f(x) := \sum_{i=1}^{m}r_{i}(x)^2 + h(x) \\
+   \text{s.t.} &\quad  a \leq x \leq b\\
+               &\quad x \in C := C_1 \cap \cdots \cap C_n, \quad \text{all $C_i$ convex}
 
-where the set :math:`C` is an optional non-empty, closed and convex constraint set. The constraints are non-relaxable (i.e. DFO-LS will never ask to evaluate a point that is not feasible).
+where the bound constraints :math:`a \leq x \leq b` and general convex constraints :math:`x\in C` are optional. The upper and lower bounds on the variables are non-relaxable (i.e. DFO-LS will never ask to evaluate a point outside the bounds). The general convex constraints are also non-relaxable, but they may be slightly violated at some points from rounding errors. 
+The function :math:`h(x)` is an optional regularizer, often used to avoid overfitting, and must be Lipschitz continuous and convex (but possibly non-differentiable). 
+A common choice is :math:`h(x)=\lambda \|x\|_1` (called L1 regularization or LASSO) for :math:`\lambda>0`. 
+Note that in the case of Tikhonov regularization/ridge regression, :math:`h(x)=\lambda\|x\|_2^2` is not Lipschitz continuous, so should instead be incorporated by adding an extra term into the least-squares sum, :math:`r_{m+1}(x)=\sqrt{\lambda} \|x\|_2`.
 
 DFO-LS iteratively constructs an interpolation-based model for the objective, and determines a step using a trust-region framework.
-For an in-depth technical description of the algorithm see the papers [CFMR2018]_ and [HR2022]_.
+For an in-depth technical description of the algorithm see the papers [CFMR2018]_, [HR2022]_ and [LLR2024]_.
 
 How to use DFO-LS
 -----------------
@@ -67,7 +71,10 @@ The :code:`solve` function has several optional arguments which the user may pro
 
   .. code-block:: python
   
-      dfols.solve(objfun, x0, args=(), bounds=None, projections=[], npt=None, rhobeg=None, 
+      dfols.solve(objfun, x0, 
+                  h=None, lh=None, prox_uh=None, 
+                  argsf=(), argsh=(), argsprox=(), 
+                  bounds=None, projections=[], npt=None, rhobeg=None, 
                   rhoend=1e-8, maxfun=None, nsamples=None, 
                   user_params=None, objfun_has_noise=False, 
                   scaling_within_bounds=False,
@@ -75,7 +82,12 @@ The :code:`solve` function has several optional arguments which the user may pro
 
 These arguments are:
 
-* :code:`args` - a tuple of extra arguments passed to the objective function. 
+* :code:`h` - the regularizer function which takes an input :math:`x\in\mathbb{R}^n` and returns :math:`h(x)`. 
+* :code:`lh` - the `Lipschitz constant <https://en.wikipedia.org/wiki/Lipschitz_continuity>`_ (with respect to the Euclidean norm on :math:`\mathbb{R}^n`) of :math:`h(x)`, a positive number if :code:`h` given. For example, if :math:`h(x)=\lambda \|x\|_1` for :math:`\lambda>0`, then :math:`L_h=\lambda \sqrt{n}`.
+* :code:`prox_uh` - the `proximal operator <https://en.wikipedia.org/wiki/Proximal_operator>`_ of :math:`h(x)`. This function has the form :code:`prox_uh(x, u)`, where :math:`x\in \mathbb{R}^n` and :math:`u>0`, and returns :math:`\operatorname{prox}_{uh}(x)`. For example, if :math:`h(x)=\lambda \|x\|_1` for :math:`\lambda>0`, then :code:`prox_uh(x, u) = np.sign(x) * np.maximum(np.abs(x) - lambda*u, 0)`. More examples of proximal operators may be found on `this page <https://proximity-operator.net/>`_. 
+* :code:`argsf` - a tuple of extra arguments passed to the objective function :code:`objfun(x, *argsf)`.
+* :code:`argsh` - a tuple of extra arguments passed to the regularizer :code:`h(x, *argsh)`. 
+* :code:`argsprox` - a tuple of extra arguments passed to the proximal operator :code:`prox_uh(x, u, *argsprox)`. 
 * :code:`bounds` - a tuple :code:`(lower, upper)` with the vectors :math:`a` and :math:`b` of lower and upper bounds on :math:`x` (default is :math:`a_i=-10^{20}` and :math:`b_i=10^{20}`). To set bounds for either :code:`lower` or :code:`upper`, but not both, pass a tuple :code:`(lower, None)` or :code:`(None, upper)`.
 * :code:`projections` - a list :code:`[f1,f2,...,fn]` of functions that each take as input a point :code:`x` and return a new point :code:`y`. The new point :code:`y` should be given by the projection of :code:`x` onto a closed convex set. The intersection of all sets corresponding to a function must be non-empty.
 * :code:`npt` - the number of interpolation points to use (default is :code:`len(x0)+1`). If using restarts, this is the number of points to use in the first run of the solver, before any restarts (and may be optionally increased via settings in :code:`user_params`).
@@ -225,74 +237,62 @@ An alternative option available is to get DFO-LS to print to terminal progress i
         1    55    1.00e-02  2.00e-01  1.50e-08  1.00e-08   56   
         1    56    1.00e-02  2.00e-01  1.50e-08  1.00e-08   57
 
-Handling Arbitrary Convex Constraints
--------------------------------------
-DFO-LS can also handle more general constraints where they can be written as the intersection of finitely many convex sets. For example, the below code
-minimizes the Rosenbrock function subject to a constraint set given by the intersection of two convex sets. Note the intersection of the user-provided convex
-sets must be non-empty.
+Adding General Convex Constraints
+---------------------------------
+We can also add more general convex constraints :math:`x \in C := C_1 \cap \cdots \cap C_n` to our problem, where
+each :math:`C_i` is a convex set. To do this, we need to know the Euclidean projection operator for each :math:`C_i`:
+
+.. math::
+
+   \operatorname{proj}_{C_i}(x) := \operatorname{argmin}_{y\in C_i} \|y-x\|_2^2.
+
+i.e. given a point :math:`x`, return the closest point to :math:`x` in the set :math:`C_i`.
+There are many examples of simple convex sets :math:`C_i` for which this function has a known, simple form, such as:
+
+* Bound constraints (but since DFO-LS supports this directly, it is better to give these explicitly via the :code:`bounds` input, as above)
+* Euclidean ball constraints: :math:`\|x-c\|_2 \leq r`
+* Unit simplex: :math:`x_i \geq 0` and :math:`\sum_{i=1}^{n} x_i \leq 1`
+* Linear inequalities: :math:`a^T x \geq b`
+
+Note the intersection of the user-provided convex sets must be non-empty.
+
+In DFO-LS, set the input :code:`projections` to be a list of projection functions, one per :math:`C_i`.
+Internally, DFO-LS computes the projection onto the intersection of these sets and the bound constraints
+using `Dykstra's projection algorithm <https://en.wikipedia.org/wiki/Dykstra%27s_projection_algorithm>`_.
+
+For the explicit expressions for the above projections, and more examples, see for example `this online database <https://proximity-operator.net/indicatorfunctions.html>`_
+or Section 6.4.6 of the textbook [B2017]_.
+
+As an example, let's minimize the above Rosenbrock function with different bounds, and with a Euclidean
+ball constraint, namely :math:`(x_1-0.7)^2 + (x_2-1.5)^2 \leq 0.4^2`.
 
   .. code-block:: python
   
-      '''
-      DFO-LS example: minimize the Rosenbrock function with arbitrary convex constraints
-
-      This example defines two functions pball(x) and pbox(x) that project onto ball and
-      box constraint sets respectively. It then passes both these functions to the DFO-LS
-      solver so that it can find a constrained minimizer to the Rosenbrock function.
-      Such a minimizer must lie in the intersection of constraint sets corresponding to
-      projection functions pball(x) and pbox(x). The description of the problem is as follows:
-
-          min rosenbrock(x)
-          s.t.
-              -2 <= x[0] <= 1.1,
-              1.1 <= x[1] <= 3,
-              norm(x-c) <= 0.4
-
-      where c = [0.7, 1.5] is the centre of the ball.
-      '''
-      from __future__ import print_function
       import numpy as np
       import dfols
-
+      
       # Define the objective function
       def rosenbrock(x):
           return np.array([10.0 * (x[1] - x[0] ** 2), 1.0 - x[0]])
-
+      
       # Define the starting point
       x0 = np.array([-1.2, 1])
-
-      '''
-      Define ball projection function
-      Projects the input x onto a ball with
-      centre point (0.7,1.5) and radius 0.4.
-      '''
-      def pball(x):
-          c = np.array([0.7,1.5]) # ball centre
-          r = 0.4 # ball radius
-          return c + (r/np.max([np.linalg.norm(x-c),r]))*(x-c)
-
-      '''
-      Define box projection function
-      Projects the input x onto a box
-      such that -2 <= x[0] <= 0.9 and
-      1.1 <= x[1] <= 3.
-
-      Note: One could equivalently add bound
-      constraints as a separate input to the solver
-      instead.
-      '''
-      def pbox(x):
-          l = np.array([-2, 1.1]) # lower bound
-          u = np.array([0.9, 3]) # upper bound
-          return np.minimum(np.maximum(x,l), u)
-
-      # For optional extra output details
-      import logging
-      logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-
-      # Call DFO-LS
-      soln = dfols.solve(rosenbrock, x0, projections=[pball,pbox])
-
+      
+      # Define bound constraints (lower <= x <= upper)
+      lower = np.array([-2.0, 1.1])
+      upper = np.array([0.9, 3.0])
+      
+      # Define the ball constraint ||x-center|| <= radius, and its projection operator
+      center = np.array([0.7, 1.5])
+      radius = 0.4
+      ball_proj = lambda x: center + (radius/max(np.linalg.norm(x-center), radius)) * (x-center)
+      
+      # Call DFO-LS (with bounds and projection operator)
+      # Note: it is better to provide bounds explicitly, instead of using the corresponding
+      #       projection function
+      # Note: input 'projections' must be a list of projection functions
+      soln = dfols.solve(rosenbrock, x0, bounds=(lower, upper), projections=[ball_proj])
+      
       # Display output
       print(soln)
 
@@ -313,6 +313,94 @@ gave an increase in the model. This is common in the case where multiple constra
       Exit flag = 5
       Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
       ****************************
+
+Just like for bound constraints, DFO-LS will automatically ensure the starting point is feasible with respect to all constraints (bounds and general convex constraints).
+
+Adding a Regularizer
+--------------------
+We can add a convex, Lipschitz continuous, but potentially non-differentiable regularizer to our objective function, to encourage the solution :math:`x` to have certain properties.
+This is most commonly used to avoid overfitting.
+A very common choice of regularizer is :math:`h(x)=\lambda\|x\|_2^2` for :math:`\lambda>0` (called Tikhonov regularization or ridge regression), but this is not Lipschitz continuous. For this regularizer, you can add a new residual function :math:`r_{m+1}(x)=\sqrt{\lambda}\|x\|_2` to the objective.
+
+A suitable and widely used regularizer is the L1 norm (i.e. L1 regularization or LASSO), :math:`h(x)=\lambda\|x\|_1` for :math:`\lambda>0`.
+This encourages the solution :math:`x` to be sparse (i.e. many entries are zero).
+To use :math:`h(x)` in DFO-LS, we need to know its `Lipschitz constant <https://en.wikipedia.org/wiki/Lipschitz_continuity>`_ and `proximal operator <https://en.wikipedia.org/wiki/Proximal_operator>`_.
+
+In this case, the Lipschitz constant of :math:`h(x)` may be computed via
+
+.. math::
+
+   |h(x) - h(x)| = \lambda\|x\|_1 - \lambda\|y\|_1 \leq \lambda\|x-y\|_1 \leq \lambda\sqrt{n} \|x-y\|_2
+
+using the reverse triangle inequality to get the first inequality. Hence the Lipschitz constant of :math:`h(x)` is :math:`\lambda\sqrt{n}`.
+
+The proximal operator for :math:`h(x)` with a parameter :math:`u>0` is defined as 
+
+.. math::
+
+   \operatorname{prox}_{uh}(x) := \operatorname{argmin}_{y\in\mathbb{R}^n} h(y) + \frac{1}{2u}\|y-x\|_2^2
+
+There are many regularizers with known proximal operators. See for example `this online database <https://proximity-operator.net/>`_
+or Section 6.9 of the textbook [B2017]_.
+In the case of :math:`h(x)=\lambda\|x\|_1`, the proximal operator is the soft-thresholding function, defined element-wise as
+
+.. math::
+
+   [\operatorname{prox}_{uh}(x)]_i = \max(|x_i|-\lambda u, 0) \operatorname{sign}(x_i)
+
+We can use DFO-LS to solve a simple regularized linear least-squares problem (with artificially generated data) as follows:
+
+  .. code-block:: python
+  
+      # DFO-LS example: regularized least-squares regression
+      import numpy as np
+      import dfols
+      
+      n = 5  # dimension of x
+      m = 10  # number of residuals, i.e. dimension of b
+      
+      # Generate some artificial data for A and b
+      A = np.arange(m*n).reshape((m,n))
+      b = np.sqrt(np.arange(m))
+      objfun = lambda x: A @ x - b
+      
+      # L1 regularizer: h(x) = lda*||x||_1 for some lda>0
+      lda = 1.0
+      h = lambda x: lda * np.linalg.norm(x, 1)
+      Lh = lda * np.sqrt(n)  # Lipschitz constant of h(x)
+      prox_uh = lambda x, u: np.sign(x) * np.maximum(np.abs(x) - lda*u, 0.0)
+      
+      
+      x0 = np.zeros((n,))  # arbitrary starting point
+      
+      # Call DFO-LS
+      soln = dfols.solve(objfun, x0, h=h, lh=Lh, prox_uh=prox_uh)
+      
+      # Display output
+      print(soln)
+
+The solution found by DFO-LS is:
+
+  .. code-block:: none
+
+      ****** DFO-LS Results ******
+      Solution xmin = [-6.85049254e-02 -7.03534168e-11  1.19957812e-15  7.47953030e-11
+        1.30074165e-01]
+      Residual vector = [ 0.52029666 -0.17185715 -0.27822451 -0.28821556 -0.24831856 -0.17654034
+       -0.08211591  0.02946872  0.1546391   0.29091242]
+      Objective value f(xmin) = 0.8682829845
+      Needed 34 objective evaluations (at 34 points)
+      Approximate Jacobian = [[-1.75619848e-09  1.00000000e+00  2.00000000e+00  3.00000000e+00
+         4.00000000e+00]
+       ...
+       [ 4.50000000e+01  4.60000000e+01  4.70000000e+01  4.80000000e+01
+         4.90000000e+01]]
+      Exit flag = 0
+      Success: rho has reached rhoend
+      ****************************
+
+We can see that 3 of the 5 components of the solution are very close to zero.
+Note that many LASSO-type algorithms can produce a solution with many entries being exactly zero, but DFO-LS can only make them very small (related to how it calculates a new point with trust-region constraints).
 
 Example: Noisy Objective Evaluation
 -----------------------------------
@@ -571,4 +659,10 @@ References
    Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, `Improving the Flexibility and Robustness of Model-Based Derivative-Free Optimization Solvers <https://doi.org/10.1145/3338517>`_, *ACM Transactions on Mathematical Software*, 45:3 (2019), pp. 32:1-32:41 [`preprint <https://arxiv.org/abs/1804.00154>`_] 
 
 .. [HR2022]   
-   Hough, M. and Roberts, L., `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+   Matthew Hough and Lindon Roberts, `Model-Based Derivative-Free Methods for Convex-Constrained Optimization <https://doi.org/10.1137/21M1460971>`_, *SIAM Journal on Optimization*, 21:4 (2022), pp. 2552-2579 [`preprint <https://arxiv.org/abs/2111.05443>`_].
+
+.. [LLR2024]   
+   Yanjun Liu, Kevin H. Lam and Lindon Roberts, `Black-box Optimization Algorithms for Regularized Least-squares Problems <http://arxiv.org/abs/2407.14915>`_, *arXiv preprint arXiv:2407.14915* (2024).
+
+.. [B2017]
+   Amir Beck, `First-Order Methods in Optimization <https://doi.org/10.1137/1.9781611974997>`_, SIAM (2017).

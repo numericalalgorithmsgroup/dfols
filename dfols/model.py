@@ -36,7 +36,7 @@ import numpy as np
 import scipy.linalg as LA
 
 from .trust_region import trsbox_geometry
-from .util import sumsq, dykstra
+from .util import sumsq, dykstra, remove_scaling
 
 __all__ = ['Model']
 
@@ -44,8 +44,8 @@ module_logger = logging.getLogger(__name__)
 
 
 class Model(object):
-    def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
-                 do_logging=True):
+    def __init__(self, npt, x0, r0, xl, xu, projections, r0_nsamples, h=None, argsh=(), n=None, m=None, abs_tol=1e-12, rel_tol=1e-20, precondition=True,
+                 do_logging=True, scaling_changes=None):
         if n is None:
             n = len(x0)
         if m is None:
@@ -56,10 +56,14 @@ class Model(object):
         assert xu.shape == (n,), "xu has wrong shape (got %s, expect (%g,))" % (str(xu.shape), n)
         assert r0.shape == (m,), "r0 has wrong shape (got %s, expect (%g,))" % (str(r0.shape), m)
         self.do_logging = do_logging
+        self.scaling_changes = scaling_changes
         self.dim = n
         self.resid_dim = m
         self.num_pts = npt
         self.npt_so_far = 1  # number of points added so far (with function values)
+
+        self.h = h
+        self.argsh = argsh
 
         # Initialise to blank some useful stuff
         # Interpolation points
@@ -72,12 +76,15 @@ class Model(object):
         # Function values
         self.fval_v = np.inf * np.ones((npt, m))  # residuals for each xpt
         self.fval_v[0, :] = r0.copy()
-        self.fval = np.inf * np.ones((npt, ))  # overall objective value for each xpt
-        self.fval[0] = sumsq(r0)
+        
+        self.objval = np.inf * np.ones((npt, ))  # overall objective value for each xpt
+        self.objval[0] = sumsq(r0)
+        if h is not None:
+            self.objval[0] += h(remove_scaling(x0, self.scaling_changes), *argsh)
         self.kopt = 0  # index of current iterate (should be best value so far)
         self.nsamples = np.zeros((npt,), dtype=int)  # number of samples used to evaluate objective at each point
         self.nsamples[0] = r0_nsamples
-        self.fbeg = self.fval[0]  # f(x0), saved to check for sufficient reduction
+        self.objbeg = self.objval[0]  # f(x0), saved to check for sufficient reduction
 
         # Termination criteria
         self.abs_tol = abs_tol
@@ -90,7 +97,7 @@ class Model(object):
         # Saved point (in absolute coordinates) - always check this value before quitting solver
         self.xsave = None
         self.rsave = None
-        self.fsave = None
+        self.objsave = None
         self.jacsave = None
         self.nsamples_save = None
 
@@ -118,8 +125,8 @@ class Model(object):
     def ropt(self):
         return self.fval_v[self.kopt, :]  # residuals for current iterate
 
-    def fopt(self):
-        return self.fval[self.kopt]
+    def objopt(self):
+        return self.objval[self.kopt]
 
     def xpt(self, k, abs_coordinates=False):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
@@ -135,9 +142,9 @@ class Model(object):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         return self.fval_v[k, :]
 
-    def fval(self, k):
+    def objval(self, k):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
-        return self.fval[k]
+        return self.objval[k]
 
     def as_absolute_coordinates(self, x, full_dykstra=False):
         # If x were an interpolation point, get the absolute coordinates of x
@@ -177,18 +184,20 @@ class Model(object):
 
         self.points[k, :] = x.copy()
         self.fval_v[k, :] = rvec.copy()
-        self.fval[k] = sumsq(rvec)
+        self.objval[k] = sumsq(rvec)
+        if self.h is not None:
+            self.objval[k] += self.h(remove_scaling(self.xbase + x, self.scaling_changes), *self.argsh)
         self.nsamples[k] = 1
         self.factorisation_current = False
 
-        if allow_kopt_update and self.fval[k] < self.fopt():
+        if allow_kopt_update and self.objval[k] < self.objopt():
             self.kopt = k
         return
 
     def swap_points(self, k1, k2):
         self.points[[k1, k2], :] = self.points[[k2, k1], :]
         self.fval_v[[k1, k2], :] = self.fval_v[[k2, k1], :]
-        self.fval[[k1, k2]] = self.fval[[k2, k1]]
+        self.objval[[k1, k2]] = self.objval[[k2, k1]]
         if self.kopt == k1:
             self.kopt = k2
         elif self.kopt == k2:
@@ -201,22 +210,27 @@ class Model(object):
         assert 0 <= k < self.npt(), "Invalid index %g" % k
         t = float(self.nsamples[k]) / float(self.nsamples[k] + 1)
         self.fval_v[k, :] = t * self.fval_v[k, :] + (1 - t) * rvec_extra
-        self.fval[k] = sumsq(self.fval_v[k, :])
+        # NOTE: how to sample when we have h? still at xpt(k), then add h(xpt(k)). Modify test if incorrect!
+        self.objval[k] = sumsq(self.fval_v[k, :])
+        if self.h is not None:
+            self.objval[k] += self.h(remove_scaling(self.xbase + self.points[k, :], self.scaling_changes), *self.argsh)
         self.nsamples[k] += 1
 
-        self.kopt = np.argmin(self.fval[:self.npt()])  # make sure kopt is always the best value we have
+        self.kopt = np.argmin(self.objval[:self.npt()])  # make sure kopt is always the best value we have
         return
 
     def add_new_point(self, x, rvec):
         self.points = np.append(self.points, x.reshape((1, self.n())), axis=0)  # append row to xpt
         self.fval_v = np.append(self.fval_v, rvec.reshape((1, self.m())), axis=0)  # append row to fval_v
-        f = np.dot(rvec, rvec)
-        self.fval = np.append(self.fval, f)  # append entry to fval
+        obj = sumsq(rvec)
+        if self.h is not None:
+            obj += self.h(remove_scaling(self.xbase + x, self.scaling_changes), *self.argsh)
+        self.objval = np.append(self.objval, obj)  # append entry to fval
         self.nsamples = np.append(self.nsamples, 1)  # add new sample number
         self.num_pts += 1  # make sure npt is updated
         self.npt_so_far += 1
 
-        if f < self.fopt():
+        if obj < self.objopt():
             self.kopt = self.npt() - 1
 
         self.factorisation_current = False
@@ -236,11 +250,14 @@ class Model(object):
         return
 
     def save_point(self, x, rvec, nsamples, x_in_abs_coords=True):
-        f = sumsq(rvec)
-        if self.fsave is None or f <= self.fsave:
-            self.xsave = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
+        xabs = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
+        obj = sumsq(rvec)
+        if self.h is not None:
+            obj += self.h(remove_scaling(xabs, self.scaling_changes), *self.argsh)
+        if self.objsave is None or obj <= self.objsave:
+            self.xsave = xabs
             self.rsave = rvec.copy()
-            self.fsave = f
+            self.objsave = obj
             self.jacsave = self.model_jac.copy()
             self.nsamples_save = nsamples
             return True
@@ -248,15 +265,15 @@ class Model(object):
             return False  # this value is worse than what we have already - didn't save
 
     def get_final_results(self):
-        # Return x and fval for optimal point (either from xsave+fsave or kopt)
-        if self.fsave is None or self.fopt() <= self.fsave:  # optimal has changed since xsave+fsave were last set
-            return self.xopt(abs_coordinates=True).copy(), self.ropt().copy(), self.fopt(), self.model_jac.copy(), self.nsamples[self.kopt]
+        # Return x and objval for optimal point (either from xsave+objsave or kopt)
+        if self.objsave is None or self.objopt() <= self.objsave:  # optimal has changed since xsave+objsave were last set
+            return self.xopt(abs_coordinates=True).copy(), self.ropt().copy(), self.objopt(), self.model_jac.copy(), self.nsamples[self.kopt]
         else:
-            return self.xsave.copy(), self.rsave.copy(), self.fsave, self.jacsave, self.nsamples_save
+            return self.xsave.copy(), self.rsave.copy(), self.objsave, self.jacsave, self.nsamples_save
 
     def min_objective_value(self):
         # Get termination criterion for f small: f <= abs_tol or f <= rel_tol * f0
-        return max(self.abs_tol, self.rel_tol * self.fbeg)
+        return max(self.abs_tol, self.rel_tol * self.objbeg)
 
     def model_value(self, d, d_based_at_xopt=True, with_const_term=False):
         if d_based_at_xopt:
@@ -375,7 +392,7 @@ class Model(object):
         return True, interp_error, sqrt(norm_J_error), linalg_resid, ls_interp_cond_num  # flag ok
 
     def build_full_model(self):
-        # Build full least squares objective model from mini-models
+        # Build full least squares model from mini-models
         # Centred around xopt
         r = self.model_const + np.dot(self.model_jac, self.xopt())  # constant term (for inexact interpolation)
         J = self.model_jac

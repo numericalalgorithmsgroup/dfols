@@ -31,7 +31,7 @@ import scipy.linalg as LA
 import sys
 
 
-__all__ = ['sumsq', 'eval_least_squares_objective', 'model_value', 'random_orthog_directions_within_bounds',
+__all__ = ['sumsq', 'eval_least_squares_with_regularisation', 'model_value', 'random_orthog_directions_within_bounds',
            'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank']
 
 module_logger = logging.getLogger(__name__) 
@@ -47,9 +47,9 @@ def sumsq(x):
     return np.dot(x, x)
 
 
-def eval_least_squares_objective(objfun, x, args=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
+def eval_least_squares_with_regularisation(objfun, x, h=None, argsf=(), argsh=(), verbose=True, eval_num=0, pt_num=0, full_x_thresh=6, check_for_overflow=True):
     # Evaluate least squares function
-    fvec = objfun(x, *args)
+    fvec = objfun(x, *argsf)
 
     if check_for_overflow:
         try:
@@ -62,20 +62,31 @@ def eval_least_squares_objective(objfun, x, args=(), verbose=True, eval_num=0, p
     else:
         f = sumsq(fvec)
 
+    # objective = least-squares + regularisation
+    obj = f
+    if h is not None:
+        # Evaluate regularisation term
+        hvalue = h(x, *argsh)
+        obj = f + hvalue
+
     if verbose:
         if len(x) < full_x_thresh:
-            module_logger.info("Function eval %i at point %i has f = %.15g at x = " % (eval_num, pt_num, f) + str(x))
+            module_logger.info("Function eval %i at point %i has obj = %.15g at x = " % (eval_num, pt_num, obj) + str(x))
         else:
-            module_logger.info("Function eval %i at point %i has f = %.15g at x = [...]" % (eval_num, pt_num, f))
+            module_logger.info("Function eval %i at point %i has obj = %.15g at x = [...]" % (eval_num, pt_num, obj))
 
-    return fvec, f
+    return fvec, obj
 
 
-def model_value(g, H, s):
-    # Calculate model value (s^T * g + 0.5* s^T * H * s) = s^T * (gopt + 0.5 * H*s)
+def model_value(g, H, s, xopt=(), h=None,argsh=(), scaling_changes=None):
+    # Calculate model value (s^T * g + 0.5* s^T * H * s) + h(xopt + s) = s^T * (gopt + 0.5 * H*s) + h(xopt + s)
     assert g.shape == s.shape, "g and s have incompatible sizes"
     Hs = H.dot(s)
-    return np.dot(s, g + 0.5*Hs)
+    rtn = np.dot(s, g + 0.5*Hs)
+    if h is not None:
+        hvalue = h(remove_scaling(xopt+s, scaling_changes), *argsh)
+        rtn += hvalue
+    return rtn
 
 
 def get_scale(dirn, delta, lower, upper):

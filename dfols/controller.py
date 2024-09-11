@@ -100,14 +100,19 @@ class ExitInformation(object):
 
 
 class Controller(object):
-    def __init__(self, objfun, args, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
-                 scaling_changes, do_logging):
+    def __init__(self, objfun, argsf, x0, r0, r0_nsamples, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun, params,
+                 scaling_changes, do_logging, h=None, lh=None, argsh = (), prox_uh=None, argsprox = ()):
         self.do_logging = do_logging
         self.objfun = objfun
-        self.args = args
+        self.h = h
+        self.argsf = argsf
+        self.argsh = argsh
+        self.lh = lh
+        self.prox_uh = prox_uh #TODO: add instruction for prox_uh
+        self.argsprox = argsprox
         self.maxfun = maxfun
-        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, precondition=params("interpolation.precondition"),
-                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging)
+        self.model = Model(npt, x0, r0, xl, xu, projections, r0_nsamples, h=self.h, argsh = argsh, precondition=params("interpolation.precondition"),
+                           abs_tol = params("model.abs_tol"), rel_tol = params("model.rel_tol"), do_logging=do_logging, scaling_changes=scaling_changes)
         self.nf = nf
         self.nx = nx
         self.rhobeg = rhobeg
@@ -230,7 +235,7 @@ class Controller(object):
             for k in range(0,self.n()):
                 # Evaluate objective at this new point
                 x = self.model.as_absolute_coordinates(D[k, :])
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -289,7 +294,7 @@ class Controller(object):
 
             # Evaluate objective at this new point
             x = self.model.as_absolute_coordinates(xpts_added[k, :])
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
@@ -309,7 +314,7 @@ class Controller(object):
             # Note: this works because the steps for (k) and (k-n) points were in the same coordinate direction
             if self.n() + 1 <= k < 2 * self.n() + 1:
                 # Only swap if steps were in different directions AND new pt has lower objective
-                if stepa * stepb < 0.0 and self.model.fval[k] < self.model.fval[k - self.n()]:
+                if stepa * stepb < 0.0 and self.model.objval[k] < self.model.objval[k - self.n()]:
                     xpts_added[[k, k-self.n()]] = xpts_added[[k-self.n(), k]]
 
         return None   # return & continue
@@ -342,7 +347,7 @@ class Controller(object):
             for ndirns in range(num_directions):
                 new_point = xopt + dirns[ndirns, :]  # alway base move around best value so far
                 x = self.model.as_absolute_coordinates(new_point)
-                rvec_list, f_list, num_samples_run, exit_info = eval_obj_results[ndirns]
+                rvec_list, obj_list, num_samples_run, exit_info = eval_obj_results[ndirns]
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
@@ -361,7 +366,7 @@ class Controller(object):
 
                 # Evaluate objective
                 x = self.model.as_absolute_coordinates(new_point)
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -398,7 +403,7 @@ class Controller(object):
         for j in range(num_steps):
             xnew = self.model.xopt() + (step_length / LA.norm(dirns[j, :])) * dirns[j, :]
             x = self.model.as_absolute_coordinates(xnew)
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
@@ -436,13 +441,85 @@ class Controller(object):
 
         return dirn * (step_length / LA.norm(dirn))
 
-    def trust_region_step(self, params):
-        # Build model for full least squares objectives
+    def evaluate_criticality_measure(self, params):
+        # Calculate criticality measure for regularized problems (h is not None)
+        
+        # Build model for full least squares function
         gopt, H = self.model.build_full_model()
+        
+        if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+            module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_sfista (criticality measure calc)")
+            # d = np.zeros(gopt.shape)
+            # gnew = gopt.copy()
+            # crvmin = -1
+            return np.inf
+        
+        # NOTE: smaller params here to get more iterations in S-FISTA
+        func_tol = params("func_tol.criticality_measure") * self.delta
         if self.model.projections:
-            d, gnew, crvmin = ctrsbox(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), self.model.projections, 1,
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
         else:
-            d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+            proj = lambda x: pbox(x, self.model.sl, self.model.su)
+            d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), [proj], 1,
+                                self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
+        
+        # Calculate criticality measure
+        criticality_measure = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, np.zeros(H.shape), d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)
+        return criticality_measure
+
+    def trust_region_step(self, params, criticality_measure=1e-2):
+        # Build model for full least squares function
+        gopt, H = self.model.build_full_model()
+        # Build func_tol for trust region step
+        # QUESTION: c1 = min{1, 1/delta_max^2}, but choose c1=1here; choose maxhessian = max(||H||_2,1)
+        # QUESTION: when criticality_measure = 0? choose max(criticality_measure,1)
+        func_tol = (1-params("func_tol.tr_step")) * 1 * max(criticality_measure,1) * min(self.delta, max(criticality_measure,1) / max(np.linalg.norm(H, 2),1))
+
+        if self.h is None:
+            if self.model.projections:
+                # Running PGD/SFISTA is generally slower than trsbox, so don't do this if gopt or H have bad values
+                # (this will ultimately lead to a manual setting of d=0 and calling a safety step anyway)
+                if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+                    module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_pgd")
+                    d = np.zeros(gopt.shape)
+                    gnew = gopt.copy()
+                    crvmin = -1
+                else:
+                    d, gnew, crvmin = ctrsbox_pgd(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta, d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"))
+            else:
+                d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+        else:
+            # Running PGD/SFISTA is generally slower than trsbox, so don't do this if gopt or H have bad values
+            # (this will ultimately lead to a manual setting of d=0 and calling a safety step anyway)
+            if np.any(np.isnan(gopt)) or np.any(np.isnan(H)) or not np.all(np.isfinite(gopt)) or not np.all(np.isfinite(H)):
+                module_logger.debug("nan/inf values in gopt and/or H, skipping ctrsbox_sfista")
+                d = np.zeros(gopt.shape)
+                gnew = gopt.copy()
+                crvmin = -1
+            elif self.model.projections:
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, self.model.projections, self.delta,
+                                     self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
+                                     max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                     scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
+            else:
+                # NOTE: alternative way if using trsbox
+                # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
+                proj = lambda x: pbox(x, self.model.sl, self.model.su)
+                d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
+                                      self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol,
+                                      max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
+                                      scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
+            
+            # NOTE: check sufficient decrease. If increase in the model, set zero step
+            pred_reduction = self.h(remove_scaling(self.model.xopt(abs_coordinates=True), self.scaling_changes), *self.argsh) - model_value(gopt, H, d, self.model.xopt(abs_coordinates=True), self.h, self.argsh, self.scaling_changes)
+            if pred_reduction < 0.0:
+                d = np.zeros(d.shape)
+        
         return d, gopt, H, gnew, crvmin
 
     def geometry_step(self, knew, adelt, number_of_samples, params):
@@ -463,10 +540,10 @@ class Controller(object):
             return exit_info  # didn't fix geometry - return & quit
 
         gopt, H = self.model.build_full_model()  # save here, to calculate predicted value from geometry step
-        fopt = self.model.fopt()  # again, evaluate now, before model.change_point()
+        objopt = self.model.objopt()  # again, evaluate now, before model.change_point()
         d = xnew - self.model.xopt()
         x = self.model.as_absolute_coordinates(xnew)
-        rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+        rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
         # Handle exit conditions (f < min obj value or maxfun reached)
         if exit_info is not None:
@@ -481,11 +558,14 @@ class Controller(object):
             self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
         # Estimate actual reduction to add to diffs vector
-        f = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0))  # estimate actual objective value
-
+        obj = sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) # estimate actual objective value
         # pred_reduction = - calculate_model_value(gopt, H, d)
         pred_reduction = - model_value(gopt, H, d)
-        actual_reduction = fopt - f
+        if self.h is not None:
+            obj += self.h(remove_scaling(x, self.scaling_changes), *self.argsh)
+            # since m(0) = h(x)
+            pred_reduction = self.h(remove_scaling(x, self.scaling_changes), *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh, self.scaling_changes)
+        actual_reduction = objopt - obj
         self.diffs = [abs(pred_reduction - actual_reduction), self.diffs[0], self.diffs[1]]
         return None  # exit_info = None
 
@@ -513,7 +593,7 @@ class Controller(object):
     def evaluate_objective(self, x, number_of_samples, params):
         # Sample from objective function several times, keeping track of maxfun and min_obj_value throughout
         rvec_list = np.zeros((number_of_samples, self.m()))
-        f_list = np.zeros((number_of_samples,))
+        obj_list = np.zeros((number_of_samples,))
         num_samples_run = 0
         incremented_nx = False
         exit_info = None
@@ -527,19 +607,24 @@ class Controller(object):
             if not incremented_nx:
                 self.nx += 1
                 incremented_nx = True
-            rvec_list[i, :], f_list[i] = eval_least_squares_objective(self.objfun, remove_scaling(x, self.scaling_changes),
-                                            args=self.args, eval_num=self.nf, pt_num=self.nx,
+            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(self.objfun, remove_scaling(x, self.scaling_changes), self.h,
+                                            argsf=self.argsf, argsh=self.argsh, verbose=self.do_logging, eval_num=self.nf, pt_num=self.nx,
                                             full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                            check_for_overflow=params("general.check_objfun_for_overflow"),
-                                            verbose=self.do_logging)
+                                            check_for_overflow=params("general.check_objfun_for_overflow"))
             num_samples_run += 1
 
         # Check if the average value was below our threshold
-        if num_samples_run > 0 and \
-                        sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
-            exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        # QUESTION: how to choose x in h when using averaged values
+        if self.h is None:
+            if num_samples_run > 0 and \
+                            sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) <= self.model.min_objective_value():
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
+        else:
+            if num_samples_run > 0 and \
+                            sumsq(np.mean(rvec_list[:num_samples_run, :], axis=0)) + self.h(remove_scaling(x, self.scaling_changes),*self.argsh) <= self.model.min_objective_value():
+                exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
-        return rvec_list, f_list, num_samples_run, exit_info
+        return rvec_list, obj_list, num_samples_run, exit_info
 
     def choose_point_to_replace(self, d, skip_kopt=True):
         delsq = self.delta ** 2
@@ -615,11 +700,18 @@ class Controller(object):
         self.last_successful_iter = current_iter  # reset successful iteration check
         return
 
-    def calculate_ratio(self, current_iter, rvec_list, d, gopt, H):
+    def calculate_ratio(self, x, current_iter, rvec_list, d, gopt, H):
         exit_info = None
-        f = sumsq(np.mean(rvec_list, axis=0))  # estimate actual objective value
-        pred_reduction = - model_value(gopt, H, d) # negative of m since m(0) = 0
-        actual_reduction = self.model.fopt() - f
+        # estimate actual objective value
+        obj = sumsq(np.mean(rvec_list, axis=0))
+        # pred_reduction = - calculate_model_value(gopt, H, d)
+        pred_reduction = - model_value(gopt, H, d)
+        if self.h is not None:
+            # QUESTION: x+d here correct? rvec_list takes mean value
+            obj += self.h(remove_scaling(x+d, self.scaling_changes), *self.argsh) 
+            # since m(0) = h(x)
+            pred_reduction = self.h(remove_scaling(x, self.scaling_changes), *self.argsh) - model_value(gopt, H, d, x, self.h, self.argsh, self.scaling_changes)
+        actual_reduction = self.model.objopt() - obj
         self.diffs = [abs(actual_reduction - pred_reduction), self.diffs[0], self.diffs[1]]
         if min(sqrt(sumsq(d)), self.delta) > self.rho:  # if ||d|| >= rho, successful!
             self.last_successful_iter = current_iter
@@ -627,8 +719,7 @@ class Controller(object):
             if len(self.model.projections) > 1: # if we are using multiple projections, only warn since likely due to constraint intersection
                 exit_info = ExitInformation(EXIT_TR_INCREASE_WARNING, "Either multiple constraints are active or trust region step gave model increase")
             else:
-                exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Either rust region step gave model increase")
-
+                exit_info = ExitInformation(EXIT_TR_INCREASE_ERROR, "Trust region step gave model increase")
         ratio = actual_reduction / pred_reduction
         return ratio, exit_info
 
@@ -636,13 +727,13 @@ class Controller(object):
         if len(self.last_iters_step_taken) <= params("slow.history_for_slow"):
             # Not enough info, simply append
             self.last_iters_step_taken.append(current_iter)
-            self.last_fopts_step_taken.append(self.model.fopt())
+            self.last_fopts_step_taken.append(self.model.objopt())
             this_iter_slow = False
         else:
             # Enough info - shift values
             self.last_iters_step_taken = self.last_iters_step_taken[1:] + [current_iter]
-            self.last_fopts_step_taken = self.last_fopts_step_taken[1:] + [self.model.fopt()]
-            this_iter_slow = (log(self.last_fopts_step_taken[0]) - log(self.model.fopt())) / \
+            self.last_fopts_step_taken = self.last_fopts_step_taken[1:] + [self.model.objopt()]
+            this_iter_slow = (log(self.last_fopts_step_taken[0]) - log(self.model.objopt())) / \
                              float(params("slow.history_for_slow")) < params("slow.thresh_for_slow")
         # Update counter of number of slow iterations
         if this_iter_slow:
@@ -659,9 +750,9 @@ class Controller(object):
     def soft_restart(self, number_of_samples, nruns_so_far, params, x_in_abs_coords_to_save=None, rvec_to_save=None,
                      nsamples_to_save=None):
         # A successful run is one where we reduced fopt
-        if self.model.fopt() < self.last_run_fopt:
+        if self.model.objopt() < self.last_run_fopt:
             self.last_successful_run = nruns_so_far
-        self.last_run_fopt = self.model.fopt()
+        self.last_run_fopt = self.model.objopt()
 
         ok_to_do_restart = (nruns_so_far - self.last_successful_run < params("restarts.max_unsuccessful_restarts")) and \
                            (self.nf < self.maxfun)
@@ -682,7 +773,7 @@ class Controller(object):
                               self.model.nsamples[self.model.kopt], x_in_abs_coords=True)
 
         if self.do_logging:
-            module_logger.info("Soft restart [currently, f = %g after %g function evals]" % (self.model.fopt(), self.nf))
+            module_logger.info("Soft restart [currently, f = %g after %g function evals]" % (self.model.objopt(), self.nf))
         # Resetting method: reset delta and rho, then move the closest 'num_steps' points to xk to improve geometry
         # Note: closest points because we are suddenly increasing delta & rho, so we want to encourage spreading out points
         self.delta = self.rhobeg
@@ -724,7 +815,7 @@ class Controller(object):
             for i in range(num_pts_to_add):
                 xnew = self.model.xopt() + dirns[i, :]  # always base move around best value so far
                 x = self.model.as_absolute_coordinates(xnew)
-                rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
@@ -771,11 +862,11 @@ class Controller(object):
             add_noise = params("noise.scale_factor_for_quit") * params("noise.additive_noise_level")
             for k in range(self.model.npt()):
                 all_fvals_within_noise = all_fvals_within_noise and \
-                                (self.model.fval[k] <= self.model.fopt() + add_noise / sqrt(self.model.nsamples[k]))
+                                (self.model.objval[k] <= self.model.objopt() + add_noise / sqrt(self.model.nsamples[k]))
         else:  # noise_level_multiplicative
             ratio = 1.0 + params("noise.scale_factor_for_quit") * params("noise.multiplicative_noise_level")
             for k in range(self.model.npt()):
-                this_ratio = self.model.fval[k] / self.model.fopt()  # fval_opt strictly positive (would have quit o/w)
+                this_ratio = self.model.objval[k] / self.model.objopt()  # fval_opt strictly positive (would have quit o/w)
                 all_fvals_within_noise = all_fvals_within_noise and (
                     this_ratio <= ratio / sqrt(self.model.nsamples[k]))
         return all_fvals_within_noise
@@ -804,7 +895,7 @@ class Controller(object):
                     dirns[i, :] = -dirns[i, :]
             xnew = np.maximum(np.minimum(self.model.xopt() + dirns[i, :], self.model.su), self.model.sl)
             x = self.model.as_absolute_coordinates(xnew)
-            rvec_list, f_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:

@@ -29,14 +29,14 @@ solves
     s.t.  lower <= x <= upper
           ||x-xbase|| <= Delta
 With this value, the variable d=x-xbase solves the problem
-    min_s  abs(c + g' * d)
+    min_d  abs(c + g' * d)
     s.t.   lower <= xbase + d <= upper
           ||d|| <= delta
 Again, we have a version of this for handling arbitrary constraints
 The call
     x = ctrsbox_geometry(xbase, c, g, projections, Delta)
 Solves
-    min_s  abs(c + g' * d)
+    min_d  abs(c + g' * d)
     s.t.   xbase + d is feasible w.r.t. the constraint set C
           ||d|| <= delta
 
@@ -70,7 +70,7 @@ alternative licensing.
 # Ensure compatibility with Python 2
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from math import sqrt
+from math import sqrt, ceil
 import numpy as np
 try:
     import trustregion
@@ -79,13 +79,93 @@ except ImportError:
     # Fall back to Python implementation
     USE_FORTRAN = False
 
-from .util import dykstra, pball, pbox, sumsq, model_value
+from .util import dykstra, pball, pbox, sumsq, model_value, remove_scaling
 
-__all__ = ['ctrsbox', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
+__all__ = ['ctrsbox_sfista', 'ctrsbox_pgd', 'ctrsbox_geometry', 'trsbox', 'trsbox_geometry']
 
 ZERO_THRESH = 1e-14
 
-def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
+def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), argsprox=(), func_tol=1e-3, max_iters=500, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN, scaling_changes=None, sfista_iters_scale=1.0):
+    n = xopt.size
+    assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
+    assert g.shape == (n,), "g and xopt have incompatible sizes"
+    assert len(H.shape) == 2, "H must be a matrix"
+    assert H.shape == (n,n), "H and xopt have incompatible sizes"
+    assert np.allclose(H, H.T), "H must be symmetric"
+    assert delta > 0.0, "delta must be strictly positive"
+
+    # Initialization
+    d = np.zeros(n) # start with zero vector
+    y = np.zeros(n)
+    t = 1
+    k_H = np.linalg.norm(H, 2)
+    crvmin = -1.0
+    
+    # Number of iterations & smoothing parameter, from Theorem 10.57 in 
+    #   [A. Beck. First-order methods in optimization, SIAM, 2017]
+    # We do not use the values of k and mu given in the theorem statement, but rather the intermediate
+    # results on p313 (K1 for number of iterations, and the immediate next line for mu)
+    # Note: in the book's notation, Gamma=delta^2, alpha=1, beta=L_h^2/2, Lf=k_H [alpha and beta from Thm 10.51]
+    try:
+        MAX_LOOP_ITERS = ceil(sfista_iters_scale * delta * (L_h+sqrt(L_h*L_h+2*k_H*func_tol)) / func_tol)
+        MAX_LOOP_ITERS = min(MAX_LOOP_ITERS, max_iters)
+    except ValueError:
+        MAX_LOOP_ITERS = max_iters
+    u =  2 * delta / (MAX_LOOP_ITERS * L_h) # smoothing parameter
+    # u = 2 * func_tol / (L_h ** 2 + L_h * sqrt(L_h ** 2 + 2 * k_H * func_tol))  # the above choice works better in practice
+
+    def gradient_Fu(xopt, g, H, u, prox_uh, d):
+    # Calculate gradient_Fu,
+    # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of h.
+    # We assume that h is globally Lipschitz continous with constant L_h,
+    # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.
+        return g + H @ d + (xopt + d - prox_uh(remove_scaling(xopt + d, scaling_changes), u, *argsprox)) / u
+
+    # Lipschitz constant of gradient_Fu
+    l = k_H + 1 / u 
+
+    # trust region is a ball of radius delta around xopt
+    trproj = lambda w: pball(w, xopt, delta)
+
+    # combine trust region constraints with user-entered constraints
+    P = list(projections)  # make a copy of the projections list
+    P.append(trproj)
+    def proj(d0):
+        p = dykstra(P, xopt+d0, max_iter=d_max_iters, tol=d_tol)
+        # we want the step only, so we subtract xopt
+        # from the new point: proj(xk+d) - xk
+        return p - xopt
+
+    # general step
+    model_value_best = model_value(g, H, d, xopt, h, argsh, scaling_changes)
+    d_best = d.copy()
+    for k in range(MAX_LOOP_ITERS):
+        prev_d = d.copy()
+        prev_t = t
+        # gradient_Fu at y
+        g_Fu = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
+
+        # main update step
+        d = proj(y - g_Fu / l)
+        new_model_value = model_value(g, H, d, xopt, h, argsh, scaling_changes)
+        if new_model_value < model_value_best:
+            d_best = d.copy()
+            model_value_best = new_model_value
+
+        # update true gradient
+        # gnew is the gradient of the smoothed function
+        gnew = gradient_Fu(xopt, g, H, u, prox_uh, d, *argsprox)
+
+        # update CRVMIN
+        crv = d.dot(H).dot(d)/sumsq(d) if sumsq(d) >= ZERO_THRESH else crvmin
+        crvmin = min(crvmin, crv) if crvmin != -1.0 else crv
+        
+        # momentum update
+        t = (1 + sqrt(1 + 4*t*t)) / 2
+        y = d + (prev_t - 1) * (d - prev_d) / t
+    return d, gnew, crvmin
+
+def ctrsbox_pgd(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fortran=USE_FORTRAN):
     n = xopt.size
     assert xopt.shape == (n,), "xopt has wrong shape (should be vector)"
     assert g.shape == (n,), "g and xopt have incompatible sizes"
@@ -150,7 +230,6 @@ def ctrsbox(xopt, g, H, projections, delta, d_max_iters=100, d_tol=1e-10, use_fo
         gy += H.dot(y - prev_y)
 
     return d, gnew, crvmin
-
 
 def trsbox(xopt, g, H, sl, su, delta, use_fortran=USE_FORTRAN):
     if use_fortran:
