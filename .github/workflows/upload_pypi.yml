@@ -1,7 +1,8 @@
 name: Package and upload to PyPI
 
-# Publish when a (published) GitHub Release is created
+# Publish when a (published) GitHub Release is created, or manually
 on:
+  workflow_dispatch:
   release:
     types:
       - published
