@@ -54,7 +54,7 @@ class TestAddValues(unittest.TestCase):
         # Now add better point
         x1 = np.array([1.0, 0.9])
         rvec = rosenbrock(x1)
-        model.change_point(1, x1 - model.xbase, rvec, allow_kopt_update=True)
+        model.change_point(1, x1 - model.xbase, rvec, 2, allow_kopt_update=True)
         self.assertEqual(model.npt(), 2, 'Wrong npt after x1')
         self.assertTrue(array_compare(model.xopt(abs_coordinates=True), x1), 'Wrong xopt after x1')
         self.assertTrue(array_compare(model.ropt(), rosenbrock(x1)), 'Wrong ropt after x1')
@@ -62,7 +62,7 @@ class TestAddValues(unittest.TestCase):
         # Now add worse point
         x2 = np.array([2.0, 0.9])
         rvec = rosenbrock(x2)
-        model.change_point(2, x2 - model.xbase, rvec, allow_kopt_update=True)
+        model.change_point(2, x2 - model.xbase, rvec, 3, allow_kopt_update=True)
         self.assertEqual(model.npt(), 3, 'Wrong npt after x2')
         self.assertTrue(array_compare(model.xpt(0, abs_coordinates=True), x0), 'Wrong xpt(0) after x2')
         self.assertTrue(array_compare(model.xpt(1, abs_coordinates=True), x1), 'Wrong xpt(1) after x2')
@@ -73,7 +73,7 @@ class TestAddValues(unittest.TestCase):
         # Now add best point (but don't update kopt)
         x3 = np.array([1.0, 1.0])
         rvec = rosenbrock(x3)
-        model.change_point(0, x3 - model.xbase, rvec, allow_kopt_update=False)  # full: overwrite x0
+        model.change_point(0, x3 - model.xbase, rvec, 4, allow_kopt_update=False)  # full: overwrite x0
         self.assertEqual(model.npt(), 3, 'Wrong npt after x3')
         self.assertTrue(array_compare(model.xopt(abs_coordinates=True), x1), 'Wrong xopt after x3')
         self.assertTrue(array_compare(model.ropt(), rosenbrock(x1)), 'Wrong ropt after x3')
@@ -101,11 +101,11 @@ class TestSwap(unittest.TestCase):
         # Now add better point
         x1 = np.array([1.0, 0.9])
         rvec = rosenbrock(x1)
-        model.change_point(1, x1 - model.xbase, rvec, allow_kopt_update=True)
+        model.change_point(1, x1 - model.xbase, rvec, 2, allow_kopt_update=True)
         # Now add worse point
         x2 = np.array([2.0, 0.9])
         rvec = rosenbrock(x2)
-        model.change_point(2, x2 - model.xbase, rvec, allow_kopt_update=True)
+        model.change_point(2, x2 - model.xbase, rvec, 3, allow_kopt_update=True)
         model.swap_points(0, 2)
         self.assertTrue(array_compare(model.xpt(0, abs_coordinates=True), x2), 'Wrong xpt(0) after swap 1')
         self.assertTrue(array_compare(model.xpt(1, abs_coordinates=True), x1), 'Wrong xpt(1) after swap 1')
@@ -128,12 +128,12 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertTrue(array_compare(model.sl, xl - x0), 'Wrong sl after initialisation')
         self.assertTrue(array_compare(model.su, xu - x0), 'Wrong su after initialisation')
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         self.assertTrue(array_compare(model.as_absolute_coordinates(x1 - x0), x1), 'Wrong abs coords')
         self.assertTrue(array_compare(model.as_absolute_coordinates(np.array([-1e3, 1e3])-x0), np.array([-1e2, 1e2])),
                         'Bad abs coords with bounds')
         x2 = np.array([2.0, 0.9])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         sqdists = model.distances_to_xopt()
         self.assertAlmostEqual(sqdists[0], sumsq(x0 - x1), 'Wrong distance 0')
         self.assertAlmostEqual(sqdists[1], sumsq(x1 - x1), 'Wrong distance 1')
@@ -158,9 +158,9 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertTrue(array_compare(model.sl, xl - x0 - d), 'Wrong sl after shift base')
         self.assertTrue(array_compare(model.su, xu - x0 - d), 'Wrong su after shift base')
         # save_point and get_final_results
-        model.change_point(0, x0 - model.xbase, rosenbrock(x0))  # revert after resampling
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))  # revert after resampling
-        x, rvec, f, jacmin, nsamples = model.get_final_results()
+        model.change_point(0, x0 - model.xbase, rosenbrock(x0), 4)  # revert after resampling
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 5)  # revert after resampling
+        x, rvec, f, jacmin, nsamples, x_eval_num, jacmin_eval_nums = model.get_final_results()
         self.assertTrue(array_compare(x, x1), 'Wrong final x')
         self.assertTrue(array_compare(rvec, rosenbrock(x1)), 'Wrong final rvec')
         self.assertAlmostEqual(sumsq(rosenbrock(x1)), f, 'Wrong final f')
@@ -170,27 +170,27 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertIsNone(model.rsave, 'rsave not none after initialisation')
         self.assertIsNone(model.objsave, 'fsave not none after initialisation')
         self.assertIsNone(model.nsamples_save, 'nsamples_save not none after initialisation')
-        model.save_point(x0, rosenbrock(x0), 1, x_in_abs_coords=True)
+        model.save_point(x0, rosenbrock(x0), 1, 6, x_in_abs_coords=True)
         self.assertTrue(array_compare(model.xsave, x0), 'Wrong xsave after saving')
         self.assertTrue(array_compare(model.rsave, rosenbrock(x0)), 'Wrong rsave after saving')
         self.assertAlmostEqual(model.objsave, sumsq(rosenbrock(x0)), 'Wrong fsave after saving')
         self.assertEqual(model.nsamples_save, 1, 'Wrong nsamples_save after saving')
-        x, rvec, f, jacmin, nsamples = model.get_final_results()
+        x, rvec, f, jacmin, nsamples, x_eval_num, jacmin_eval_nums = model.get_final_results()
         self.assertTrue(array_compare(x, x1), 'Wrong final x after saving')
         self.assertTrue(array_compare(rvec, rosenbrock(x1)), 'Wrong final rvec after saving')
         self.assertAlmostEqual(sumsq(rosenbrock(x1)), f, 'Wrong final f after saving')
         self.assertEqual(1, nsamples, 'Wrong final nsamples after saving')
-        model.save_point(x2 - model.xbase, np.array([0.0, 0.0]), 2, x_in_abs_coords=False)
+        model.save_point(x2 - model.xbase, np.array([0.0, 0.0]), 2, 7, x_in_abs_coords=False)
         self.assertTrue(array_compare(model.xsave, x2), 'Wrong xsave after saving 2')
         self.assertTrue(array_compare(model.rsave, np.array([0.0, 0.0])), 'Wrong rsave after saving 2')
         self.assertAlmostEqual(model.objsave, 0.0, 'Wrong fsave after saving 2')
         self.assertEqual(model.nsamples_save, 2, 'Wrong nsamples_save after saving 2')
-        x, rvec, f, jacmin, nsamples = model.get_final_results()
+        x, rvec, f, jacmin, nsamples, x_eval_num, jacmin_eval_nums = model.get_final_results()
         self.assertTrue(array_compare(x, x2), 'Wrong final x after saving 2')
         self.assertTrue(array_compare(rvec, np.array([0.0, 0.0])), 'Wrong final rvec after saving 2')
         self.assertAlmostEqual(f, 0.0, 'Wrong final f after saving 2')
         self.assertEqual(2, nsamples, 'Wrong final nsamples after saving 2')
-        model.save_point(x0, rosenbrock(x0), 3, x_in_abs_coords=True)  # try to re-save a worse value
+        model.save_point(x0, rosenbrock(x0), 3, 8, x_in_abs_coords=True)  # try to re-save a worse value
         self.assertTrue(array_compare(model.xsave, x2), 'Wrong xsave after saving 3')
         self.assertTrue(array_compare(model.rsave, np.array([0.0, 0.0])), 'Wrong rsave after saving 3')
         self.assertAlmostEqual(model.objsave, 0.0, 'Wrong fsave after saving 3')
@@ -206,9 +206,9 @@ class TestAveraging(unittest.TestCase):
         xu = 1e2 * np.ones((n,))
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = np.array([1.0, 1.0])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         self.assertEqual(model.kopt, 2, 'Wrong kopt before resampling')
         # Originally, x2 is the ideal point
         # Here, testing that kopt moves back to x1 after adding heaps of bad x2 samples
@@ -226,9 +226,9 @@ class TestMinObjValue(unittest.TestCase):
         xu = 1e2 * np.ones((n,))
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = np.array([2.0, 0.9])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         self.assertAlmostEqual(model.min_objective_value(), 1e-12, 'Wrong min obj value')
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1, rel_tol=1e-2)
         self.assertAlmostEqual(model.min_objective_value(), 1e-2 * sumsq(rosenbrock(x0)), 'Wrong min obj value 2')
@@ -248,9 +248,9 @@ class TestInterpMatrixSVD(unittest.TestCase):
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         model.add_new_sample(0, rosenbrock(x0))
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = np.array([2.0, 0.9])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         A, left_scaling, right_scaling = model.interpolation_matrix()
         A_expect = np.ones((3, 3))
         A_expect[0, 1:] = x0 - x1
@@ -298,9 +298,9 @@ class TestGeomSystem(unittest.TestCase):
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         model.add_new_sample(0, rosenbrock(x0))
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = np.array([2.0, 0.9])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         c0, g0 = model.lagrange_gradient(0)
         lag_thresh = 1e-10
         xopt = model.xopt(abs_coordinates=True)
@@ -329,7 +329,7 @@ class TestFullRankSVD(unittest.TestCase):
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         model.add_new_sample(0, rosenbrock(x0))
         x1 = np.array([-1.2, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         # Here, x0 is base
         # A = model.interpolation_matrix()
         # self.assertTrue(array_compare(A[1, :], delta * np.array([1.0, 0.0])), 'Bad padded interp matrix')
@@ -357,9 +357,9 @@ class TestPoisedness(unittest.TestCase):
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         model.add_new_sample(0, rosenbrock(x0))
         x1 = x0 + delta * np.array([1.0, 0.0])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = x0 + delta * np.array([0.0, 1.0])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         model.kopt = 0  # force this
         # Here (use delta=1), Lagrange polynomials are (1-x-y), 1-x and 1-y
         # Maximum value in ball is for (1-x-y) at (x,y)=(1/sqrt2, 1/sqrt2) --> max value = 1 + sqrt(2)
@@ -375,12 +375,12 @@ class TestAddPoint(unittest.TestCase):
         xu = 1e2 * np.ones((n,))
         model = Model(npt, x0, rosenbrock(x0), xl, xu, [], 1)
         x1 = np.array([1.0, 0.9])
-        model.change_point(1, x1 - model.xbase, rosenbrock(x1))
+        model.change_point(1, x1 - model.xbase, rosenbrock(x1), 2)
         x2 = np.array([2.0, 0.9])
-        model.change_point(2, x2 - model.xbase, rosenbrock(x2))
+        model.change_point(2, x2 - model.xbase, rosenbrock(x2), 3)
         # Now add a new point
         x3 = np.array([1.0, 1.0])  # good point
-        model.add_new_point(x3 - model.xbase, rosenbrock(x3))
+        model.add_new_point(x3 - model.xbase, rosenbrock(x3), 4)
         self.assertEqual(model.npt(), 4, "Wrong number of points after x3")
         self.assertTrue(array_compare(model.xpt(3, abs_coordinates=True), x3), "Wrong new point after x3")
         self.assertTrue(array_compare(model.rvec(3), rosenbrock(x3)), "Wrong rvec after x3")
@@ -388,7 +388,7 @@ class TestAddPoint(unittest.TestCase):
         self.assertEqual(len(model.nsamples), 4, "Wrong nsamples length after x3")
         self.assertEqual(model.nsamples[-1], 1, "Wrong nsample value after x3")
         x4 = np.array([-1.8, 1.8])  # bad point
-        model.add_new_point(x4 - model.xbase, rosenbrock(x4))
+        model.add_new_point(x4 - model.xbase, rosenbrock(x4), 5)
         self.assertEqual(model.npt(), 5, "Wrong number of points after x4")
         self.assertTrue(array_compare(model.xpt(4, abs_coordinates=True), x4), "Wrong new point after x4")
         self.assertTrue(array_compare(model.rvec(4), rosenbrock(x4)), "Wrong rvec after x4")
@@ -411,7 +411,7 @@ class TestRegression(unittest.TestCase):
 
         for i in range(1,npt):
             xi = A[i,:]
-            model.change_point(i, xi - model.xbase, b[i])
+            model.change_point(i, xi - model.xbase, b[i], i+1)
 
         xopt = model.xopt(abs_coordinates=True)
         A_for_interp = np.zeros((npt, n+1))  # there are actually npt+1 points
@@ -454,7 +454,7 @@ class TestUnderdetermined(unittest.TestCase):
 
         for i in range(1,npt):
             xi = A[i,:]
-            model.change_point(i, xi - model.xbase, b[i])
+            model.change_point(i, xi - model.xbase, b[i], i+1)
 
         xopt = model.xopt(abs_coordinates=True)
         A_for_interp = np.zeros((npt, n + 1))  # there are actually npt+1 points

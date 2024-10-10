@@ -253,69 +253,101 @@ class Controller(object):
 
         at_lower_boundary = (self.model.sl > -0.01 * self.delta)  # sl = xl - x0, should be -ve, actually < -rhobeg
         at_upper_boundary = (self.model.su < 0.01 * self.delta)  # su = xu - x0, should be +ve, actually > rhobeg
-
-        xpts_added = np.zeros((num_directions + 1, self.n()))
-        for k in range(1, num_directions + 1):
-            # k = 0 --> base point (xpt = 0)  [ not here]
-            # k = 1, ..., 2n --> coordinate directions [1,...,n and n+1,...,2n]
-            # k = 2n+1, ..., (n+1)(n+2)/2 --> off-diagonal directions
-            if 1 <= k < self.n() + 1:  # first step along coord directions
+        
+        if params("init.run_in_parallel") and num_directions <= self.n():
+            # Can do all the evaluation in parallel if <= n+1 interpolation points, but if larger
+            # then the step depends on the function value at previous steps and does point swapping
+            xpts_added = np.zeros((num_directions + 1, self.n()))
+            eval_obj_results = []
+            for k in range(1, num_directions + 1):  # k = 1, ..., num_directions
+                # always have k = 1, ..., n since num_directions <= n
                 dirn = k - 1  # direction to move in (0,...,n-1)
                 stepa = self.delta if not at_upper_boundary[dirn] else -self.delta # take a +delta step if at lower, -delta if at upper
                 stepb = None
                 xpts_added[k, dirn] = stepa # set new (relative) point to the step since we haven't done any moving, so relative point is all zeros.
+                
+                # Evaluate objective at this new point
+                x = self.model.as_absolute_coordinates(xpts_added[k, :])
+                eval_obj_results.append(self.evaluate_objective(x, number_of_samples, params))
+            
+            # Evaluations done, now add to the model
+            for k in range(1, num_directions + 1):
+                x = self.model.as_absolute_coordinates(xpts_added[k, :])
+                rvec_list, obj_list, num_samples_run, exit_info = eval_obj_results[k-1]
+                # Handle exit conditions (f < min obj value or maxfun reached)
+                if exit_info is not None:
+                    if num_samples_run > 0:
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
+                                              x_in_abs_coords=True)
+                    return exit_info  # return & quit
 
-            elif self.n() + 1 <= k < 2 * self.n() + 1:  # second step along coord directions
-                dirn = k - self.n() - 1  # direction to move in (0,...,n-1)
-                stepa = xpts_added[k - self.n(), dirn] # previous step
-                stepb = -self.delta # new step
-                if at_lower_boundary[dirn]:
-                    # if at lower boundary, set the second step to be +ve
-                    stepb = min(2.0 * self.delta, self.model.su[dirn])  # su = xu - x0, should be +ve
-                if at_upper_boundary[dirn]:
-                    # if at upper boundary, set the second step to be -ve
-                    stepb = max(-2.0 * self.delta, self.model.sl[dirn])  # sl = xl - x0, should be -ve
-                xpts_added[k, dirn] = stepb
+                # Otherwise, add new results (increments model.npt_so_far)
+                self.model.change_point(k, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
+                for i in range(1, num_samples_run):
+                    self.model.add_new_sample(k, rvec_extra=rvec_list[i, :])
+        else:
+            xpts_added = np.zeros((num_directions + 1, self.n()))
+            for k in range(1, num_directions + 1):
+                # k = 0 --> base point (xpt = 0)  [ not here]
+                # k = 1, ..., 2n --> coordinate directions [1,...,n and n+1,...,2n]
+                # k = 2n+1, ..., (n+1)(n+2)/2 --> off-diagonal directions
+                if 1 <= k < self.n() + 1:  # first step along coord directions
+                    dirn = k - 1  # direction to move in (0,...,n-1)
+                    stepa = self.delta if not at_upper_boundary[dirn] else -self.delta # take a +delta step if at lower, -delta if at upper
+                    stepb = None
+                    xpts_added[k, dirn] = stepa # set new (relative) point to the step since we haven't done any moving, so relative point is all zeros.
 
-            else:  # k = 2n+1, ..., (n+1)(n+2)/2
-                # p = (k - 1) % n + 1  # cycles through (1,...,n), starting at 2n+1 --> 1
-                # l = (k - 2 * n - 1) / n + 1  # (1,...,1, 2, ..., 2, etc.) where each number appears n times
-                # q = (p + l if p + l <= n else p + l - n)
-                stepa = None
-                stepb = None
-                itemp = (k - self.n() - 1) // self.n()
-                q = k - itemp * self.n() - self.n()
-                p = q + itemp
-                if p > self.n():
-                    p, q = q, p - self.n()  # does swap correctly in Python
+                elif self.n() + 1 <= k < 2 * self.n() + 1:  # second step along coord directions
+                    dirn = k - self.n() - 1  # direction to move in (0,...,n-1)
+                    stepa = xpts_added[k - self.n(), dirn] # previous step
+                    stepb = -self.delta # new step
+                    if at_lower_boundary[dirn]:
+                        # if at lower boundary, set the second step to be +ve
+                        stepb = min(2.0 * self.delta, self.model.su[dirn])  # su = xu - x0, should be +ve
+                    if at_upper_boundary[dirn]:
+                        # if at upper boundary, set the second step to be -ve
+                        stepb = max(-2.0 * self.delta, self.model.sl[dirn])  # sl = xl - x0, should be -ve
+                    xpts_added[k, dirn] = stepb
 
-                xpts_added[k, p - 1] = xpts_added[p, p - 1]
-                xpts_added[k, q - 1] = xpts_added[q, q - 1]
+                else:  # k = 2n+1, ..., (n+1)(n+2)/2
+                    # p = (k - 1) % n + 1  # cycles through (1,...,n), starting at 2n+1 --> 1
+                    # l = (k - 2 * n - 1) / n + 1  # (1,...,1, 2, ..., 2, etc.) where each number appears n times
+                    # q = (p + l if p + l <= n else p + l - n)
+                    stepa = None
+                    stepb = None
+                    itemp = (k - self.n() - 1) // self.n()
+                    q = k - itemp * self.n() - self.n()
+                    p = q + itemp
+                    if p > self.n():
+                        p, q = q, p - self.n()  # does swap correctly in Python
 
-            # Evaluate objective at this new point
-            x = self.model.as_absolute_coordinates(xpts_added[k, :])
-            rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+                    xpts_added[k, p - 1] = xpts_added[p, p - 1]
+                    xpts_added[k, q - 1] = xpts_added[q, q - 1]
 
-            # Handle exit conditions (f < min obj value or maxfun reached)
-            if exit_info is not None:
-                if num_samples_run > 0:
-                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
-                                          x_in_abs_coords=True)
-                return exit_info  # return & quit
+                # Evaluate objective at this new point
+                x = self.model.as_absolute_coordinates(xpts_added[k, :])
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
 
-            # Otherwise, add new results (increments model.npt_so_far)
-            self.model.change_point(k, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
-            for i in range(1, num_samples_run):
-                self.model.add_new_sample(k, rvec_extra=rvec_list[i, :])
+                # Handle exit conditions (f < min obj value or maxfun reached)
+                if exit_info is not None:
+                    if num_samples_run > 0:
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
+                                              x_in_abs_coords=True)
+                    return exit_info  # return & quit
 
-            # If k exceeds N+1, then the positions of the k-th and (k-N)-th interpolation
-            # points may be switched, in order that the function value at the first of them
-            # contributes to the off-diagonal second derivative terms of the initial quadratic model.
-            # Note: this works because the steps for (k) and (k-n) points were in the same coordinate direction
-            if self.n() + 1 <= k < 2 * self.n() + 1:
-                # Only swap if steps were in different directions AND new pt has lower objective
-                if stepa * stepb < 0.0 and self.model.objval[k] < self.model.objval[k - self.n()]:
-                    xpts_added[[k, k-self.n()]] = xpts_added[[k-self.n(), k]]
+                # Otherwise, add new results (increments model.npt_so_far)
+                self.model.change_point(k, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
+                for i in range(1, num_samples_run):
+                    self.model.add_new_sample(k, rvec_extra=rvec_list[i, :])
+
+                # If k exceeds N+1, then the positions of the k-th and (k-N)-th interpolation
+                # points may be switched, in order that the function value at the first of them
+                # contributes to the off-diagonal second derivative terms of the initial quadratic model.
+                # Note: this works because the steps for (k) and (k-n) points were in the same coordinate direction
+                if self.n() + 1 <= k < 2 * self.n() + 1:
+                    # Only swap if steps were in different directions AND new pt has lower objective
+                    if stepa * stepb < 0.0 and self.model.objval[k] < self.model.objval[k - self.n()]:
+                        xpts_added[[k, k-self.n()]] = xpts_added[[k-self.n(), k]]
 
         return None   # return & continue
 
