@@ -95,7 +95,7 @@ class Model(object):
         # Model information
         self.model_const = np.zeros((m, ))  # constant term for model m(s) = c + J*s
         self.model_jac = np.zeros((m, n))  # Jacobian term for model m(s) = c + J*s
-        self.model_jac_eval_nums = np.zeros((npt,), dtype=int)  # which evaluation numbers (1-indexed, nx not nf) were used to build model_jac
+        self.model_jac_eval_nums = None  # which evaluation numbers (1-indexed, nx not nf) were used to build model_jac
 
         # Saved point (in absolute coordinates) - always check this value before quitting solver
         self.xsave = None
@@ -266,10 +266,10 @@ class Model(object):
             self.xsave = xabs
             self.rsave = rvec.copy()
             self.objsave = obj
-            self.jacsave = self.model_jac.copy()
+            self.jacsave = self.model_jac.copy() if self.model_jac is not None else None
             self.nsamples_save = nsamples
             self.eval_num_save = eval_num
-            self.jacsave_eval_nums = self.model_jac_eval_nums.copy()
+            self.jacsave_eval_nums = self.model_jac_eval_nums.copy() if self.model_jac_eval_nums is not None else None
             return True
         else:
             return False  # this value is worse than what we have already - didn't save
