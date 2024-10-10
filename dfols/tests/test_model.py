@@ -211,8 +211,8 @@ class TestBasicManipulation(unittest.TestCase):
         self.assertTrue(array_compare(model.rsave, np.array([0.0, 0.0])), 'Wrong rsave after saving 3')
         self.assertAlmostEqual(model.objsave, 0.0, 'Wrong fsave after saving 3')
         self.assertEqual(model.nsamples_save, 2, 'Wrong nsamples_save after saving 3')
-        self.assertEqual(model.eval_num_save, 7, 'Wrong eval_num_save after saving 2')
-        self.assertIsNone(model.jacsave_eval_nums, 'jacsave_eval_nums not none after saving 2')
+        self.assertEqual(model.eval_num_save, 7, 'Wrong eval_num_save after saving 3')
+        self.assertIsNone(model.jacsave_eval_nums, 'jacsave_eval_nums not none after saving 3')
 
 
 class TestAveraging(unittest.TestCase):

@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{11 September 2024}
-\release{1.5.0}
+\date{10 October 2024}
+\release{1.5.1}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.5.0
+\sphinxstylestrong{Release:} 1.5.1
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 11 September 2024
+\sphinxstylestrong{Date:} 10 October 2024
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -394,7 +394,7 @@ At each step, we compute a trial step \(s_k\) designed to make our approximation
 In DFO\sphinxhyphen{}LS, we construct our approximation \(m_k(s)\) by interpolating a linear approximation for each residual \(r_i(x)\) at several points close to \(x_k\). To make sure our interpolated model is accurate, we need to regularly check that the points are well\sphinxhyphen{}spaced, and move them if they aren’t (i.e. improve the geometry of our interpolation points).
 
 \sphinxAtStartPar
-A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
+A complete description of the DFO\sphinxhyphen{}LS algorithm is given in our papers \sphinxcite{userguide:cfmr2018}, \sphinxcite{userguide:hr2022} and \sphinxcite{userguide:llr2024}.
 
 
 \section{References}
@@ -425,7 +425,7 @@ Note that in the case of Tikhonov regularization/ridge regression, \(h(x)=\lambd
 
 \sphinxAtStartPar
 DFO\sphinxhyphen{}LS iteratively constructs an interpolation\sphinxhyphen{}based model for the objective, and determines a step using a trust\sphinxhyphen{}region framework.
-For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
+For an in\sphinxhyphen{}depth technical description of the algorithm see the papers \sphinxcite{userguide:cfmr2018}, \sphinxcite{userguide:hr2022} and \sphinxcite{userguide:llr2024}.
 
 
 \section{How to use DFO\sphinxhyphen{}LS}
@@ -488,6 +488,14 @@ The output of \sphinxcode{\sphinxupquote{dfols.solve}} is an object containing:
 \item {} 
 \sphinxAtStartPar
 \sphinxcode{\sphinxupquote{soln.diagnostic\_info}} \sphinxhyphen{} a table of diagnostic information showing the progress of the solver, a Pandas DataFrame.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{soln.xmin\_eval\_num}} \sphinxhyphen{} an integer representing which evaluation point (i.e. same as \sphinxcode{\sphinxupquote{soln.nx}}) gave the solution \sphinxcode{\sphinxupquote{soln.x}}. Evaluation counts are 1\sphinxhyphen{}indexed, to match the logging information.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{soln.jacmin\_eval\_nums}} \sphinxhyphen{} a NumPy integer array of length \sphinxcode{\sphinxupquote{npt}} with the evaluation point numbers (i.e. same as \sphinxcode{\sphinxupquote{soln.nx}}) used to build \sphinxcode{\sphinxupquote{soln.jacobian}} via linear interpolation to the residual values at these points. Evaluation counts are 1\sphinxhyphen{}indexed, to match the logging information. This array will usually, but not always, include \sphinxcode{\sphinxupquote{soln.xmin\_eval\_num}}.
 
 \end{itemize}
 
@@ -690,8 +698,10 @@ Solution xmin = [1. 1.]
 Residual vector = [0. 0.]
 Objective value f(xmin) = 0
 Needed 33 objective evaluations (at 33 points)
-Approximate Jacobian = [[\PYGZhy{}2.00180000e+01  1.00000000e+01]
- [\PYGZhy{}1.00000000e+00  8.19971362e\PYGZhy{}16]]
+Approximate Jacobian = [[\PYGZhy{}1.9982000e+01  1.0000000e+01]
+ [\PYGZhy{}1.0000000e+00  1.0079924e\PYGZhy{}14]]
+Solution xmin was evaluation point 33
+Approximate Jacobian formed using evaluation points [29 31 32]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -725,11 +735,13 @@ DFO\sphinxhyphen{}LS correctly finds the solution to the constrained problem:
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 ****** DFO\PYGZhy{}LS Results ******
 Solution xmin = [0.9  0.81]
-Residual vector = [3.10862447e\PYGZhy{}14 1.00000000e\PYGZhy{}01]
+Residual vector = [0.  0.1]
 Objective value f(xmin) = 0.01
-Needed 58 objective evaluations (at 58 points)
-Approximate Jacobian = [[\PYGZhy{}1.79999999e+01  9.99999998e+00]
- [\PYGZhy{}1.00000000e+00  8.62398179e\PYGZhy{}10]]
+Needed 56 objective evaluations (at 56 points)
+Approximate Jacobian = [[\PYGZhy{}1.79999999e+01  1.00000000e+01]
+ [\PYGZhy{}1.00000000e+00 \PYGZhy{}5.15519307e\PYGZhy{}10]]
+Solution xmin was evaluation point 42
+Approximate Jacobian formed using evaluation points [55 42 54]
 Exit flag = 0
 Success: rho has reached rhoend
 ****************************
@@ -770,8 +782,8 @@ Initialising (coordinate directions)
 Function eval 2 at point 2 has f = 14.337296 at x = [\PYGZhy{}1.08  0.85]
 Function eval 3 at point 3 has f = 55.25 at x = [\PYGZhy{}1.2   0.73]
 ...
-Function eval 57 at point 57 has f = 0.010000001407575 at x = [0.89999999 0.80999999]
-Function eval 58 at point 58 has f = 0.00999999999999997 at x = [0.9  0.81]
+Function eval 55 at point 55 has obj = 0.0100000000000225 at x = [0.9        0.80999998]
+Function eval 56 at point 56 has obj = 0.01 at x = [0.9  0.81]
 Did a total of 1 run(s)
 \end{sphinxVerbatim}
 \end{quote}
@@ -899,6 +911,8 @@ Objective value f(xmin) = 11.81557703
 Needed 10 objective evaluations (at 10 points)
 Approximate Jacobian = [[\PYGZhy{}1.79826221e+01  1.00004412e+01]
  [\PYGZhy{}1.00000000e+00 \PYGZhy{}1.81976605e\PYGZhy{}15]]
+Solution xmin was evaluation point 5
+Approximate Jacobian formed using evaluation points [8 5 9]
 Exit flag = 5
 Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
 ****************************
@@ -992,6 +1006,8 @@ Approximate Jacobian = [[\PYGZhy{}1.75619848e\PYGZhy{}09  1.00000000e+00  2.0000
  ...
  [ 4.50000000e+01  4.60000000e+01  4.70000000e+01  4.80000000e+01
    4.90000000e+01]]
+Solution xmin was evaluation point 34
+Approximate Jacobian formed using evaluation points [30 32 29 31 33 27]
 Exit flag = 0
 Success: rho has reached rhoend
 ****************************
@@ -1006,7 +1022,7 @@ Note that many LASSO\sphinxhyphen{}type algorithms can produce a solution with m
 \section{Example: Noisy Objective Evaluation}
 \label{\detokenize{userguide:example-noisy-objective-evaluation}}
 \sphinxAtStartPar
-As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{Overview}}}}, derivative\sphinxhyphen{}free algorithms such as DFO\sphinxhyphen{}LS are particularly useful when \sphinxcode{\sphinxupquote{objfun}} has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to a derivative\sphinxhyphen{}based solver:
+As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{Overview}}}}, derivative\sphinxhyphen{}free algorithms such as DFO\sphinxhyphen{}LS are particularly useful when \sphinxcode{\sphinxupquote{objfun}} has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to SciPy’s derivative\sphinxhyphen{}based solver (the below results came from using SciPy v1.13.0):
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -1067,28 +1083,30 @@ objfun(x0) = [\PYGZhy{}4.44180389  2.19667014]
 objfun(x0) = [\PYGZhy{}4.39545837  2.20903317]
 
 ****** DFO\PYGZhy{}LS Results ******
-Solution xmin = [1.         1.00000003]
-Residual vector = [ 1.59634974e\PYGZhy{}07 \PYGZhy{}4.63036198e\PYGZhy{}09]
-Objective value f(xmin) = 2.550476524e\PYGZhy{}14
-Needed 53 objective evaluations (at 53 points)
-Approximate Jacobian = [[\PYGZhy{}1.98196347e+01  9.90335675e+00]
- [\PYGZhy{}1.01941978e+00  4.24991776e\PYGZhy{}05]]
+Solution xmin = [1.00000001 1.00000002]
+Residual vector = [ 5.17481720e\PYGZhy{}09 \PYGZhy{}1.04150014e\PYGZhy{}08]
+Objective value f(xmin) = 1.352509879e\PYGZhy{}16
+Needed 35 objective evaluations (at 35 points)
+Approximate Jacobian = [[\PYGZhy{}1.98079840e+01  1.00105722e+01]
+ [\PYGZhy{}9.93887907e\PYGZhy{}01 \PYGZhy{}3.06567570e\PYGZhy{}04]]
+Solution xmin was evaluation point 35
+Approximate Jacobian formed using evaluation points [30 33 34]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
 
 
 ** SciPy results **
-Solution xmin = [\PYGZhy{}1.20000087  1.00000235]
-Objective value f(xmin) = 23.95535774
-Needed 6 objective evaluations
+Solution xmin = [\PYGZhy{}1.2  1. ]
+Objective value f(xmin) = 23.83907501
+Needed 5 objective evaluations
 Exit flag = 3
 `xtol` termination condition is satisfied.
 \end{sphinxVerbatim}
 \end{quote}
 
 \sphinxAtStartPar
-DFO\sphinxhyphen{}LS is able to find the solution with 20 more function evaluations as in the noise\sphinxhyphen{}free case. However SciPy’s derivative\sphinxhyphen{}based solver, which has no trouble solving the noise\sphinxhyphen{}free problem, is unable to make any progress.
+DFO\sphinxhyphen{}LS is able to find the solution, but SciPy’s derivative\sphinxhyphen{}based solver, which has no trouble solving the noise\sphinxhyphen{}free problem, is unable to make any progress.
 
 \sphinxAtStartPar
 As noted above, DFO\sphinxhyphen{}LS has an input parameter \sphinxcode{\sphinxupquote{objfun\_has\_noise}} to indicate if \sphinxcode{\sphinxupquote{objfun}} has noise in it, which it does in this case. Therefore we can call DFO\sphinxhyphen{}LS with
@@ -1106,11 +1124,13 @@ Using this setting, we find the correct solution faster:
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 ****** DFO\PYGZhy{}LS Results ******
 Solution xmin = [1. 1.]
-Residual vector = [\PYGZhy{}4.06227943e\PYGZhy{}08  2.51525603e\PYGZhy{}10]
-Objective value f(xmin) = 1.650274685e\PYGZhy{}15
-Needed 29 objective evaluations (at 29 points)
-Approximate Jacobian = [[\PYGZhy{}1.99950530e+01  1.00670067e+01]
- [\PYGZhy{}9.96161167e\PYGZhy{}01 \PYGZhy{}2.41166495e\PYGZhy{}04]]
+Residual vector = [\PYGZhy{}6.56093684e\PYGZhy{}10 \PYGZhy{}1.17835345e\PYGZhy{}10]
+Objective value f(xmin) = 4.443440912e\PYGZhy{}19
+Needed 28 objective evaluations (at 28 points)
+Approximate Jacobian = [[\PYGZhy{}1.98649933e+01  9.93403044e+00]
+ [\PYGZhy{}9.93112150e\PYGZhy{}01  5.78830812e\PYGZhy{}03]]
+Solution xmin was evaluation point 28
+Approximate Jacobian formed using evaluation points [27 25 26]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -1168,20 +1188,22 @@ The output of this is (noting that DFO\sphinxhyphen{}LS moves \(x_0\) to be far 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 ****** DFO\PYGZhy{}LS Results ******
 Solution xmin = [ 4.98830861e+02 \PYGZhy{}1.01256863e\PYGZhy{}01]
-Residual vector = [\PYGZhy{}0.1816709   0.06098397  0.76276301  0.11962354 \PYGZhy{}0.26589796 \PYGZhy{}0.59788814
- \PYGZhy{}1.02611897 \PYGZhy{}1.5123537  \PYGZhy{}1.56145452 \PYGZhy{}1.63266662]
+Residual vector = [\PYGZhy{}0.1816709   0.06098396  0.76276296  0.11962351 \PYGZhy{}0.26589799 \PYGZhy{}0.59788816
+ \PYGZhy{}1.02611898 \PYGZhy{}1.51235371 \PYGZhy{}1.56145452 \PYGZhy{}1.63266662]
 Objective value f(xmin) = 9.504886892
-Needed 79 objective evaluations (at 79 points)
-Approximate Jacobian = [[\PYGZhy{}9.12897463e\PYGZhy{}01 \PYGZhy{}4.09843514e+02]
- [\PYGZhy{}8.59085679e\PYGZhy{}01 \PYGZhy{}6.42808544e+02]
- [\PYGZhy{}2.47252555e\PYGZhy{}01 \PYGZhy{}1.70205419e+03]
- [\PYGZhy{}1.34676365e\PYGZhy{}01 \PYGZhy{}1.33017181e+03]
- [\PYGZhy{}8.71355033e\PYGZhy{}02 \PYGZhy{}1.04752848e+03]
- [\PYGZhy{}5.75304364e\PYGZhy{}02 \PYGZhy{}8.09280752e+02]
- [\PYGZhy{}2.83184867e\PYGZhy{}02 \PYGZhy{}4.97239623e+02]
- [\PYGZhy{}2.22992989e\PYGZhy{}03 \PYGZhy{}6.70749826e+01]
- [\PYGZhy{}5.24129962e\PYGZhy{}04 \PYGZhy{}1.95045269e+01]
- [\PYGZhy{}2.65956876e\PYGZhy{}04 \PYGZhy{}1.07858081e+01]]
+Needed 111 objective evaluations (at 111 points)
+Approximate Jacobian = [[\PYGZhy{}9.12901055e\PYGZhy{}01 \PYGZhy{}4.09843504e+02]
+ [\PYGZhy{}8.59087363e\PYGZhy{}01 \PYGZhy{}6.42808534e+02]
+ [\PYGZhy{}2.47254068e\PYGZhy{}01 \PYGZhy{}1.70205403e+03]
+ [\PYGZhy{}1.34676757e\PYGZhy{}01 \PYGZhy{}1.33017163e+03]
+ [\PYGZhy{}8.71358948e\PYGZhy{}02 \PYGZhy{}1.04752831e+03]
+ [\PYGZhy{}5.75309286e\PYGZhy{}02 \PYGZhy{}8.09280596e+02]
+ [\PYGZhy{}2.83185935e\PYGZhy{}02 \PYGZhy{}4.97239504e+02]
+ [\PYGZhy{}2.22997879e\PYGZhy{}03 \PYGZhy{}6.70749550e+01]
+ [\PYGZhy{}5.24146460e\PYGZhy{}04 \PYGZhy{}1.95045170e+01]
+ [\PYGZhy{}2.65964661e\PYGZhy{}04 \PYGZhy{}1.07858021e+01]]
+Solution xmin was evaluation point 111
+Approximate Jacobian formed using evaluation points [104 109 110]
 Exit flag = 0
 Success: rho has reached rhoend
 ****************************
@@ -1264,11 +1286,13 @@ The output of this is
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 ****** DFO\PYGZhy{}LS Results ******
 Solution xmin = [ 0.09777309 \PYGZhy{}2.32510588]
-Residual vector = [\PYGZhy{}1.45394186e\PYGZhy{}09 \PYGZhy{}1.95108811e\PYGZhy{}08]
-Objective value f(xmin) = 3.827884295e\PYGZhy{}16
+Residual vector = [\PYGZhy{}1.38601752e\PYGZhy{}09 \PYGZhy{}1.70204653e\PYGZhy{}08]
+Objective value f(xmin) = 2.916172822e\PYGZhy{}16
 Needed 13 objective evaluations (at 13 points)
-Approximate Jacobian = [[ 3.32499552  0.90216381]
- [10.22664908 \PYGZhy{}1.00061604]]
+Approximate Jacobian = [[ 3.32527052  0.90227531]
+ [10.22943034 \PYGZhy{}0.99958226]]
+Solution xmin was evaluation point 13
+Approximate Jacobian formed using evaluation points [ 8 11 12]
 Exit flag = 0
 Success: Objective is sufficiently small
 ****************************
@@ -1290,7 +1314,7 @@ Here, we see that both entries of the residual vector are very small, so both eq
 This section describes different optional user parameters available in DFO\sphinxhyphen{}LS.
 
 \sphinxAtStartPar
-In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{advanced:cfmr2018}, \sphinxcite{advanced:hr2022} and \sphinxcite{advanced:llr2024}.
+In the last section ({\hyperref[\detokenize{userguide::doc}]{\sphinxcrossref{\DUrole{doc}{Using DFO\sphinxhyphen{}LS}}}}), we introduced \sphinxcode{\sphinxupquote{dfols.solve()}}, which has the optional input \sphinxcode{\sphinxupquote{user\_params}}. This is a Python dictionary of user parameters. We will now go through the settings which can be changed in this way. More details are available in the papers \sphinxcite{userguide:cfmr2018}, \sphinxcite{userguide:hr2022} and \sphinxcite{userguide:llr2024}.
 
 \sphinxAtStartPar
 The default values, used if no override is given, in some cases vary depending on whether \sphinxcode{\sphinxupquote{objfun}} has stochastic noise; that is, whether evaluating \sphinxcode{\sphinxupquote{objfun(x)}} several times at the same \sphinxcode{\sphinxupquote{x}} gives the same result or not. Whether or not this is the case is determined by the \sphinxcode{\sphinxupquote{objfun\_has\_noise}} input to \sphinxcode{\sphinxupquote{dfols.solve()}} (and not by inspecting \sphinxcode{\sphinxupquote{objfun}}, for instance).
@@ -1350,7 +1374,7 @@ The default values, used if no override is given, in some cases vary depending o
 
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{init.run\_in\_parallel}} \sphinxhyphen{} If using random directions, whether or not to ask for all \sphinxcode{\sphinxupquote{objfun}} to be evaluated at all points without any intermediate processing. Default is \sphinxcode{\sphinxupquote{False}}.
+\sphinxcode{\sphinxupquote{init.run\_in\_parallel}} \sphinxhyphen{} If using random directions or non\sphinxhyphen{}random with input \sphinxcode{\sphinxupquote{npt}} at most \sphinxcode{\sphinxupquote{len(x0)+1}}, whether or not to ask for all \sphinxcode{\sphinxupquote{objfun}} to be evaluated at all points without any intermediate processing. Default is \sphinxcode{\sphinxupquote{False}}.
 
 \end{itemize}
 
@@ -1972,6 +1996,19 @@ Add support for (possibly nonsmooth) regularizer term.
 \item {} 
 \sphinxAtStartPar
 Drop warning about infeasible initial point if the point is on an upper/lower bound.
+
+\end{itemize}
+
+
+\section{Version 1.5.1 (10 Oct 2024)}
+\label{\detokenize{history:version-1-5-1-10-oct-2024}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Add return values \sphinxcode{\sphinxupquote{soln.xmin\_eval\_num}} and \sphinxcode{\sphinxupquote{soln.jacmin\_eval\_nums}}
+
+\item {} 
+\sphinxAtStartPar
+Allow option for parallel initial evaluations for non\sphinxhyphen{}random directions if \sphinxcode{\sphinxupquote{npt}} not too large
 
 \end{itemize}
 

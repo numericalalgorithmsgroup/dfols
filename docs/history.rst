@@ -66,3 +66,8 @@ Version 1.5.0 (11 Sep 2024)
 ---------------------------
 * Add support for (possibly nonsmooth) regularizer term.
 * Drop warning about infeasible initial point if the point is on an upper/lower bound.
+
+Version 1.5.1 (10 Oct 2024)
+---------------------------
+* Add return values :code:`soln.xmin_eval_num` and :code:`soln.jacmin_eval_nums`
+* Allow option for parallel initial evaluations for non-random directions if :code:`npt` not too large

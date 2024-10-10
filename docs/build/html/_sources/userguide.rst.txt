@@ -45,6 +45,8 @@ The output of :code:`dfols.solve` is an object containing:
 * :code:`soln.flag` - an exit flag, which can take one of several values (listed below), an Integer.
 * :code:`soln.msg` - a description of why the algorithm finished, a String.
 * :code:`soln.diagnostic_info` - a table of diagnostic information showing the progress of the solver, a Pandas DataFrame.
+* :code:`soln.xmin_eval_num` - an integer representing which evaluation point (i.e. same as :code:`soln.nx`) gave the solution :code:`soln.x`. Evaluation counts are 1-indexed, to match the logging information. 
+* :code:`soln.jacmin_eval_nums` - a NumPy integer array of length :code:`npt` with the evaluation point numbers (i.e. same as :code:`soln.nx`) used to build :code:`soln.jacobian` via linear interpolation to the residual values at these points. Evaluation counts are 1-indexed, to match the logging information. This array will usually, but not always, include :code:`soln.xmin_eval_num`.
 
 The possible values of :code:`soln.flag` are defined by the following variables:
 
@@ -149,8 +151,10 @@ Note that DFO-LS is a randomized algorithm: in its first phase, it builds an int
       Residual vector = [0. 0.]
       Objective value f(xmin) = 0
       Needed 33 objective evaluations (at 33 points)
-      Approximate Jacobian = [[-2.00180000e+01  1.00000000e+01]
-       [-1.00000000e+00  8.19971362e-16]]
+      Approximate Jacobian = [[-1.9982000e+01  1.0000000e+01]
+       [-1.0000000e+00  1.0079924e-14]]
+      Solution xmin was evaluation point 33
+      Approximate Jacobian formed using evaluation points [29 31 32]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
@@ -176,11 +180,13 @@ DFO-LS correctly finds the solution to the constrained problem:
   
       ****** DFO-LS Results ******
       Solution xmin = [0.9  0.81]
-      Residual vector = [3.10862447e-14 1.00000000e-01]
+      Residual vector = [0.  0.1]
       Objective value f(xmin) = 0.01
-      Needed 58 objective evaluations (at 58 points)
-      Approximate Jacobian = [[-1.79999999e+01  9.99999998e+00]
-       [-1.00000000e+00  8.62398179e-10]]
+      Needed 56 objective evaluations (at 56 points)
+      Approximate Jacobian = [[-1.79999999e+01  1.00000000e+01]
+       [-1.00000000e+00 -5.15519307e-10]]
+      Solution xmin was evaluation point 42
+      Approximate Jacobian formed using evaluation points [55 42 54]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -212,8 +218,8 @@ And for the simple bounds example we can now see each evaluation of :code:`objfu
       Function eval 2 at point 2 has f = 14.337296 at x = [-1.08  0.85]
       Function eval 3 at point 3 has f = 55.25 at x = [-1.2   0.73]
       ...
-      Function eval 57 at point 57 has f = 0.010000001407575 at x = [0.89999999 0.80999999]
-      Function eval 58 at point 58 has f = 0.00999999999999997 at x = [0.9  0.81]
+      Function eval 55 at point 55 has obj = 0.0100000000000225 at x = [0.9        0.80999998]
+      Function eval 56 at point 56 has obj = 0.01 at x = [0.9  0.81]
       Did a total of 1 run(s)
 
 If we wanted to save this output to a file, we could replace the above call to :code:`logging.basicConfig()` with
@@ -310,6 +316,8 @@ gave an increase in the model. This is common in the case where multiple constra
       Needed 10 objective evaluations (at 10 points)
       Approximate Jacobian = [[-1.79826221e+01  1.00004412e+01]
        [-1.00000000e+00 -1.81976605e-15]]
+      Solution xmin was evaluation point 5
+      Approximate Jacobian formed using evaluation points [8 5 9]
       Exit flag = 5
       Warning (trust region increase): Either multiple constraints are active or trust region step gave model increase
       ****************************
@@ -395,6 +403,8 @@ The solution found by DFO-LS is:
        ...
        [ 4.50000000e+01  4.60000000e+01  4.70000000e+01  4.80000000e+01
          4.90000000e+01]]
+      Solution xmin was evaluation point 34
+      Approximate Jacobian formed using evaluation points [30 32 29 31 33 27]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -404,7 +414,7 @@ Note that many LASSO-type algorithms can produce a solution with many entries be
 
 Example: Noisy Objective Evaluation
 -----------------------------------
-As described in :doc:`info`, derivative-free algorithms such as DFO-LS are particularly useful when :code:`objfun` has noise. Let's modify the previous example to include random noise in our objective evaluation, and compare it to a derivative-based solver:
+As described in :doc:`info`, derivative-free algorithms such as DFO-LS are particularly useful when :code:`objfun` has noise. Let's modify the previous example to include random noise in our objective evaluation, and compare it to SciPy's derivative-based solver (the below results came from using SciPy v1.13.0):
 
   .. code-block:: python
   
@@ -463,25 +473,27 @@ The output of this is:
       objfun(x0) = [-4.39545837  2.20903317]
       
       ****** DFO-LS Results ******
-      Solution xmin = [1.         1.00000003]
-      Residual vector = [ 1.59634974e-07 -4.63036198e-09]
-      Objective value f(xmin) = 2.550476524e-14
-      Needed 53 objective evaluations (at 53 points)
-      Approximate Jacobian = [[-1.98196347e+01  9.90335675e+00]
-       [-1.01941978e+00  4.24991776e-05]]
+      Solution xmin = [1.00000001 1.00000002]
+      Residual vector = [ 5.17481720e-09 -1.04150014e-08]
+      Objective value f(xmin) = 1.352509879e-16
+      Needed 35 objective evaluations (at 35 points)
+      Approximate Jacobian = [[-1.98079840e+01  1.00105722e+01]
+       [-9.93887907e-01 -3.06567570e-04]]
+      Solution xmin was evaluation point 35
+      Approximate Jacobian formed using evaluation points [30 33 34]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
       
       
       ** SciPy results **
-      Solution xmin = [-1.20000087  1.00000235]
-      Objective value f(xmin) = 23.95535774
-      Needed 6 objective evaluations
+      Solution xmin = [-1.2  1. ]
+      Objective value f(xmin) = 23.83907501
+      Needed 5 objective evaluations
       Exit flag = 3
       `xtol` termination condition is satisfied.
 
-DFO-LS is able to find the solution with 20 more function evaluations as in the noise-free case. However SciPy's derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.
+DFO-LS is able to find the solution, but SciPy's derivative-based solver, which has no trouble solving the noise-free problem, is unable to make any progress.
 
 As noted above, DFO-LS has an input parameter :code:`objfun_has_noise` to indicate if :code:`objfun` has noise in it, which it does in this case. Therefore we can call DFO-LS with
 
@@ -495,11 +507,13 @@ Using this setting, we find the correct solution faster:
   
       ****** DFO-LS Results ******
       Solution xmin = [1. 1.]
-      Residual vector = [-4.06227943e-08  2.51525603e-10]
-      Objective value f(xmin) = 1.650274685e-15
-      Needed 29 objective evaluations (at 29 points)
-      Approximate Jacobian = [[-1.99950530e+01  1.00670067e+01]
-       [-9.96161167e-01 -2.41166495e-04]]
+      Residual vector = [-6.56093684e-10 -1.17835345e-10]
+      Objective value f(xmin) = 4.443440912e-19
+      Needed 28 objective evaluations (at 28 points)
+      Approximate Jacobian = [[-1.98649933e+01  9.93403044e+00]
+       [-9.93112150e-01  5.78830812e-03]]
+      Solution xmin was evaluation point 28
+      Approximate Jacobian formed using evaluation points [27 25 26]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************
@@ -551,20 +565,22 @@ The output of this is (noting that DFO-LS moves :math:`x_0` to be far away enoug
   
       ****** DFO-LS Results ******
       Solution xmin = [ 4.98830861e+02 -1.01256863e-01]
-      Residual vector = [-0.1816709   0.06098397  0.76276301  0.11962354 -0.26589796 -0.59788814
-       -1.02611897 -1.5123537  -1.56145452 -1.63266662]
+      Residual vector = [-0.1816709   0.06098396  0.76276296  0.11962351 -0.26589799 -0.59788816
+       -1.02611898 -1.51235371 -1.56145452 -1.63266662]
       Objective value f(xmin) = 9.504886892
-      Needed 79 objective evaluations (at 79 points)
-      Approximate Jacobian = [[-9.12897463e-01 -4.09843514e+02]
-       [-8.59085679e-01 -6.42808544e+02]
-       [-2.47252555e-01 -1.70205419e+03]
-       [-1.34676365e-01 -1.33017181e+03]
-       [-8.71355033e-02 -1.04752848e+03]
-       [-5.75304364e-02 -8.09280752e+02]
-       [-2.83184867e-02 -4.97239623e+02]
-       [-2.22992989e-03 -6.70749826e+01]
-       [-5.24129962e-04 -1.95045269e+01]
-       [-2.65956876e-04 -1.07858081e+01]]
+      Needed 111 objective evaluations (at 111 points)
+      Approximate Jacobian = [[-9.12901055e-01 -4.09843504e+02]
+       [-8.59087363e-01 -6.42808534e+02]
+       [-2.47254068e-01 -1.70205403e+03]
+       [-1.34676757e-01 -1.33017163e+03]
+       [-8.71358948e-02 -1.04752831e+03]
+       [-5.75309286e-02 -8.09280596e+02]
+       [-2.83185935e-02 -4.97239504e+02]
+       [-2.22997879e-03 -6.70749550e+01]
+       [-5.24146460e-04 -1.95045170e+01]
+       [-2.65964661e-04 -1.07858021e+01]]
+      Solution xmin was evaluation point 111
+      Approximate Jacobian formed using evaluation points [104 109 110]
       Exit flag = 0
       Success: rho has reached rhoend
       ****************************
@@ -641,11 +657,13 @@ The output of this is
   
       ****** DFO-LS Results ******
       Solution xmin = [ 0.09777309 -2.32510588]
-      Residual vector = [-1.45394186e-09 -1.95108811e-08]
-      Objective value f(xmin) = 3.827884295e-16
+      Residual vector = [-1.38601752e-09 -1.70204653e-08]
+      Objective value f(xmin) = 2.916172822e-16
       Needed 13 objective evaluations (at 13 points)
-      Approximate Jacobian = [[ 3.32499552  0.90216381]
-       [10.22664908 -1.00061604]]
+      Approximate Jacobian = [[ 3.32527052  0.90227531]
+       [10.22943034 -0.99958226]]
+      Solution xmin was evaluation point 13
+      Approximate Jacobian formed using evaluation points [ 8 11 12]
       Exit flag = 0
       Success: Objective is sufficiently small
       ****************************

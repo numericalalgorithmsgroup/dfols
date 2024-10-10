@@ -1169,11 +1169,11 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/txfonts/ts1txtt.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/tcxtt.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/t1xttsl.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/tcxsl.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/tex-gyre/ec-qtmr.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/public/txfonts/tcxsl.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/rtxptmro.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/rtcxsl.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/rtxptmr.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/tex-gyre/ec-qtmr.tfm
 INPUT ./data_fitting.png
 INPUT ./data_fitting.png
 INPUT data_fitting.png
