@@ -240,12 +240,12 @@ class Controller(object):
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
-                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                               x_in_abs_coords=True)
                     return exit_info  # return & quit
 
                 # Otherwise, add new results (increments model.npt_so_far)
-                self.model.change_point(k+1, x - self.model.xbase, rvec_list[0, :])  # expect step, not absolute x
+                self.model.change_point(k+1, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
                 for i in range(1, num_samples_run):
                     self.model.add_new_sample(k+1, rvec_extra=rvec_list[i, :])
             
@@ -299,12 +299,12 @@ class Controller(object):
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
                 if num_samples_run > 0:
-                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                           x_in_abs_coords=True)
                 return exit_info  # return & quit
 
             # Otherwise, add new results (increments model.npt_so_far)
-            self.model.change_point(k, x - self.model.xbase, rvec_list[0, :])  # expect step, not absolute x
+            self.model.change_point(k, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
             for i in range(1, num_samples_run):
                 self.model.add_new_sample(k, rvec_extra=rvec_list[i, :])
 
@@ -351,13 +351,13 @@ class Controller(object):
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
-                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                               x_in_abs_coords=True)
                     return exit_info  # return & quit
 
                 # Otherwise, add new results (increments model.npt_so_far)
                 self.model.change_point(1 + ndirns, x - self.model.xbase,
-                                        rvec_list[0, :])  # expect step, not absolute x
+                                        rvec_list[0, :], self.nx)  # expect step, not absolute x
                 for i in range(1, num_samples_run):
                     self.model.add_new_sample(1 + ndirns, rvec_extra=rvec_list[i, :])
         else:
@@ -371,12 +371,12 @@ class Controller(object):
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
-                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                               x_in_abs_coords=True)
                     return exit_info  # return & quit
 
                 # Otherwise, add new results (increments model.npt_so_far)
-                self.model.change_point(1 + ndirns, x - self.model.xbase, rvec_list[0, :])  # expect step, not absolute x
+                self.model.change_point(1 + ndirns, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
                 for i in range(1, num_samples_run):
                     self.model.add_new_sample(1 + ndirns, rvec_extra=rvec_list[i, :])
 
@@ -408,7 +408,7 @@ class Controller(object):
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
                 if num_samples_run > 0:
-                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                           x_in_abs_coords=True)
                 return exit_info  # return & quit
 
@@ -422,7 +422,7 @@ class Controller(object):
                     return exit_info  # return & quit
 
             # Otherwise, add new results
-            self.model.change_point(kmin, xnew, rvec_list[0, :])  # expect step, not absolute x
+            self.model.change_point(kmin, xnew, rvec_list[0, :], self.nx)  # expect step, not absolute x
             for i in range(1, num_samples_run):
                 self.model.add_new_sample(kmin, rvec_extra=rvec_list[i, :])
 
@@ -548,12 +548,12 @@ class Controller(object):
         # Handle exit conditions (f < min obj value or maxfun reached)
         if exit_info is not None:
             if num_samples_run > 0:
-                self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                       x_in_abs_coords=True)
             return exit_info  # didn't fix geometry - return & quit
 
         # Otherwise, add new results
-        self.model.change_point(knew, xnew, rvec_list[0, :])  # expect step, not absolute x
+        self.model.change_point(knew, xnew, rvec_list[0, :], self.nx)  # expect step, not absolute x
         for i in range(1, num_samples_run):
             self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
@@ -768,8 +768,8 @@ class Controller(object):
         if x_in_abs_coords_to_save is not None:
             assert rvec_to_save is not None, "Soft restart: specified x_to_save but not rvec_to_save"
             assert nsamples_to_save is not None, "Soft restart: specified x_to_save but not nsamples_to_save"
-            self.model.save_point(x_in_abs_coords_to_save, rvec_to_save, nsamples_to_save, x_in_abs_coords=True)
-        self.model.save_point(self.model.xopt(abs_coordinates=True), self.model.ropt(),
+            self.model.save_point(x_in_abs_coords_to_save, rvec_to_save, nsamples_to_save, self.nx, x_in_abs_coords=True)
+        self.model.save_point(self.model.xopt(abs_coordinates=True), self.model.ropt(), self.nx,
                               self.model.nsamples[self.model.kopt], x_in_abs_coords=True)
 
         if self.do_logging:
@@ -820,12 +820,12 @@ class Controller(object):
                 # Handle exit conditions (f < min obj value or maxfun reached)
                 if exit_info is not None:
                     if num_samples_run > 0:
-                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                               x_in_abs_coords=True)
                     return exit_info  # return & quit
 
                 # Otherwise, add new results
-                self.model.add_new_point(xnew, rvec_list[0, :])  # expect step, not absolute x
+                self.model.add_new_point(xnew, rvec_list[0, :], self.nx)  # expect step, not absolute x
                 for i in range(1, num_samples_run):
                     self.model.add_new_sample(self.model.npt() - 1, rvec_extra=rvec_list[i, :])
 
@@ -900,12 +900,12 @@ class Controller(object):
             # Handle exit conditions (f < min obj value or maxfun reached)
             if exit_info is not None:
                 if num_samples_run > 0:
-                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                    self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, self.nx,
                                           x_in_abs_coords=True)
                 return exit_info  # return & quit
 
             # Otherwise, add new results
-            self.model.change_point(knew, xnew, rvec_list[0, :])  # expect step, not absolute x
+            self.model.change_point(knew, xnew, rvec_list[0, :], self.nx)  # expect step, not absolute x
             for i in range(1, num_samples_run):
                 self.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
         return None

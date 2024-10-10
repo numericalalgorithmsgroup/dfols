@@ -48,7 +48,7 @@ module_logger = logging.getLogger(__name__)
 
 # A container for the results of the optimization routine
 class OptimResults(object):
-    def __init__(self, xmin, rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg):
+    def __init__(self, xmin, rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg, xmin_eval_num, jacmin_eval_nums):
         self.x = xmin
         self.resid = rmin
         self.obj = objmin
@@ -59,6 +59,8 @@ class OptimResults(object):
         self.flag = exit_flag
         self.msg = exit_msg
         self.diagnostic_info = None
+        self.xmin_eval_num = xmin_eval_num
+        self.jacmin_eval_nums = jacmin_eval_nums
         # Set standard names for exit flags
         self.EXIT_SLOW_WARNING = EXIT_SLOW_WARNING
         self.EXIT_MAXFUN_WARNING = EXIT_MAXFUN_WARNING
@@ -89,6 +91,9 @@ class OptimResults(object):
                 output += "Not showing approximate Jacobian because it is too long; check self.jacobian\n"
             if self.diagnostic_info is not None:
                 output += "Diagnostic information available; check self.diagnostic_info\n"
+            output += "Solution xmin was evaluation point %g\n" % self.xmin_eval_num
+            if len(self.jacmin_eval_nums) < 100:
+                output += "Approximate Jacobian formed using evaluation points %s\n" % str(self.jacmin_eval_nums)
         output += "Exit flag = %g\n" % self.flag
         output += "%s\n" % self.msg
         output += "****************************\n"
@@ -182,8 +187,8 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             module_logger.info("Initialising (coordinate directions)")
         exit_info = control.initialise_coordinate_directions(number_of_samples, num_directions, params)
     if exit_info is not None:
-        x, rvec, obj, jacmin, nsamples = control.model.get_final_results()
-        return x, rvec, obj, None, nsamples, control.nf, control.nx, nruns_so_far + 1, exit_info, diagnostic_info
+        x, rvec, obj, jacmin, nsamples, x_eval_num, jac_eval_nums = control.model.get_final_results()
+        return x, rvec, obj, None, nsamples, control.nf, control.nx, nruns_so_far + 1, exit_info, diagnostic_info, x_eval_num, jac_eval_nums
 
     finished_growing = (control.model.npt() >= control.model.num_pts)  # have we finished growing the initial set yet?
 
@@ -464,7 +469,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                     
                     if num_samples_run > 0:
                             control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0),
-                                                     num_samples_run, x_in_abs_coords=True)
+                                                     num_samples_run, control.nx, x_in_abs_coords=True)
                     
                     if exit_info is not None:
                         nruns_so_far += 1
@@ -549,7 +554,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 break  # quit
             if exit_info is not None:
                 if num_samples_run > 0:
-                    control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                    control.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run, control.nx,
                                              x_in_abs_coords=True)
                 nruns_so_far += 1
                 break  # quit
@@ -638,7 +643,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
             if do_logging:
                 module_logger.debug("Updating with knew = %i" % knew)
-            control.model.change_point(knew, xnew, rvec_list[0, :])  # expect step, not absolute x
+            control.model.change_point(knew, xnew, rvec_list[0, :], control.nx)  # expect step, not absolute x
             for i in range(1, num_samples_run):
                 control.model.add_new_sample(knew, rvec_extra=rvec_list[i, :])
 
@@ -877,11 +882,11 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
     # (end main loop)
 
     # Quit & return the important information
-    x, rvec, obj, jacmin, nsamples = control.model.get_final_results()
+    x, rvec, obj, jacmin, nsamples, x_eval_num, jac_eval_nums = control.model.get_final_results()
     if do_logging:
         module_logger.debug("At return from DFO-LS, number of function evals = %i" % nf)
         module_logger.debug("Smallest objective value = %.15g at x = " % obj + str(x))
-    return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info
+    return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info, x_eval_num, jac_eval_nums
 
 
 def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argsprox=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
@@ -1056,7 +1061,7 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
     nruns = 0
     nf = 0
     nx = 0
-    xmin, rmin, objmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info = \
+    xmin, rmin, objmin, jacmin, nsamples_min, nf, nx, nruns, exit_info, diagnostic_info, xmin_eval_num, jacmin_eval_nums = \
         solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                     diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, default_growing_method_set_by_user=default_growing_method_set_by_user,
                    do_logging=do_logging, print_progress=print_progress)
@@ -1075,12 +1080,12 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
             module_logger.info("Restarting from finish point (f = %g) after %g function evals; using rhobeg = %g and rhoend = %g"
                      % (objmin, nf, rhobeg, rhoend))
         if params("restarts.hard.use_old_rk"):
-            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
+            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info, xmin_eval_num2, jacmin_eval_nums2 = \
                 solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                             diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, r0_avg_old=rmin, r0_nsamples_old=nsamples_min,
                            do_logging=do_logging, print_progress=print_progress)
         else:
-            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info = \
+            xmin2, rmin2, objmin2, jacmin2, nsamples2, nf, nx, nruns, exit_info, diagnostic_info, xmin_eval_num2, jacmin_eval_nums2 = \
                 solve_main(objfun, xmin, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns, nf, nx, nsamples, params,
                            diagnostic_info, scaling_changes, h, lh, argsh, prox_uh, argsprox, do_logging=do_logging, print_progress=print_progress)
 
@@ -1088,9 +1093,10 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
             if do_logging:
                 module_logger.info("Successful run with new f = %s compared to old f = %s" % (objmin2, objmin))
             last_successful_run = nruns
-            (xmin, rmin, objmin, nsamples_min) = (xmin2, rmin2, objmin2, nsamples2)
+            (xmin, rmin, objmin, nsamples_min, xmin_eval_num) = (xmin2, rmin2, objmin2, nsamples2, xmin_eval_num2)
             if jacmin2 is not None:  # may be None if finished during setup phase, in which case just use old Jacobian
                 jacmin = jacmin2
+                jacmin_eval_nums = jacmin_eval_nums2
         else:
             if do_logging:
                 module_logger.info("Unsuccessful run with new f = %s compared to old f = %s" % (objmin2, objmin))
@@ -1105,7 +1111,7 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
     if scaling_changes is not None and jacmin is not None:
         for i in range(n):
             jacmin[:, i] = jacmin[:, i] / scaling_changes[1][i]
-    results = OptimResults(remove_scaling(xmin, scaling_changes), rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg)
+    results = OptimResults(remove_scaling(xmin, scaling_changes), rmin, objmin, jacmin, nf, nx, nruns, exit_flag, exit_msg, xmin_eval_num, jacmin_eval_nums)
     if params("logging.save_diagnostic_info"):
         df = diagnostic_info.to_dataframe(with_xk=params("logging.save_xk"), with_rk=params("logging.save_rk"))
         results.diagnostic_info = df

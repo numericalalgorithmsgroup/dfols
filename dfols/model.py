@@ -85,6 +85,8 @@ class Model(object):
         self.nsamples = np.zeros((npt,), dtype=int)  # number of samples used to evaluate objective at each point
         self.nsamples[0] = r0_nsamples
         self.objbeg = self.objval[0]  # f(x0), saved to check for sufficient reduction
+        self.eval_num = np.zeros((npt,), dtype=int)  # which evaluation number (1-indexed, nx not nf) is currently stored self.points[k,:]
+        self.eval_num[0] = 1
 
         # Termination criteria
         self.abs_tol = abs_tol
@@ -93,6 +95,7 @@ class Model(object):
         # Model information
         self.model_const = np.zeros((m, ))  # constant term for model m(s) = c + J*s
         self.model_jac = np.zeros((m, n))  # Jacobian term for model m(s) = c + J*s
+        self.model_jac_eval_nums = np.zeros((npt,), dtype=int)  # which evaluation numbers (1-indexed, nx not nf) were used to build model_jac
 
         # Saved point (in absolute coordinates) - always check this value before quitting solver
         self.xsave = None
@@ -100,6 +103,8 @@ class Model(object):
         self.objsave = None
         self.jacsave = None
         self.nsamples_save = None
+        self.eval_num_save = None
+        self.jacsave_eval_nums = None
 
         # Factorisation of interpolation matrix
         self.factorisation_current = False
@@ -174,7 +179,7 @@ class Model(object):
             sq_distances[k] = sumsq(self.points[k, :] - xopt)
         return sq_distances
 
-    def change_point(self, k, x, rvec, allow_kopt_update=True):
+    def change_point(self, k, x, rvec, eval_num, allow_kopt_update=True):
         # Update point k to x (w.r.t. xbase), with residual values fvec
         if k >= self.npt_so_far and self.npt_so_far < self.num_pts:
             assert k == self.npt_so_far, "Growing: updating wrong point"
@@ -188,6 +193,7 @@ class Model(object):
         if self.h is not None:
             self.objval[k] += self.h(remove_scaling(self.xbase + x, self.scaling_changes), *self.argsh)
         self.nsamples[k] = 1
+        self.eval_num[k] = eval_num
         self.factorisation_current = False
 
         if allow_kopt_update and self.objval[k] < self.objopt():
@@ -198,6 +204,7 @@ class Model(object):
         self.points[[k1, k2], :] = self.points[[k2, k1], :]
         self.fval_v[[k1, k2], :] = self.fval_v[[k2, k1], :]
         self.objval[[k1, k2]] = self.objval[[k2, k1]]
+        self.eval_num[[k1, k2]] = self.eval_num[[k2, k1]]
         if self.kopt == k1:
             self.kopt = k2
         elif self.kopt == k2:
@@ -219,7 +226,7 @@ class Model(object):
         self.kopt = np.argmin(self.objval[:self.npt()])  # make sure kopt is always the best value we have
         return
 
-    def add_new_point(self, x, rvec):
+    def add_new_point(self, x, rvec, eval_num):
         self.points = np.append(self.points, x.reshape((1, self.n())), axis=0)  # append row to xpt
         self.fval_v = np.append(self.fval_v, rvec.reshape((1, self.m())), axis=0)  # append row to fval_v
         obj = sumsq(rvec)
@@ -227,6 +234,7 @@ class Model(object):
             obj += self.h(remove_scaling(self.xbase + x, self.scaling_changes), *self.argsh)
         self.objval = np.append(self.objval, obj)  # append entry to fval
         self.nsamples = np.append(self.nsamples, 1)  # add new sample number
+        self.eval_num = np.append(self.eval_num, eval_num)  # add new evaluation number
         self.num_pts += 1  # make sure npt is updated
         self.npt_so_far += 1
 
@@ -249,7 +257,7 @@ class Model(object):
         self.model_const += np.dot(self.model_jac, xbase_shift)
         return
 
-    def save_point(self, x, rvec, nsamples, x_in_abs_coords=True):
+    def save_point(self, x, rvec, nsamples, eval_num, x_in_abs_coords=True):
         xabs = x.copy() if x_in_abs_coords else self.as_absolute_coordinates(x)
         obj = sumsq(rvec)
         if self.h is not None:
@@ -260,6 +268,8 @@ class Model(object):
             self.objsave = obj
             self.jacsave = self.model_jac.copy()
             self.nsamples_save = nsamples
+            self.eval_num_save = eval_num
+            self.jacsave_eval_nums = self.model_jac_eval_nums.copy()
             return True
         else:
             return False  # this value is worse than what we have already - didn't save
@@ -267,9 +277,9 @@ class Model(object):
     def get_final_results(self):
         # Return x and objval for optimal point (either from xsave+objsave or kopt)
         if self.objsave is None or self.objopt() <= self.objsave:  # optimal has changed since xsave+objsave were last set
-            return self.xopt(abs_coordinates=True).copy(), self.ropt().copy(), self.objopt(), self.model_jac.copy(), self.nsamples[self.kopt]
+            return self.xopt(abs_coordinates=True).copy(), self.ropt().copy(), self.objopt(), self.model_jac.copy(), self.nsamples[self.kopt], self.eval_num[self.kopt], self.model_jac_eval_nums
         else:
-            return self.xsave.copy(), self.rsave.copy(), self.objsave, self.jacsave, self.nsamples_save
+            return self.xsave.copy(), self.rsave.copy(), self.objsave, self.jacsave, self.nsamples_save, self.eval_num_save, self.jacsave_eval_nums
 
     def min_objective_value(self):
         # Get termination criterion for f small: f <= abs_tol or f <= rel_tol * f0
@@ -367,6 +377,7 @@ class Model(object):
         J_old = self.model_jac.copy()
         self.model_jac = dg[1:,:].T
         self.model_const = dg[0,:] - np.dot(self.model_jac, xopt)  # shift base to xbase
+        self.model_jac_eval_nums = self.eval_num.copy()
         if verbose or get_chg_J:
             norm_J_error = np.linalg.norm(self.model_jac - J_old, ord='fro')**2
             linalg_resid = np.linalg.norm(W.dot(dg) - rhs)**2
