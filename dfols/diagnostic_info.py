@@ -102,7 +102,7 @@ class DiagnosticInfo(object):
         self.data["rho"].append(control.rho)
         # And from a model?
         self.data["npt"].append(control.model.npt())
-        x, rvec, f, jac, nsamples = control.model.get_final_results()
+        x, rvec, f, jac, nsamples, eval_num, jac_eval_nums = control.model.get_final_results()
         self.data["xk"].append(remove_scaling(x, control.scaling_changes))
         self.data["rk"].append(rvec)
         self.data["fk"].append(f)
