@@ -71,3 +71,7 @@ Version 1.5.1 (10 Oct 2024)
 ---------------------------
 * Add return values :code:`soln.xmin_eval_num` and :code:`soln.jacmin_eval_nums`
 * Allow option for parallel initial evaluations for non-random directions if :code:`npt` not too large
+
+Version 1.5.2 (28 Oct 2024)
+---------------------------
+* Bugfix for saving diagnostic info (bug introduced in v1.5.1)
