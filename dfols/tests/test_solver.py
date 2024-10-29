@@ -210,3 +210,22 @@ class TestRosenbrockBoxBall(unittest.TestCase):
         self.assertTrue(array_compare(soln.resid, rosenbrock(soln.x), thresh=1e-10), "Wrong resid")
         self.assertTrue(array_compare(soln.jacobian, rosenbrock_jacobian(soln.x), thresh=1e-2), "Wrong Jacobian")
         self.assertTrue(abs(soln.obj - fmin) < 1e-4, "Wrong fmin")
+
+class TestDiagnosticInto(unittest.TestCase):
+    # Return diagnostic info - minimal working example for issue #23
+    def runTest(self):
+        ## Minimal working example for DFO-LS bug #23
+        objfun = lambda x: x
+        x0 = np.arange(3)
+        xmin = np.zeros(x0.shape)
+        soln = dfols.solve(objfun=objfun, x0=x0, user_params={"logging.save_diagnostic_info": True})
+        self.assertTrue(array_compare(soln.x, xmin, thresh=1e-2), "Wrong xmin")
+
+class TestStartAtMin(unittest.TestCase):
+    # Start solver at solution - minimal working example for issue #24
+    def runTest(self):
+        objfun = lambda x: x
+        x0 = np.zeros(3)
+        xmin = x0.copy()
+        soln = dfols.solve(objfun=objfun, x0=x0, user_params={"logging.save_diagnostic_info": True})
+        self.assertTrue(array_compare(soln.x, xmin, thresh=1e-8), "Wrong xmin")

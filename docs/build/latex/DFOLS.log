@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.11)  28 OCT 2024 10:21
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.11)  30 OCT 2024 10:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -900,7 +900,7 @@ Overfull \vbox (2.32195pt too high) detected at line 919
  []
 
 [15] [16] [17] [18] [19] [20]
-<data_fitting.png, id=532, 524.6802pt x 403.2666pt>
+<data_fitting.png, id=537, 524.6802pt x 403.2666pt>
 File: data_fitting.png Graphic file (type png)
 <use data_fitting.png>
 Package pdftex.def Info: data_fitting.png  used on input line 1216.
@@ -937,13 +937,13 @@ Chapter 8.
 
 ] (./DFOLS.aux)
 Package rerunfilecheck Info: File `DFOLS.out' has not changed.
-(rerunfilecheck)             Checksum: 7B8EE4F01D2E9A7E5517DD4BFEAC4259;11645.
+(rerunfilecheck)             Checksum: 49E88F6CDAEA6BAC194D89A1AEF27B88;11854.
  ) 
 Here is how much of TeX's memory you used:
- 16267 strings out of 480247
- 271435 string characters out of 5896151
- 625387 words of memory out of 5000000
- 33684 multiletter control sequences out of 15000+600000
+ 16270 strings out of 480247
+ 271496 string characters out of 5896151
+ 625444 words of memory out of 5000000
+ 33686 multiletter control sequences out of 15000+600000
  526530 words of font info for 75 fonts, out of 8000000 for 9000
  15 hyphenation exceptions out of 8191
  70i,20n,76p,887b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -968,10 +968,10 @@ f-dist/fonts/type1/public/txfonts/t1xbtt.pfb></usr/share/texlive/texmf-dist/fon
 ts/type1/public/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
 blic/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfont
 s/tcxtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on DFOLS.pdf (45 pages, 385314 bytes).
+Output written on DFOLS.pdf (45 pages, 385630 bytes).
 PDF statistics:
- 780 PDF objects out of 1000 (max. 8388607)
- 691 compressed objects within 7 object streams
- 130 named destinations out of 1000 (max. 500000)
- 570 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 785 PDF objects out of 1000 (max. 8388607)
+ 696 compressed objects within 7 object streams
+ 131 named destinations out of 1000 (max. 500000)
+ 578 words of extra memory for PDF output out of 10000 (max. 10000000)
 

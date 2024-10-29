@@ -148,7 +148,9 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
         if exit_info is not None:
-            return x0, r0_avg, sumsq(r0_avg), None, num_samples_run, nf, nx, nruns_so_far+1, exit_info, diagnostic_info
+            xmin_eval_num = 0
+            jacmin_eval_nums = np.array([0], dtype=int)
+            return x0, r0_avg, sumsq(r0_avg), None, num_samples_run, nf, nx, nruns_so_far+1, exit_info, diagnostic_info, xmin_eval_num, jacmin_eval_nums
 
     else:  # have old r0 information (e.g. from previous restart), use this instead
 

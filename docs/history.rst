@@ -75,3 +75,7 @@ Version 1.5.1 (10 Oct 2024)
 Version 1.5.2 (28 Oct 2024)
 ---------------------------
 * Bugfix for saving diagnostic info (bug introduced in v1.5.1)
+
+Version 1.5.3 (30 Oct 2024)
+---------------------------
+* Bugfix when starting solver at problem minimizer (bug introduced in v1.5.1)
