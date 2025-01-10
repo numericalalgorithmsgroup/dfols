@@ -92,8 +92,12 @@ class OptimResults(object):
             if self.diagnostic_info is not None:
                 output += "Diagnostic information available; check self.diagnostic_info\n"
             output += "Solution xmin was evaluation point %g\n" % self.xmin_eval_num
-            if len(self.jacmin_eval_nums) < 100:
+            if self.jacmin_eval_nums is not None and len(self.jacmin_eval_nums) < 100:
                 output += "Approximate Jacobian formed using evaluation points %s\n" % str(self.jacmin_eval_nums)
+            elif self.jacmin_eval_nums is None:
+                output += "Approximate Jacobian not formed using problem information, disregard\n"
+            else:
+                output += "Not showing Jacobian evaluation points because it is too long; check self.jacmin_eval_nums\n"
         output += "Exit flag = %g\n" % self.flag
         output += "%s\n" % self.msg
         output += "****************************\n"
