@@ -26,13 +26,14 @@ alternative licensing.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
+import math
 import numpy as np
 import scipy.linalg as LA
 import sys
 
 
 __all__ = ['sumsq', 'eval_least_squares_with_regularisation', 'model_value', 'random_orthog_directions_within_bounds',
-           'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank']
+           'random_directions_within_bounds', 'apply_scaling', 'remove_scaling', 'pbox', 'pball', 'dykstra', 'qr_rank', 'replace_nan_with_none']
 
 module_logger = logging.getLogger(__name__) 
 
@@ -268,3 +269,15 @@ def qr_rank(A,tol=1e-15):
     D = np.abs(np.diag(R))
     rank = np.sum(D > tol) 
     return rank, D
+
+
+def replace_nan_with_none(d):
+    # Replace Nan values in a dict/list with None (used for JSON serializing of OptimResults object)
+    if isinstance(d, dict):
+        return {k: replace_nan_with_none(v) for k, v in d.items()}
+    elif isinstance(d, list):
+        return [replace_nan_with_none(i) for i in d]
+    elif isinstance(d, float) and math.isnan(d):
+        return None
+    else:
+        return d

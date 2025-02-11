@@ -32,6 +32,7 @@ import logging
 from math import sqrt
 import numpy as np
 import os
+import pandas as pd
 import scipy.linalg as LA
 import scipy.stats as STAT
 import warnings
@@ -41,7 +42,7 @@ from .diagnostic_info import *
 from .params import *
 from .util import *
 
-__all__ = ['solve']
+__all__ = ['solve', 'OptimResults']
 
 module_logger = logging.getLogger(__name__) 
 
@@ -102,6 +103,50 @@ class OptimResults(object):
         output += "%s\n" % self.msg
         output += "****************************\n"
         return output
+    
+    def to_dict(self, replace_nan=True):
+        # Convert to a serializable dict object suitable for saving in a json file
+        # If replace_nan=True, convert all NaN entries to None
+        soln_dict = {}
+        soln_dict['x'] = self.x.tolist() if self.x is not None else None
+        soln_dict['resid'] = self.resid.tolist() if self.resid is not None else None
+        soln_dict['obj'] = float(self.obj)
+        soln_dict['jacobian'] = self.jacobian.tolist() if self.jacobian is not None else None
+        soln_dict['nf'] = int(self.nf)
+        soln_dict['nx'] = int(self.nx)
+        soln_dict['nruns'] = int(self.nruns)
+        soln_dict['flag'] = int(self.flag)
+        soln_dict['msg'] = str(self.msg)
+        soln_dict['diagnostic_info'] = self.diagnostic_info.to_dict() if self.diagnostic_info is not None else None
+        soln_dict['xmin_eval_num'] = int(self.xmin_eval_num)
+        soln_dict['jacmin_eval_nums'] = self.jacmin_eval_nums.tolist() if self.jacmin_eval_nums is not None else None
+        if replace_nan:
+            return replace_nan_with_none(soln_dict)
+        else:
+            return soln_dict
+    
+    @staticmethod
+    def from_dict(soln_dict):
+        # Take a dict object containing OptimResults information, and return the relevant OptimResults object
+        # Input soln_dict should come from soln.to_dict()
+        # Note: np.array(mylist, dtype=float) automatically converts None to NaN
+        x = np.array(soln_dict['x'], dtype=float) if soln_dict['x'] is not None else None
+        resid = np.array(soln_dict['resid'], dtype=float) if soln_dict['resid'] is not None else None
+        obj = soln_dict['obj']
+        jacobian = np.array(soln_dict['jacobian'], dtype=float) if soln_dict['jacobian'] is not None else None
+        nf = soln_dict['nf']
+        nx = soln_dict['nx']
+        nruns = soln_dict['nruns']
+        flag = soln_dict['flag']
+        msg = soln_dict['msg']
+        xmin_eval_num = soln_dict['xmin_eval_num']
+        jacmin_eval_nums = np.array(soln_dict['jacmin_eval_nums'], dtype=int) if soln_dict['jacmin_eval_nums'] is not None else None
+        
+        soln = OptimResults(x, resid, obj, jacobian, nf, nx, nruns, flag, msg, xmin_eval_num, jacmin_eval_nums)
+        
+        if soln_dict['diagnostic_info'] is not None:
+            soln.diagnostic_info = pd.DataFrame.from_dict(soln_dict['diagnostic_info'])
+        return soln
 
 
 def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,

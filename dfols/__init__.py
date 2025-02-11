@@ -43,5 +43,5 @@ __version__ = '1.5.3'
 
 # Main solver & exit flags
 from .solver import *
-__all__ = ['solve']
+__all__ = ['solve', 'OptimResults']
 
