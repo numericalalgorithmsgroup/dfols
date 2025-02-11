@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using DFO-LS &mdash; DFO-LS v1.5.3 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d75fd82e"></script>
+        <script src="_static/documentation_options.js?v=1cd648e3"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -38,7 +38,7 @@
             DFO-LS
           </a>
               <div class="version">
-                1.5.3
+                1.5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -155,6 +155,28 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">soln</span><span class="o">.</span><span class="n">flag</span> <span class="o">==</span> <span class="n">soln</span><span class="o">.</span><span class="n">EXIT_SUCCESS</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Success!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>In newer versions DFO-LS (v1.5.4 onwards), the results object can be converted to, or loaded from, a serialized Python dictionary. This allows the results to be saved as a JSON file.
+For example, to save the results to a JSON file, you may use</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="n">soln_dict</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>  <span class="c1"># convert soln to serializable dict object</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dfols_results.json&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">soln_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The <code class="code docutils literal notranslate"><span class="pre">to_dict()</span></code> function takes an optional boolean, <code class="code docutils literal notranslate"><span class="pre">to_dict(replace_nan=True)</span></code>. If <code class="code docutils literal notranslate"><span class="pre">replace_nan</span></code> is <code class="code docutils literal notranslate"><span class="pre">True</span></code>, any NaN values in the results object are converted to <code class="code docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>To load results from a JSON file and convert to a solution object, you may use</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="n">soln_dict</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dfols_results.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">soln_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># read JSON into dict</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">OptimResults</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">soln_dict</span><span class="p">)</span>  <span class="c1"># convert to DFO-LS results object</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -758,7 +780,7 @@ Success: Objective is sufficiently small
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2017-2024, Lindon Roberts.</p>
+    <p>&#169; Copyright 2017-2025, Lindon Roberts.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

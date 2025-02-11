@@ -1,10 +1,10 @@
 # Fdb version 3
-["makeindex DFOLS.idx"] 1712813974 "DFOLS.idx" "DFOLS.ind" "DFOLS" 1730244161
-  "DFOLS.idx" 1730244160 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+["makeindex DFOLS.idx"] 1712813974 "DFOLS.idx" "DFOLS.ind" "DFOLS" 1739235438
+  "DFOLS.idx" 1739235437 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   (generated)
   "DFOLS.ilg"
   "DFOLS.ind"
-["pdflatex"] 1730244157 "DFOLS.tex" "DFOLS.pdf" "DFOLS" 1730244161
+["pdflatex"] 1739235434 "DFOLS.tex" "DFOLS.pdf" "DFOLS" 1739235438
   "/etc/texmf/web2c/texmf.cnf" 1712803173 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -165,14 +165,14 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1712803388 4234243 4a42437c56f0785ccfd4e39da48c38dc ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1712803393 1405649 09028a54f5e9b3274f4344c937e7ff76 ""
-  "DFOLS.aux" 1730244161 17534 61f7df755b4ffbc0de456be92d39e529 "pdflatex"
+  "DFOLS.aux" 1739235438 17767 2ec5549fe4e27a7a5c38b3a9a48a94e3 "pdflatex"
   "DFOLS.ind" 1712813975 0 d41d8cd98f00b204e9800998ecf8427e "makeindex DFOLS.idx"
-  "DFOLS.out" 1730244161 11854 49e88f6cdaea6bac194d89a1aef27b88 "pdflatex"
-  "DFOLS.tex" 1730244150 116243 b219867bfecc483e429c9a02df8ac8d3 ""
-  "DFOLS.toc" 1730244161 5816 37f41b3441f0969ec5eda5177e97f5a4 "pdflatex"
+  "DFOLS.out" 1739235438 12063 b1d090d924f9cae29b25afecfc8cf68a "pdflatex"
+  "DFOLS.tex" 1739235432 118628 146fbb5fe1e54e8c84a8bc45b4cbd6e7 ""
+  "DFOLS.toc" 1739235438 5906 9502799029c4e7992ade8afae6d3a9f6 "pdflatex"
   "data_fitting.png" 1587347499 29893 211bb1c28ea25d47c8c0990fbf39c55c ""
   "sphinx.sty" 1722476524 44560 f9fbf51072c954d129c9bd5284cc4ccf ""
-  "sphinxhighlight.sty" 1730244151 7553 83fb52292c17957d9f4aadcb28c57a87 ""
+  "sphinxhighlight.sty" 1739235433 7553 83fb52292c17957d9f4aadcb28c57a87 ""
   "sphinxlatexadmonitions.sty" 1722476524 10989 c38302e64c2bb47779f086869b246760 ""
   "sphinxlatexcontainers.sty" 1722476524 901 d3a3a1b7b2547f47ade2499350b5c420 ""
   "sphinxlatexgraphics.sty" 1722476524 4840 a9578332b6f3b35e198751fb632c9b79 ""
@@ -187,7 +187,7 @@
   "sphinxlatexstyletext.sty" 1722476525 8589 a7e8f95eb4fef6c1cd2623cd417d6467 ""
   "sphinxlatextables.sty" 1722476525 57830 16f2773b765508003aec5d08680f39b9 ""
   "sphinxmanual.cls" 1722476525 4241 7b0d7a37df7b5715fb0dbd585c52ecdb ""
-  "sphinxmessages.sty" 1730244151 745 3f5fcd6cdd7964ed608767954a8ced6f ""
+  "sphinxmessages.sty" 1739235433 745 3f5fcd6cdd7964ed608767954a8ced6f ""
   "sphinxoptionsgeometry.sty" 1722476525 2061 47bb34b8ed8a78823eb0c886abfb9f4d ""
   "sphinxoptionshyperref.sty" 1722476525 1094 79beb8b8a3f10784f8cce804e0f9d3aa ""
   "sphinxpackageboxes.sty" 1722476525 36615 1d74c63e665ede6c648fa08c42ea70fb ""

@@ -67,6 +67,30 @@ These variables are defined in the :code:`soln` object, so can be accessed with,
       if soln.flag == soln.EXIT_SUCCESS:
           print("Success!")
 
+In newer versions DFO-LS (v1.5.4 onwards), the results object can be converted to, or loaded from, a serialized Python dictionary. This allows the results to be saved as a JSON file.
+For example, to save the results to a JSON file, you may use
+
+  .. code-block:: python
+  
+      import json
+      soln_dict = soln.to_dict()  # convert soln to serializable dict object
+      with open("dfols_results.json", 'w') as f:
+          json.dump(soln_dict, f, indent=2)
+
+The :code:`to_dict()` function takes an optional boolean, :code:`to_dict(replace_nan=True)`. If :code:`replace_nan` is :code:`True`, any NaN values in the results object are converted to :code:`None`.
+
+To load results from a JSON file and convert to a solution object, you may use
+
+  .. code-block:: python
+  
+      import json
+      soln_dict = None
+      with open("dfols_results.json") as f:
+          soln_dict = json.load(f)  # read JSON into dict
+      soln = dfols.OptimResults.from_dict(soln_dict)  # convert to DFO-LS results object
+      print(soln)
+
+
 Optional Arguments
 ------------------
 The :code:`solve` function has several optional arguments which the user may provide:

@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{30 October 2024}
-\release{1.5.3}
+\date{11 February 2025}
+\release{1.5.4}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.5.3
+\sphinxstylestrong{Release:} 1.5.4
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 30 October 2024
+\sphinxstylestrong{Date:} 11 February 2025
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -547,6 +547,36 @@ These variables are defined in the \sphinxcode{\sphinxupquote{soln}} object, so 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{k}{if} \PYG{n}{soln}\PYG{o}{.}\PYG{n}{flag} \PYG{o}{==} \PYG{n}{soln}\PYG{o}{.}\PYG{n}{EXIT\PYGZus{}SUCCESS}\PYG{p}{:}
     \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Success!}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+In newer versions DFO\sphinxhyphen{}LS (v1.5.4 onwards), the results object can be converted to, or loaded from, a serialized Python dictionary. This allows the results to be saved as a JSON file.
+For example, to save the results to a JSON file, you may use
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{json}
+\PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{n}{soln}\PYG{o}{.}\PYG{n}{to\PYGZus{}dict}\PYG{p}{(}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} convert soln to serializable dict object}
+\PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{dfols\PYGZus{}results.json}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{w}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{f}\PYG{p}{:}
+    \PYG{n}{json}\PYG{o}{.}\PYG{n}{dump}\PYG{p}{(}\PYG{n}{soln\PYGZus{}dict}\PYG{p}{,} \PYG{n}{f}\PYG{p}{,} \PYG{n}{indent}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+The \sphinxcode{\sphinxupquote{to\_dict()}} function takes an optional boolean, \sphinxcode{\sphinxupquote{to\_dict(replace\_nan=True)}}. If \sphinxcode{\sphinxupquote{replace\_nan}} is \sphinxcode{\sphinxupquote{True}}, any NaN values in the results object are converted to \sphinxcode{\sphinxupquote{None}}.
+
+\sphinxAtStartPar
+To load results from a JSON file and convert to a solution object, you may use
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{json}
+\PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{k+kc}{None}
+\PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{dfols\PYGZus{}results.json}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{f}\PYG{p}{:}
+    \PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{n}{json}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{n}{f}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} read JSON into dict}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{OptimResults}\PYG{o}{.}\PYG{n}{from\PYGZus{}dict}\PYG{p}{(}\PYG{n}{soln\PYGZus{}dict}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} convert to DFO\PYGZhy{}LS results object}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
 \end{sphinxVerbatim}
 \end{quote}
 
@@ -2027,6 +2057,15 @@ Bugfix for saving diagnostic info (bug introduced in v1.5.1)
 \item {} 
 \sphinxAtStartPar
 Bugfix when starting solver at problem minimizer (bug introduced in v1.5.1)
+
+\end{itemize}
+
+
+\section{Version 1.5.4 (11 Feb 2025)}
+\label{\detokenize{history:version-1-5-4-11-feb-2025}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Add ability to save/load results to/from a dictionary
 
 \end{itemize}
 
