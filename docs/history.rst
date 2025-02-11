@@ -82,4 +82,5 @@ Version 1.5.3 (30 Oct 2024)
 
 Version 1.5.4 (11 Feb 2025)
 ---------------------------
+* Bugfix when printing results from a run which terminated early
 * Add ability to save/load results to/from a dictionary
