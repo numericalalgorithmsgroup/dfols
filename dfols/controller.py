@@ -427,8 +427,8 @@ class Controller(object):
                                                                                             dykstra_tol=params("dykstra.d_tol"))
 
         # Add suitable pre-existing evaluations
-        module_logger.debug("Adding %g pre-existing evaluations (aside from x0) to initial model" % len(perturbation_idx))
         for i, idx in enumerate(perturbation_idx):
+            module_logger.info("Adding pre-existing evaluation %g to initial model" % idx)
             x, rx = eval_database.get_eval(idx)
             self.model.change_point(i + 1, x - self.model.xbase, rx, -idx)  # use eval_num = -idx
 

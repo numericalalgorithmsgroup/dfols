@@ -45,3 +45,5 @@ __version__ = '1.5.4'
 from .solver import *
 __all__ = ['solve', 'OptimResults']
 
+from .evaluations_database import *
+__all__ += ['EvaluationDatabase']

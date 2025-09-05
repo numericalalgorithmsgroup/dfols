@@ -165,12 +165,15 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
     if r0_avg_old is None:
+        exit_info = None
         if x0_is_eval_database:
             # We have already got r(x0), so just extract this information
             nf = nf_so_far
             nx = nx_so_far
+            num_samples_run = 1
             r0_avg = x0.get_rx(x0.get_starting_eval_idx())
             m = len(r0_avg)
+            module_logger.info("Using pre-existing evaluation %g as starting point" % (x0.get_starting_eval_idx()))
         else:
             number_of_samples = max(nsamples(rhobeg, rhobeg, 0, nruns_so_far), 1)
             # Evaluate the first time...
@@ -188,7 +191,6 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
             rvec_list[0, :] = r0
             obj_list[0] = obj0
             num_samples_run = 1
-            exit_info = None
 
             for i in range(1, number_of_samples):  # skip first eval - already did this
                 if nf >= maxfun:
@@ -972,6 +974,7 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
         assert len(x0) > 0, "evaluation database x0 cannot be empty"
         assert 0 <= x0.get_starting_eval_idx() < len(x0), "evaluation database must have valid starting index set"
         x0_is_eval_database = True
+        n = len(x0.get_x(x0.get_starting_eval_idx()))
     else:
         x0 = np.array(x0).astype(float)
         n = len(x0)

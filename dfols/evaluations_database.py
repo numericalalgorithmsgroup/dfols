@@ -89,7 +89,7 @@ class EvaluationDatabase(object):
         n = len(xbase)
         module_logger.debug("Selecting starting evaluations from existing database")
         module_logger.debug("Have %g evaluations to choose from" % len(self))
-        module_logger.debug("Using base index %g, x0 =" % base_idx, xbase)
+        module_logger.debug("Using base index %g" % base_idx)
 
         # For linear interpolation, we will use the matrix
         # M = [[1, 0], [0, L]] where L has rows (xi-xbase)/delta
