@@ -71,13 +71,16 @@ class OptimResults(object):
         self.EXIT_TR_INCREASE_ERROR = EXIT_TR_INCREASE_ERROR
         self.EXIT_LINALG_ERROR = EXIT_LINALG_ERROR
         self.EXIT_FALSE_SUCCESS_WARNING = EXIT_FALSE_SUCCESS_WARNING
+        self.max_resid_length_print = 20  # don't print self.resid in __str__ if length >= this value
+        self.max_jac_length_print = 40  # don't print self.jacobian in __str__ if length >= this value
+
 
     def __str__(self):
         # Result of calling print(soln)
         output = "****** DFO-LS Results ******\n"
         if self.flag != self.EXIT_INPUT_ERROR:
             output += "Solution xmin = %s\n" % str(self.x)
-            if len(self.resid) < 100:
+            if len(self.resid) < self.max_resid_length_print:
                 output += "Residual vector = %s\n" % str(self.resid)
             else:
                 output += "Not showing residual vector because it is too long; check self.resid\n"
@@ -85,7 +88,7 @@ class OptimResults(object):
             output += "Needed %g objective evaluations (at %g points)\n" % (self.nf, self.nx)
             if self.nruns > 1:
                 output += "Did a total of %g runs\n" % self.nruns
-            if self.jacobian is not None and np.size(self.jacobian) < 200:
+            if self.jacobian is not None and np.size(self.jacobian) < self.max_jac_length_print:
                 output += "Approximate Jacobian = %s\n" % str(self.jacobian)
             elif self.jacobian is None:
                 output += "No Jacobian returned\n"
@@ -94,7 +97,7 @@ class OptimResults(object):
             if self.diagnostic_info is not None:
                 output += "Diagnostic information available; check self.diagnostic_info\n"
             output += "Solution xmin was evaluation point %g\n" % self.xmin_eval_num
-            if self.jacmin_eval_nums is not None and len(self.jacmin_eval_nums) < 100:
+            if self.jacmin_eval_nums is not None and len(self.jacmin_eval_nums) < self.max_resid_length_print:
                 output += "Approximate Jacobian formed using evaluation points %s\n" % str(self.jacmin_eval_nums)
             elif self.jacmin_eval_nums is None:
                 output += "Approximate Jacobian not formed using problem information, disregard\n"
