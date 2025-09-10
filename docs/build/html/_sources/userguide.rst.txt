@@ -560,7 +560,7 @@ The following code demonstrates how an evaluation database may be constructed an
       logging.basicConfig(level=logging.INFO, format='%(message)s')
       
       # Call DFO-LS
-      soln = dfols.solve(watson, x0)
+      soln = dfols.solve(watson, eval_db)
       
       # Display output
       print(soln)

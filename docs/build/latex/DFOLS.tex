@@ -1190,7 +1190,7 @@ The following code demonstrates how an evaluation database may be constructed an
 \PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{INFO}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
-\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{watson}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{)}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{watson}\PYG{p}{,} \PYG{n}{eval\PYGZus{}db}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Display output}
 \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
