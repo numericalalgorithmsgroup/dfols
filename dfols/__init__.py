@@ -39,9 +39,11 @@ alternative licensing.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 # DFO-LS version
-__version__ = '1.5.4'
+__version__ = '1.6'
 
 # Main solver & exit flags
 from .solver import *
 __all__ = ['solve', 'OptimResults']
 
+from .evaluations_database import *
+__all__ += ['EvaluationDatabase']

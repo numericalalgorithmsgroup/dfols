@@ -414,6 +414,48 @@ class Controller(object):
 
         return None
 
+    def initialise_from_database(self, eval_database, number_of_samples, params):
+        # Here, eval_database has at least one entry, and the base index has already been used
+        # to evaluate (x0,r0), which has already been added to self.model
+        # Now, find exactly n feasible perturbations (either from database or new evals) and add them to the model
+        base_idx, perturbation_idx, new_perturbations = eval_database.select_starting_evals(self.delta,
+                                                                                            xl=self.model.xbase + self.model.sl,
+                                                                                            xu=self.model.xbase + self.model.su,
+                                                                                            projections=self.model.projections,
+                                                                                            tol=params("database.new_direction_tol"),
+                                                                                            dykstra_max_iters=params("dykstra.max_iters"),
+                                                                                            dykstra_tol=params("dykstra.d_tol"))
+
+        # Add suitable pre-existing evaluations
+        for i, idx in enumerate(perturbation_idx):
+            module_logger.info("Adding pre-existing evaluation %g to initial model" % idx)
+            x, rx = eval_database.get_eval(idx)
+            self.model.change_point(i + 1, x - self.model.xbase, rx, -idx)  # use eval_num = -idx
+
+        if new_perturbations is not None:
+            num_perturbations = new_perturbations.shape[0]
+            module_logger.debug("Adding %g new evaluations to initial model" % num_perturbations)
+            for i in range(num_perturbations):
+                new_point = (eval_database.get_x(base_idx) - self.model.xbase) + new_perturbations[i,:]  # new_perturbations[i,:] has length <= self.delta
+
+                # Evaluate objective
+                x = self.model.as_absolute_coordinates(new_point)
+                rvec_list, obj_list, num_samples_run, exit_info = self.evaluate_objective(x, number_of_samples, params)
+
+                # Handle exit conditions (f < min obj value or maxfun reached)
+                if exit_info is not None:
+                    if num_samples_run > 0:
+                        self.model.save_point(x, np.mean(rvec_list[:num_samples_run, :], axis=0), num_samples_run,
+                                              self.nx, x_in_abs_coords=True)
+                    return exit_info  # return & quit
+
+                # Otherwise, add new results (increments model.npt_so_far)
+                self.model.change_point(len(perturbation_idx) + 1 + i, x - self.model.xbase, rvec_list[0, :], self.nx)  # expect step, not absolute x
+                for j in range(1, num_samples_run):
+                    self.model.add_new_sample(len(perturbation_idx) + 1 + i, rvec_extra=rvec_list[j, :])
+
+        return None
+
     def add_new_direction_while_growing(self, number_of_samples, params, min_num_steps=0):
         num_steps = max(params('growing.num_new_dirns_each_iter'), min_num_steps)
         step_length = params('growing.delta_scale_new_dirns') * self.delta

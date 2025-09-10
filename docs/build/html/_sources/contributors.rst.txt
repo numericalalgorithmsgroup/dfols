@@ -3,7 +3,7 @@ Contributors
 
 Main author
 -----------
-* `Lindon Roberts <https://lindonroberts.github.io/>`_ (University of Sydney)
+* `Lindon Roberts <https://lindonroberts.github.io/>`_ (University of Melbourne)
 
 Contributors
 ------------

@@ -33,6 +33,11 @@ The input :code:`objfun` is a Python function which takes an input :math:`x\in\m
 The input :code:`x0` is the starting point for the solver, and (where possible) should be set to be the best available estimate of the true solution :math:`x_{min}\in\mathbb{R}^n`. It should be specified as a one-dimensional NumPy array (i.e. with :code:`x0.shape == (n,)`).
 As DFO-LS is a local solver, providing different values for :code:`x0` may cause it to return different solutions, with possibly different objective values.
 
+In newer version of DFO-LS (v1.6 onwards), the input :code:`x0` may instead by an instance of a :code:`dfols.EvaluationDatabase`, which stores a collection
+of previously evaluated points and their associated vectors of residuals. One of these points is designated the starting point for the solver, and the other
+points may be used by DFO-LS to build its first approximation to :code:`objfun`, reducing the number of evaluations required to begin the main iteration.
+See the example below for more details for how to use this functionality.
+
 The output of :code:`dfols.solve` is an object containing:
 
 * :code:`soln.x` - an estimate of the solution, :math:`x_{min}\in\mathbb{R}^n`, a one-dimensional NumPy array.
@@ -436,6 +441,164 @@ The solution found by DFO-LS is:
 We can see that 3 of the 5 components of the solution are very close to zero.
 Note that many LASSO-type algorithms can produce a solution with many entries being exactly zero, but DFO-LS can only make them very small (related to how it calculates a new point with trust-region constraints).
 
+Using Initial Evaluation Database
+---------------------------------
+Since DFO-LS v1.6, the input :code:`x0` may instead be an instance of a :code:`dfols.EvaluationDatabase` class containing a collection of previously evaluated 
+points and their associated vectors of residuals. One of these points must be flagged as the starting point for the solver (otherwise, the most recently added 
+point is used). DFO-LS will automaticaly select some (but possibly none/all) of the other points to help build its first internal approximation to the objective,
+which reduces the number of times the objective must be evaluated during the initialization phase, before the main algorithm can begin.
+
+For example, suppose we want to use DFO-LS to minimize the Watson test function (Problem 20 from [MGH1981]_). Using the standard starting point, our code looks like 
+
+  .. code-block:: python
+  
+      import numpy as np
+      import dfols
+      
+      # Define the objective function
+      def watson(x):
+          n = len(x)
+          m = 31
+          fvec = np.zeros((m,), dtype=float)
+          for i in range(1, 30):  # i=1,...,29
+              div = float(i) / 29.0
+              s1 = 0.0
+              dx = 1.0
+              for j in range(2, n + 1):  # j = 2,...,n
+                  s1 = s1 + (j - 1) * dx * x[j - 1]
+                  dx = div * dx
+              s2 = 0.0
+              dx = 1.0
+              for j in range(1, n + 1):  # j = 1,...,n
+                  s2 = s2 + dx * x[j - 1]
+                  dx = div * dx
+              fvec[i - 1] = s1 - s2 ** 2 - 1.0
+          fvec[29] = x[0]
+          fvec[30] = x[1] - x[0] ** 2 - 1.0
+          return fvec
+      
+      # Define the starting point
+      n = 6
+      x0 = 0.5 * np.ones((n,), dtype=float)
+      
+      # Show extra output to demonstrate the impact of using an initial evaluation database
+      import logging
+      logging.basicConfig(level=logging.INFO, format='%(message)s')
+      
+      # Call DFO-LS
+      soln = dfols.solve(watson, x0)
+      
+      # Display output
+      print(soln)
+
+In the output of this code, we can check that DFO-LS finds the unique minimizer of this function. We can also see that before the main loop can begin,
+DFO-LS needs to evaluate the objective at the given starting point, and 6 extra points (since this problem has 6 variables to be minimized):
+
+  .. code-block:: none
+  
+      Function eval 1 at point 1 has obj = 16.4308311759923 at x = [...]
+      Initialising (coordinate directions)
+      Function eval 2 at point 2 has obj = 28.9196967094733 at x = [...]
+      Function eval 3 at point 3 has obj = 22.0866904737059 at x = [...]
+      Function eval 4 at point 4 has obj = 20.6560889343479 at x = [...]
+      Function eval 5 at point 5 has obj = 19.2914312375462 at x = [...]
+      Function eval 6 at point 6 has obj = 18.0373781384725 at x = [...]
+      Function eval 7 at point 7 has obj = 16.8946356501339 at x = [...]
+      Beginning main loop
+      Function eval 8 at point 8 has obj = 8.45207899459595 at x = [...]
+      Function eval 9 at point 9 has obj = 2.54949692496583 at x = [...]
+      ...
+      Function eval 90 at point 90 has obj = 0.00228767005355292 at x = [...]
+      Did a total of 1 run(s)
+      
+      ****** DFO-LS Results ******
+      Solution xmin = [-0.01572509  1.01243487 -0.23299162  1.26043004 -1.51372886  0.99299641]
+      Not showing residual vector because it is too long; check self.resid
+      Objective value f(xmin) = 0.002287670054
+      Needed 90 objective evaluations (at 90 points)
+      Not showing approximate Jacobian because it is too long; check self.jacobian
+      Solution xmin was evaluation point 89
+      Approximate Jacobian formed using evaluation points [87 85 76 89 86 88 84]
+      Exit flag = 0
+      Success: rho has reached rhoend
+      ****************************
+
+Instead of this, we can build a database of points where we have previously evaluated the objective, marking one of them as the starting point
+for the algorithm. DFO-LS will then select some/all (but possibly none) of the other points and use them as initial evaluations, allowing it to begin
+the main loop faster. In general, DFO-LS will select points that are:
+
+* Not too close/far from the selected starting point (relative to the initial trust-region radius, input :code:`rhobeg`)
+* Not in similar directions (relative to the selected starting point) to other selected initial points. For example, if several points differ from 
+  the selected starting point in only the first variable, at most one of these will be selected.
+
+The following code demonstrates how an evaluation database may be constructed and given to DFO-LS:
+
+  .. code-block:: python
+      
+      # Assuming numpy and dfols already imported, watson function already defined
+      
+      # Build a database of evaluations
+      eval_db = dfols.EvaluationDatabase()
+      
+      # Define the starting point and add it to the database
+      n = 6
+      x0 = 0.5 * np.ones((n,), dtype=float)
+      eval_db.append(x0, watson(x0), make_starting_eval=True)
+      # make_starting_eval=True --> use this point as the starting point for DFO-LS
+      
+      # Add other points to the database
+      # Note: x0, x1 and x2 are colinear, so at least one of x1 and x2 will not be included in the initial model
+      x1 = np.ones((n,), dtype=float)
+      x2 = np.zeros((n,), dtype=float)
+      x3 = np.arange(n).astype(float)
+      eval_db.append(x1, watson(x1))
+      eval_db.append(x2, watson(x2))
+      eval_db.append(x3, watson(x3))
+      
+      # Show extra output to demonstrate the impact of using an initial evaluation database
+      import logging
+      logging.basicConfig(level=logging.INFO, format='%(message)s')
+      
+      # Call DFO-LS
+      soln = dfols.solve(watson, x0)
+      
+      # Display output
+      print(soln)
+
+Running this code, we get the same (correct) answer but using fewer evaluations of the objective in the main call to :code:`dfols.solve()`.
+The logging information reveals that :code:`x0` was used as the starting point, and :code:`x1` and :code:`x3` were used to build the initial model.
+This means that only 4 evaluations of the objective were required in the initialization phase.
+
+  .. code-block:: none
+      
+      Using pre-existing evaluation 0 as starting point
+      Adding pre-existing evaluation 1 to initial model
+      Adding pre-existing evaluation 3 to initial model
+      Function eval 1 at point 1 has obj = 15.1910664616598 at x = [...]
+      Function eval 2 at point 2 has obj = 15.2288491702299 at x = [...]
+      Function eval 3 at point 3 has obj = 15.228054997542 at x = [...]
+      Function eval 4 at point 4 has obj = 15.3011037277481 at x = [...]
+      Beginning main loop
+      Function eval 5 at point 5 has obj = 13.5524099633802 at x = [...]
+      Function eval 6 at point 6 has obj = 7.33371957636104 at x = [...]
+      ...
+      Function eval 81 at point 81 has obj = 0.00228767005355266 at x = [...]
+      Did a total of 1 run(s)
+      
+      ****** DFO-LS Results ******
+      Solution xmin = [-0.01572509  1.01243487 -0.23299163  1.26043009 -1.51372893  0.99299643]
+      Not showing residual vector because it is too long; check self.resid
+      Objective value f(xmin) = 0.002287670054
+      Needed 81 objective evaluations (at 81 points)
+      Not showing approximate Jacobian because it is too long; check self.jacobian
+      Solution xmin was evaluation point 77
+      Approximate Jacobian formed using evaluation points [76 73 79 74 77 75 80]
+      Exit flag = 0
+      Success: rho has reached rhoend
+      ****************************
+
+Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.
+
 Example: Noisy Objective Evaluation
 -----------------------------------
 As described in :doc:`info`, derivative-free algorithms such as DFO-LS are particularly useful when :code:`objfun` has noise. Let's modify the previous example to include random noise in our objective evaluation, and compare it to SciPy's derivative-based solver (the below results came from using SciPy v1.13.0):
@@ -708,3 +871,6 @@ References
 
 .. [B2017]
    Amir Beck, `First-Order Methods in Optimization <https://doi.org/10.1137/1.9781611974997>`_, SIAM (2017).
+
+.. [MGH1981]
+   Jorge J. More, Burton S. Garbow and Kenneth E. Hillstrom, `Testing Unconstrained Optimization Software <https://doi.org/10.1145/355934.355936>`_, *ACM Transactions on Mathematical Software*, 7:1 (1981), pp. 17-41.

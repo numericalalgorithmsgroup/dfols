@@ -84,3 +84,8 @@ Version 1.5.4 (11 Feb 2025)
 ---------------------------
 * Bugfix when printing results from a run which terminated early
 * Add ability to save/load results to/from a dictionary
+
+Version 1.6 (10 Sep 2025)
+-------------------------
+* Allow use of evaluation database as :code:`x0` to reduce number of objective evaluations required in initialization phase
+* When printing solution object, reduce the maximum length of residual/Jacobian vectors that are fully displayed

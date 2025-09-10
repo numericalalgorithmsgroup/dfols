@@ -39,6 +39,7 @@ import warnings
 
 from .controller import *
 from .diagnostic_info import *
+from .evaluations_database import *
 from .params import *
 from .util import *
 
@@ -70,13 +71,16 @@ class OptimResults(object):
         self.EXIT_TR_INCREASE_ERROR = EXIT_TR_INCREASE_ERROR
         self.EXIT_LINALG_ERROR = EXIT_LINALG_ERROR
         self.EXIT_FALSE_SUCCESS_WARNING = EXIT_FALSE_SUCCESS_WARNING
+        self.max_resid_length_print = 20  # don't print self.resid in __str__ if length >= this value
+        self.max_jac_length_print = 40  # don't print self.jacobian in __str__ if length >= this value
+
 
     def __str__(self):
         # Result of calling print(soln)
         output = "****** DFO-LS Results ******\n"
         if self.flag != self.EXIT_INPUT_ERROR:
             output += "Solution xmin = %s\n" % str(self.x)
-            if len(self.resid) < 100:
+            if len(self.resid) < self.max_resid_length_print:
                 output += "Residual vector = %s\n" % str(self.resid)
             else:
                 output += "Not showing residual vector because it is too long; check self.resid\n"
@@ -84,7 +88,7 @@ class OptimResults(object):
             output += "Needed %g objective evaluations (at %g points)\n" % (self.nf, self.nx)
             if self.nruns > 1:
                 output += "Did a total of %g runs\n" % self.nruns
-            if self.jacobian is not None and np.size(self.jacobian) < 200:
+            if self.jacobian is not None and np.size(self.jacobian) < self.max_jac_length_print:
                 output += "Approximate Jacobian = %s\n" % str(self.jacobian)
             elif self.jacobian is None:
                 output += "No Jacobian returned\n"
@@ -93,7 +97,7 @@ class OptimResults(object):
             if self.diagnostic_info is not None:
                 output += "Diagnostic information available; check self.diagnostic_info\n"
             output += "Solution xmin was evaluation point %g\n" % self.xmin_eval_num
-            if self.jacmin_eval_nums is not None and len(self.jacmin_eval_nums) < 100:
+            if self.jacmin_eval_nums is not None and len(self.jacmin_eval_nums) < self.max_resid_length_print:
                 output += "Approximate Jacobian formed using evaluation points %s\n" % str(self.jacmin_eval_nums)
             elif self.jacmin_eval_nums is None:
                 output += "Approximate Jacobian not formed using problem information, disregard\n"
@@ -152,58 +156,77 @@ class OptimResults(object):
 def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxfun, nruns_so_far, nf_so_far, nx_so_far, nsamples, params,
                diagnostic_info, scaling_changes, h=None, lh=None, argsh=(), prox_uh=None, argsprox=None, r0_avg_old=None, r0_nsamples_old=None, default_growing_method_set_by_user=None,
                do_logging=True, print_progress=False):
+
+    if type(x0) == EvaluationDatabase:
+        x0_is_eval_database = True
+        x0_vec = x0.get_x(x0.get_starting_eval_idx())
+    else:
+        x0_vec = x0
+        x0_is_eval_database = False
+    n = len(x0_vec)
+
     # Evaluate at x0 (keep nf, nx correct and check for f < 1e-12)
     # The hard bit is determining what m = len(r0) should be, and allocating memory appropriately
     if r0_avg_old is None:
-        number_of_samples = max(nsamples(rhobeg, rhobeg, 0, nruns_so_far), 1)
-        # Evaluate the first time...
-        nf = nf_so_far + 1
-        nx = nx_so_far + 1
-        r0, obj0 = eval_least_squares_with_regularisation(objfun, remove_scaling(x0, scaling_changes), h, 
-                                              argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
-                                              full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                              check_for_overflow=params("general.check_objfun_for_overflow"))
-        m = len(r0)
-
-        # Now we have m, we can evaluate the rest of the times
-        rvec_list = np.zeros((number_of_samples, m))
-        obj_list = np.zeros((number_of_samples,))
-        rvec_list[0, :] = r0
-        obj_list[0] = obj0
-        num_samples_run = 1
         exit_info = None
+        if x0_is_eval_database:
+            # We have already got r(x0), so just extract this information
+            nf = nf_so_far
+            nx = nx_so_far
+            num_samples_run = 1
+            r0_avg = x0.get_rx(x0.get_starting_eval_idx())
+            m = len(r0_avg)
+            module_logger.info("Using pre-existing evaluation %g as starting point" % (x0.get_starting_eval_idx()))
+        else:
+            number_of_samples = max(nsamples(rhobeg, rhobeg, 0, nruns_so_far), 1)
+            # Evaluate the first time...
+            nf = nf_so_far + 1
+            nx = nx_so_far + 1
+            r0, obj0 = eval_least_squares_with_regularisation(objfun, remove_scaling(x0_vec, scaling_changes), h,
+                                                  argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
+                                                  full_x_thresh=params("logging.n_to_print_whole_x_vector"),
+                                                  check_for_overflow=params("general.check_objfun_for_overflow"))
+            m = len(r0)
 
-        for i in range(1, number_of_samples):  # skip first eval - already did this
-            if nf >= maxfun:
-                exit_info = ExitInformation(EXIT_MAXFUN_WARNING, "Objective has been called MAXFUN times")
-                nruns_so_far += 1
-                break  # stop evaluating at x0
+            # Now we have m, we can evaluate the rest of the times
+            rvec_list = np.zeros((number_of_samples, m))
+            obj_list = np.zeros((number_of_samples,))
+            rvec_list[0, :] = r0
+            obj_list[0] = obj0
+            num_samples_run = 1
 
-            nf += 1
-            # Don't increment nx for x0 - we did this earlier
-            rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(objfun, remove_scaling(x0, scaling_changes), h, 
-                                                argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
-                                                full_x_thresh=params("logging.n_to_print_whole_x_vector"),
-                                                check_for_overflow=params("general.check_objfun_for_overflow"))
-            num_samples_run += 1
+            for i in range(1, number_of_samples):  # skip first eval - already did this
+                if nf >= maxfun:
+                    exit_info = ExitInformation(EXIT_MAXFUN_WARNING, "Objective has been called MAXFUN times")
+                    nruns_so_far += 1
+                    break  # stop evaluating at x0
 
-        r0_avg = np.mean(rvec_list[:num_samples_run, :], axis=0)
+                nf += 1
+                # Don't increment nx for x0 - we did this earlier
+                rvec_list[i, :], obj_list[i] = eval_least_squares_with_regularisation(objfun, remove_scaling(x0_vec, scaling_changes), h,
+                                                    argsf=argsf, argsh=argsh, verbose=do_logging, eval_num=nf, pt_num=nx,
+                                                    full_x_thresh=params("logging.n_to_print_whole_x_vector"),
+                                                    check_for_overflow=params("general.check_objfun_for_overflow"))
+                num_samples_run += 1
+
+            r0_avg = np.mean(rvec_list[:num_samples_run, :], axis=0)
+
         # NOTE: modify objvalue here
         if h is None:
             if sumsq(r0_avg) <= params("model.abs_tol"):
                 exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
         else:
-            if sumsq(r0_avg) + h(remove_scaling(x0, scaling_changes), *argsh)<= params("model.abs_tol"):
+            if sumsq(r0_avg) + h(remove_scaling(x0_vec, scaling_changes), *argsh)<= params("model.abs_tol"):
                 exit_info = ExitInformation(EXIT_SUCCESS, "Objective is sufficiently small")
 
         if exit_info is not None:
             xmin_eval_num = 0
             jacmin_eval_nums = np.array([0], dtype=int)
-            return x0, r0_avg, sumsq(r0_avg), None, num_samples_run, nf, nx, nruns_so_far+1, exit_info, diagnostic_info, xmin_eval_num, jacmin_eval_nums
+            return x0_vec, r0_avg, sumsq(r0_avg), None, num_samples_run, nf, nx, nruns_so_far+1, exit_info, diagnostic_info, xmin_eval_num, jacmin_eval_nums
 
     else:  # have old r0 information (e.g. from previous restart), use this instead
 
-        # m = len(r0_avg_old)
+        m = len(r0_avg_old)
         r0_avg = r0_avg_old
         num_samples_run = r0_nsamples_old
         nf = nf_so_far
@@ -213,7 +236,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
     if default_growing_method_set_by_user is not None and (not default_growing_method_set_by_user):
         # If m>=n, the default growing method (use_full_rank_interp) is best
         # However, this can fail for m<n, so need to use an alternative method (perturb_trust_region_step)
-        if m < len(x0):
+        if m < n:
             if do_logging:
                 module_logger.debug("Inverse problem (m<n), switching default growing method")
             params('growing.full_rank.use_full_rank_interp', new_value=False)
@@ -222,25 +245,32 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
                 params('growing.delta_scale_new_dirns', new_value=0.1)
 
     # Initialise controller
-    control = Controller(objfun, argsf, x0, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
+    control = Controller(objfun, argsf, x0_vec, r0_avg, num_samples_run, xl, xu, projections, npt, rhobeg, rhoend, nf, nx, maxfun,
                          params, scaling_changes, do_logging, h=h, lh=lh, argsh=argsh,  prox_uh=prox_uh, argsprox=argsprox)
 
     # Initialise interpolation set
     number_of_samples = max(nsamples(control.delta, control.rho, 0, nruns_so_far), 1)
     num_directions = min(params("growing.ndirs_initial") + params("restarts.hard.increase_ndirs_initial_amt") * nruns_so_far,
                          npt - 1)  # cap at npt
-    if params("init.random_initial_directions"):
-        if do_logging:
-            module_logger.info("Initialising (random directions)")
-        exit_info = control.initialise_random_directions(number_of_samples, num_directions, params)
+    if x0_is_eval_database:
+        if num_directions != n:
+            module_logger.warning("When evaluation database provided, we will always initialize with n+1 evaluations")
+        exit_info = control.initialise_from_database(x0, number_of_samples, params)
     else:
-        if do_logging:
-            module_logger.info("Initialising (coordinate directions)")
-        exit_info = control.initialise_coordinate_directions(number_of_samples, num_directions, params)
+        if params("init.random_initial_directions"):
+            if do_logging:
+                module_logger.info("Initialising (random directions)")
+            exit_info = control.initialise_random_directions(number_of_samples, num_directions, params)
+        else:
+            if do_logging:
+                module_logger.info("Initialising (coordinate directions)")
+            exit_info = control.initialise_coordinate_directions(number_of_samples, num_directions, params)
     if exit_info is not None:
         x, rvec, obj, jacmin, nsamples, x_eval_num, jac_eval_nums = control.model.get_final_results()
         return x, rvec, obj, None, nsamples, control.nf, control.nx, nruns_so_far + 1, exit_info, diagnostic_info, x_eval_num, jac_eval_nums
 
+    # model.npt() = actual number of evaluations available to the model so far
+    # model.num_pts = desired interp set size >= n+1
     finished_growing = (control.model.npt() >= control.model.num_pts)  # have we finished growing the initial set yet?
 
     # Save list of last N successful steps: whether they failed to be an improvement over fsave
@@ -942,8 +972,16 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
 def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argsprox=(), bounds=None, projections=[], npt=None, rhobeg=None, rhoend=1e-8, maxfun=None, nsamples=None, user_params=None,
           objfun_has_noise=False, scaling_within_bounds=False, do_logging=True, print_progress=False):
-    x0 = x0.astype(float)
-    n = len(x0)
+
+    if type(x0) == EvaluationDatabase:
+        assert len(x0) > 0, "evaluation database x0 cannot be empty"
+        assert 0 <= x0.get_starting_eval_idx() < len(x0), "evaluation database must have valid starting index set"
+        x0_is_eval_database = True
+        n = len(x0.get_x(x0.get_starting_eval_idx()))
+    else:
+        x0 = np.array(x0).astype(float)
+        n = len(x0)
+        x0_is_eval_database = False
 
     # Set missing inputs (if not specified) to some sensible defaults
     if bounds is None:
@@ -969,7 +1007,8 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
     if npt is None:
         npt = n + 1
     if rhobeg is None:
-        rhobeg = 0.1 if scaling_within_bounds else 0.1 * max(np.max(np.abs(x0)), 1.0)
+        x0_norm = np.max(np.abs(x0.get_x(x0.get_starting_eval_idx()))) if x0_is_eval_database else np.max(np.abs(x0))
+        rhobeg = 0.1 if scaling_within_bounds else 0.1 * max(x0_norm, 1.0)
     if maxfun is None:
         maxfun = min(100 * (n + 1), 1000)  # 100 gradients, capped at 1000
     if nsamples is None:
@@ -1004,7 +1043,10 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
         scale = xu - xl
         scaling_changes = (shift, scale)
 
-    x0 = apply_scaling(x0, scaling_changes)
+    if x0_is_eval_database:
+        x0.apply_scaling(scaling_changes)
+    else:
+        x0 = apply_scaling(x0, scaling_changes)
     xl = apply_scaling(xl, scaling_changes)
     xu = apply_scaling(xu, scaling_changes)
 
@@ -1033,13 +1075,19 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
     if exit_info is None and maxfun <= 0:
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "maxfun must be strictly positive")
 
-    if exit_info is None and np.shape(x0) != (n,):
-        exit_info = ExitInformation(EXIT_INPUT_ERROR, "x0 must be a vector")
+    if exit_info is None:
+        if x0_is_eval_database:
+            for i in range(len(x0)):
+                if np.shape(x0.get_x(i)) != (n,):
+                    exit_info = ExitInformation(EXIT_INPUT_ERROR, "All input vectors x0 must have the same shape")
+        else:
+            if np.shape(x0) != (n,):
+                exit_info = ExitInformation(EXIT_INPUT_ERROR, "x0 must be a vector")
 
-    if exit_info is None and np.shape(x0) != np.shape(xl):
+    if exit_info is None and np.shape(xl) != (n,):
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "lower bounds must have same shape as x0")
 
-    if exit_info is None and np.shape(x0) != np.shape(xu):
+    if exit_info is None and np.shape(xu) != (n,):
         exit_info = ExitInformation(EXIT_INPUT_ERROR, "upper bounds must have same shape as x0")
 
     if exit_info is None and np.min(xu - xl) < 2.0 * rhobeg:
@@ -1090,22 +1138,24 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
         return results
 
     # Enforce arbitrary constraint bounds on x0
-    if projections:
-        xp = dykstra(projections,x0,max_iter=params("dykstra.max_iters"),tol=params("dykstra.d_tol"))
-        if not np.allclose(xp,x0):
-            warnings.warn("x0 not feasible w.r.t given constraints, adjusting", RuntimeWarning)
-            x0 = xp.copy()
+    if not x0_is_eval_database:
+        # Don't need to enforce any constraints for pre-existing evaluations (since we already have the objective value)
+        if projections:
+            xp = dykstra(projections,x0,max_iter=params("dykstra.max_iters"),tol=params("dykstra.d_tol"))
+            if not np.allclose(xp,x0):
+                warnings.warn("x0 not feasible w.r.t given constraints, adjusting", RuntimeWarning)
+                x0 = xp.copy()
 
-    # Enforce lower & upper bounds on x0
-    idx = (x0 < xl)
-    if np.any(idx):
-        warnings.warn("x0 below lower bound, adjusting", RuntimeWarning)
-    x0[idx] = xl[idx]
+        # Enforce lower & upper bounds on x0
+        idx = (x0 < xl)
+        if np.any(idx):
+            warnings.warn("x0 below lower bound, adjusting", RuntimeWarning)
+        x0[idx] = xl[idx]
 
-    idx = (x0 > xu)
-    if np.any(idx):
-        warnings.warn("x0 above upper bound, adjusting", RuntimeWarning)
-    x0[idx] = xu[idx]
+        idx = (x0 > xu)
+        if np.any(idx):
+            warnings.warn("x0 above upper bound, adjusting", RuntimeWarning)
+        x0[idx] = xu[idx]
 
     # Call main solver (first time)
     diagnostic_info = DiagnosticInfo()
