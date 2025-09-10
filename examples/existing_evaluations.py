@@ -37,11 +37,13 @@ def watson(x):
 n = 6
 x0 = 0.5 * np.ones((n,), dtype=float)
 
-# When n=6, we expect f(x0) ~ 16.4308 and f(xmin) ~ 0.00228767 at xmin ~ [ -0.0157, 1.0124, 1.2604, -1.5137, 0.992996]
-
 # For optional extra output details
-import logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+# import logging
+# logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+# Initial run: normal initialization from starting point x0
+soln = dfols.solve(watson, x0)
+print(soln)
 
 # Now build a database of evaluations
 eval_db = dfols.EvaluationDatabase()
@@ -55,6 +57,7 @@ eval_db.append(x1, watson(x1))
 eval_db.append(x2, watson(x2))
 eval_db.append(x3, watson(x3))
 
+# Alternative run: initialize using evaluation database
+# Turn on logging above to see which database points are selected to reduce the initialization cost
 soln = dfols.solve(watson, eval_db)  # replace x0 with eval_db
-
 print(soln)
