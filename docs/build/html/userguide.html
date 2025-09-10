@@ -1,24 +1,22 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using DFO-LS &mdash; DFO-LS v1.5.4 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Using DFO-LS &mdash; DFO-LS v1.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1cd648e3"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=9d552775"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -37,9 +35,6 @@
           <a href="index.html" class="icon icon-home">
             DFO-LS
           </a>
-              <div class="version">
-                1.5.4
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -60,6 +55,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#adding-bounds-and-more-output">Adding Bounds and More Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-general-convex-constraints">Adding General Convex Constraints</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-a-regularizer">Adding a Regularizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-initial-evaluation-database">Using Initial Evaluation Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-noisy-objective-evaluation">Example: Noisy Objective Evaluation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-parameter-estimation-data-fitting">Example: Parameter Estimation/Data Fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-solving-a-nonlinear-system-of-equations">Example: Solving a Nonlinear System of Equations</a></li>
@@ -124,6 +120,10 @@ For an in-depth technical description of the algorithm see the papers <a class="
 <p>The input <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> is a Python function which takes an input <span class="math notranslate nohighlight">\(x\in\mathbb{R}^n\)</span> and returns the vector of residuals <span class="math notranslate nohighlight">\([r_1(x)\: \cdots \: r_m(x)]\in\mathbb{R}^m\)</span>. Both the input and output of <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> must be one-dimensional NumPy arrays (i.e. with <code class="code docutils literal notranslate"><span class="pre">x.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code> and <code class="code docutils literal notranslate"><span class="pre">objfun(x).shape</span> <span class="pre">==</span> <span class="pre">(m,)</span></code>).</p>
 <p>The input <code class="code docutils literal notranslate"><span class="pre">x0</span></code> is the starting point for the solver, and (where possible) should be set to be the best available estimate of the true solution <span class="math notranslate nohighlight">\(x_{min}\in\mathbb{R}^n\)</span>. It should be specified as a one-dimensional NumPy array (i.e. with <code class="code docutils literal notranslate"><span class="pre">x0.shape</span> <span class="pre">==</span> <span class="pre">(n,)</span></code>).
 As DFO-LS is a local solver, providing different values for <code class="code docutils literal notranslate"><span class="pre">x0</span></code> may cause it to return different solutions, with possibly different objective values.</p>
+<p>In newer version of DFO-LS (v1.6 onwards), the input <code class="code docutils literal notranslate"><span class="pre">x0</span></code> may instead by an instance of a <code class="code docutils literal notranslate"><span class="pre">dfols.EvaluationDatabase</span></code>, which stores a collection
+of previously evaluated points and their associated vectors of residuals. One of these points is designated the starting point for the solver, and the other
+points may be used by DFO-LS to build its first approximation to <code class="code docutils literal notranslate"><span class="pre">objfun</span></code>, reducing the number of evaluations required to begin the main iteration.
+See the example below for more details for how to use this functionality.</p>
 <p>The output of <code class="code docutils literal notranslate"><span class="pre">dfols.solve</span></code> is an object containing:</p>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">soln.x</span></code> - an estimate of the solution, <span class="math notranslate nohighlight">\(x_{min}\in\mathbb{R}^n\)</span>, a one-dimensional NumPy array.</p></li>
@@ -161,7 +161,7 @@ As DFO-LS is a local solver, providing different values for <code class="code do
 <p>In newer versions DFO-LS (v1.5.4 onwards), the results object can be converted to, or loaded from, a serialized Python dictionary. This allows the results to be saved as a JSON file.
 For example, to save the results to a JSON file, you may use</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="n">soln_dict</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>  <span class="c1"># convert soln to serializable dict object</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dfols_results.json&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">soln_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -171,7 +171,7 @@ For example, to save the results to a JSON file, you may use</p>
 <p>The <code class="code docutils literal notranslate"><span class="pre">to_dict()</span></code> function takes an optional boolean, <code class="code docutils literal notranslate"><span class="pre">to_dict(replace_nan=True)</span></code>. If <code class="code docutils literal notranslate"><span class="pre">replace_nan</span></code> is <code class="code docutils literal notranslate"><span class="pre">True</span></code>, any NaN values in the results object are converted to <code class="code docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <p>To load results from a JSON file and convert to a solution object, you may use</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="n">soln_dict</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dfols_results.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">soln_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># read JSON into dict</span>
@@ -231,12 +231,12 @@ The <code class="code docutils literal notranslate"><span class="pre">scaling_wi
 <p>A commonly-used starting point for testing purposes is <span class="math notranslate nohighlight">\(x_0=(-1.2,1)\)</span>. The following script shows how to solve this problem using DFO-LS:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the Rosenbrock function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
-<span class="k">def</span> <span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 
 <span class="c1"># Define the starting point</span>
@@ -308,7 +308,7 @@ Success: rho has reached rhoend
 <p>DFO-LS automatically fixes this, and moves <span class="math notranslate nohighlight">\(x_0\)</span> to a point within the bounds, in this case <span class="math notranslate nohighlight">\(x_0=(-1.2,0.85)\)</span>.</p>
 <p>We can also get DFO-LS to print out more detailed information about its progress using the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging</a> module. To do this, we need to add the following lines:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <span class="c1"># ... (call dfols.solve)</span>
@@ -372,11 +372,11 @@ or Section 6.4.6 of the textbook <a class="reference internal" href="#b2017" id=
 <p>As an example, let’s minimize the above Rosenbrock function with different bounds, and with a Euclidean
 ball constraint, namely <span class="math notranslate nohighlight">\((x_1-0.7)^2 + (x_2-1.5)^2 \leq 0.4^2\)</span>.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
-<span class="k">def</span> <span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 
 <span class="c1"># Define the starting point</span>
@@ -446,8 +446,8 @@ In the case of <span class="math notranslate nohighlight">\(h(x)=\lambda\|x\|_1\
 <p>We can use DFO-LS to solve a simple regularized linear least-squares problem (with artificially generated data) as follows:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: regularized least-squares regression</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># dimension of x</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># number of residuals, i.e. dimension of b</span>
@@ -499,21 +499,178 @@ Success: rho has reached rhoend
 <p>We can see that 3 of the 5 components of the solution are very close to zero.
 Note that many LASSO-type algorithms can produce a solution with many entries being exactly zero, but DFO-LS can only make them very small (related to how it calculates a new point with trust-region constraints).</p>
 </section>
+<section id="using-initial-evaluation-database">
+<h2>Using Initial Evaluation Database<a class="headerlink" href="#using-initial-evaluation-database" title="Link to this heading"></a></h2>
+<p>Since DFO-LS v1.6, the input <code class="code docutils literal notranslate"><span class="pre">x0</span></code> may instead be an instance of a <code class="code docutils literal notranslate"><span class="pre">dfols.EvaluationDatabase</span></code> class containing a collection of previously evaluated
+points and their associated vectors of residuals. One of these points must be flagged as the starting point for the solver (otherwise, the most recently added
+point is used). DFO-LS will automaticaly select some (but possibly none/all) of the other points to help build its first internal approximation to the objective,
+which reduces the number of times the objective must be evaluated during the initialization phase, before the main algorithm can begin.</p>
+<p>For example, suppose we want to use DFO-LS to minimize the Watson test function (Problem 20 from <a class="reference internal" href="#mgh1981" id="id10"><span>[MGH1981]</span></a>). Using the standard starting point, our code looks like</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
+
+<span class="c1"># Define the objective function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">watson</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="mi">31</span>
+    <span class="n">fvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">30</span><span class="p">):</span>  <span class="c1"># i=1,...,29</span>
+        <span class="n">div</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="mf">29.0</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># j = 2,...,n</span>
+            <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">div</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># j = 1,...,n</span>
+            <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">div</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="n">fvec</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">-</span> <span class="n">s2</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span>
+    <span class="n">fvec</span><span class="p">[</span><span class="mi">29</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">fvec</span><span class="p">[</span><span class="mi">30</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">fvec</span>
+
+<span class="c1"># Define the starting point</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="c1"># Show extra output to demonstrate the impact of using an initial evaluation database</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Call DFO-LS</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">watson</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+
+<span class="c1"># Display output</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>In the output of this code, we can check that DFO-LS finds the unique minimizer of this function. We can also see that before the main loop can begin,
+DFO-LS needs to evaluate the objective at the given starting point, and 6 extra points (since this problem has 6 variables to be minimized):</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Function eval 1 at point 1 has obj = 16.4308311759923 at x = [...]
+Initialising (coordinate directions)
+Function eval 2 at point 2 has obj = 28.9196967094733 at x = [...]
+Function eval 3 at point 3 has obj = 22.0866904737059 at x = [...]
+Function eval 4 at point 4 has obj = 20.6560889343479 at x = [...]
+Function eval 5 at point 5 has obj = 19.2914312375462 at x = [...]
+Function eval 6 at point 6 has obj = 18.0373781384725 at x = [...]
+Function eval 7 at point 7 has obj = 16.8946356501339 at x = [...]
+Beginning main loop
+Function eval 8 at point 8 has obj = 8.45207899459595 at x = [...]
+Function eval 9 at point 9 has obj = 2.54949692496583 at x = [...]
+...
+Function eval 90 at point 90 has obj = 0.00228767005355292 at x = [...]
+Did a total of 1 run(s)
+
+****** DFO-LS Results ******
+Solution xmin = [-0.01572509  1.01243487 -0.23299162  1.26043004 -1.51372886  0.99299641]
+Not showing residual vector because it is too long; check self.resid
+Objective value f(xmin) = 0.002287670054
+Needed 90 objective evaluations (at 90 points)
+Not showing approximate Jacobian because it is too long; check self.jacobian
+Solution xmin was evaluation point 89
+Approximate Jacobian formed using evaluation points [87 85 76 89 86 88 84]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+</pre></div>
+</div>
+</div></blockquote>
+<p>Instead of this, we can build a database of points where we have previously evaluated the objective, marking one of them as the starting point
+for the algorithm. DFO-LS will then select some/all (but possibly none) of the other points and use them as initial evaluations, allowing it to begin
+the main loop faster. In general, DFO-LS will select points that are:</p>
+<ul class="simple">
+<li><p>Not too close/far from the selected starting point (relative to the initial trust-region radius, input <code class="code docutils literal notranslate"><span class="pre">rhobeg</span></code>)</p></li>
+<li><p>Not in similar directions (relative to the selected starting point) to other selected initial points. For example, if several points differ from
+the selected starting point in only the first variable, at most one of these will be selected.</p></li>
+</ul>
+<p>The following code demonstrates how an evaluation database may be constructed and given to DFO-LS:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assuming numpy and dfols already imported, watson function already defined</span>
+
+<span class="c1"># Build a database of evaluations</span>
+<span class="n">eval_db</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">EvaluationDatabase</span><span class="p">()</span>
+
+<span class="c1"># Define the starting point and add it to the database</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">eval_db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">watson</span><span class="p">(</span><span class="n">x0</span><span class="p">),</span> <span class="n">make_starting_eval</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># make_starting_eval=True --&gt; use this point as the starting point for DFO-LS</span>
+
+<span class="c1"># Add other points to the database</span>
+<span class="c1"># Note: x0, x1 and x2 are colinear, so at least one of x1 and x2 will not be included in the initial model</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">x3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">eval_db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">watson</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span>
+<span class="n">eval_db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">watson</span><span class="p">(</span><span class="n">x2</span><span class="p">))</span>
+<span class="n">eval_db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x3</span><span class="p">,</span> <span class="n">watson</span><span class="p">(</span><span class="n">x3</span><span class="p">))</span>
+
+<span class="c1"># Show extra output to demonstrate the impact of using an initial evaluation database</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Call DFO-LS</span>
+<span class="n">soln</span> <span class="o">=</span> <span class="n">dfols</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">watson</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+
+<span class="c1"># Display output</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Running this code, we get the same (correct) answer but using fewer evaluations of the objective in the main call to <code class="code docutils literal notranslate"><span class="pre">dfols.solve()</span></code>.
+The logging information reveals that <code class="code docutils literal notranslate"><span class="pre">x0</span></code> was used as the starting point, and <code class="code docutils literal notranslate"><span class="pre">x1</span></code> and <code class="code docutils literal notranslate"><span class="pre">x3</span></code> were used to build the initial model.
+This means that only 4 evaluations of the objective were required in the initialization phase.</p>
+<blockquote>
+<div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Using pre-existing evaluation 0 as starting point
+Adding pre-existing evaluation 1 to initial model
+Adding pre-existing evaluation 3 to initial model
+Function eval 1 at point 1 has obj = 15.1910664616598 at x = [...]
+Function eval 2 at point 2 has obj = 15.2288491702299 at x = [...]
+Function eval 3 at point 3 has obj = 15.228054997542 at x = [...]
+Function eval 4 at point 4 has obj = 15.3011037277481 at x = [...]
+Beginning main loop
+Function eval 5 at point 5 has obj = 13.5524099633802 at x = [...]
+Function eval 6 at point 6 has obj = 7.33371957636104 at x = [...]
+...
+Function eval 81 at point 81 has obj = 0.00228767005355266 at x = [...]
+Did a total of 1 run(s)
+
+****** DFO-LS Results ******
+Solution xmin = [-0.01572509  1.01243487 -0.23299163  1.26043009 -1.51372893  0.99299643]
+Not showing residual vector because it is too long; check self.resid
+Objective value f(xmin) = 0.002287670054
+Needed 81 objective evaluations (at 81 points)
+Not showing approximate Jacobian because it is too long; check self.jacobian
+Solution xmin was evaluation point 77
+Approximate Jacobian formed using evaluation points [76 73 79 74 77 75 80]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+</pre></div>
+</div>
+</div></blockquote>
+<p>Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.</p>
+</section>
 <section id="example-noisy-objective-evaluation">
 <h2>Example: Noisy Objective Evaluation<a class="headerlink" href="#example-noisy-objective-evaluation" title="Link to this heading"></a></h2>
 <p>As described in <a class="reference internal" href="info.html"><span class="doc">Overview</span></a>, derivative-free algorithms such as DFO-LS are particularly useful when <code class="code docutils literal notranslate"><span class="pre">objfun</span></code> has noise. Let’s modify the previous example to include random noise in our objective evaluation, and compare it to SciPy’s derivative-based solver (the below results came from using SciPy v1.13.0):</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: minimize the noisy Rosenbrock function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="c1"># Define the objective function</span>
-<span class="k">def</span> <span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 
 <span class="c1"># Modified objective function: add 1% Gaussian noise</span>
-<span class="k">def</span> <span class="nf">rosenbrock_noisy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock_noisy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1e-2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,)))</span>
 
 <span class="c1"># Define the starting point</span>
@@ -534,7 +691,7 @@ Note that many LASSO-type algorithms can produce a solution with many entries be
 <span class="nb">print</span><span class="p">(</span><span class="n">soln</span><span class="p">)</span>
 
 <span class="c1"># Compare with a derivative-based solver</span>
-<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">opt</span>
 <span class="n">soln</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">least_squares</span><span class="p">(</span><span class="n">rosenbrock_noisy</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -614,9 +771,9 @@ Success: Objective is sufficiently small
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFO-LS example: data fitting problem</span>
 <span class="c1"># Originally from:</span>
 <span class="c1"># https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="c1"># Observations</span>
 <span class="n">tdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">13.8</span><span class="p">,</span> <span class="mf">19.8</span><span class="p">,</span> <span class="mf">24.1</span><span class="p">,</span> <span class="mf">28.2</span><span class="p">,</span> <span class="mf">35.2</span><span class="p">,</span>
@@ -625,7 +782,7 @@ Success: Objective is sufficiently small
                   <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">])</span>
 
 <span class="c1"># Model is y(t) = x[0] * exp(x[1] * t)</span>
-<span class="k">def</span> <span class="nf">prediction_error</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">prediction_error</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">ydata</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">tdata</span><span class="p">)</span>
 
 <span class="c1"># Define the starting point</span>
@@ -669,14 +826,15 @@ Success: rho has reached rhoend
 </div>
 </div></blockquote>
 <p>This produces a good fit to the observations.</p>
-<a class="reference internal image-reference" href="_images/data_fitting.png"><img alt="Data Fitting Results" class="align-center" src="_images/data_fitting.png" style="width: 75%;" /></a>
+<a class="reference internal image-reference" href="_images/data_fitting.png"><img alt="Data Fitting Results" class="align-center" src="_images/data_fitting.png" style="width: 75%;" />
+</a>
 <p>To generate this plot, run:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot calibrated model vs. observations</span>
 <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">)</span>
 <span class="n">ys</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ts</span><span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># current axes</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Model&#39;</span><span class="p">)</span>
@@ -702,15 +860,15 @@ x_1 \exp(-x_2) - 1 &amp;= 0.\end{split}\]</div>
 <span class="c1"># Originally from:</span>
 <span class="c1"># http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm#imlug_genstatexpls_sect004.htm</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">dfols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">exp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dfols</span>
 
 <span class="c1"># Want to solve:</span>
 <span class="c1">#   x1 + x2 - x1*x2 + 2 = 0</span>
 <span class="c1">#   x1 * exp(-x2) - 1   = 0</span>
-<span class="k">def</span> <span class="nf">nonlinear_system</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">nonlinear_system</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
                      <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">])</span>
 
@@ -764,6 +922,10 @@ Success: Objective is sufficiently small
 <span class="label"><span class="fn-bracket">[</span>B2017<span class="fn-bracket">]</span></span>
 <span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
 <p>Amir Beck, <a class="reference external" href="https://doi.org/10.1137/1.9781611974997">First-Order Methods in Optimization</a>, SIAM (2017).</p>
+</div>
+<div class="citation" id="mgh1981" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">MGH1981</a><span class="fn-bracket">]</span></span>
+<p>Jorge J. More, Burton S. Garbow and Kenneth E. Hillstrom, <a class="reference external" href="https://doi.org/10.1145/355934.355936">Testing Unconstrained Optimization Software</a>, <em>ACM Transactions on Mathematical Software</em>, 7:1 (1981), pp. 17-41.</p>
 </div>
 </div>
 </section>

@@ -13,7 +13,6 @@ def watson(x):
     n = len(x)
     m = 31
     fvec = np.zeros((m,), dtype=float)
-
     for i in range(1, 30):  # i=1,...,29
         div = float(i) / 29.0
         s1 = 0.0
@@ -27,29 +26,33 @@ def watson(x):
             s2 = s2 + dx * x[j - 1]
             dx = div * dx
         fvec[i - 1] = s1 - s2 ** 2 - 1.0
-
     fvec[29] = x[0]
     fvec[30] = x[1] - x[0] ** 2 - 1.0
-
     return fvec
 
 # Define the starting point
 n = 6
 x0 = 0.5 * np.ones((n,), dtype=float)
 
-# For optional extra output details
-# import logging
-# logging.basicConfig(level=logging.INFO, format='%(message)s')
+# Show extra output to demonstrate the impact of using an initial evaluation database
+import logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-# Initial run: normal initialization from starting point x0
+# Call DFO-LS
 soln = dfols.solve(watson, x0)
+
+# Display output
 print(soln)
 
-# Now build a database of evaluations
+# Build a database of evaluations
 eval_db = dfols.EvaluationDatabase()
-eval_db.append(x0, watson(x0), make_starting_eval=True)  # make x0 the starting point
 
-# Note: x0, x1 and x2 are colinear, so at least one of x1 and x2 shouldn't be included in the initial model
+# Define the starting point and add it to the database
+eval_db.append(x0, watson(x0), make_starting_eval=True)
+# make_starting_eval=True --> use this point as the starting point for DFO-LS
+
+# Add other points to the database
+# Note: x0, x1 and x2 are colinear, so at least one of x1 and x2 will not be included in the initial model
 x1 = np.ones((n,), dtype=float)
 x2 = np.zeros((n,), dtype=float)
 x3 = np.arange(n).astype(float)

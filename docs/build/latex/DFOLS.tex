@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{11 February 2025}
-\release{1.5.4}
+\date{10 September 2025}
+\release{1.6}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.5.4
+\sphinxstylestrong{Release:} 1.6
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 11 February 2025
+\sphinxstylestrong{Date:} 10 September 2025
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -447,6 +447,12 @@ The input \sphinxcode{\sphinxupquote{x0}} is the starting point for the solver, 
 As DFO\sphinxhyphen{}LS is a local solver, providing different values for \sphinxcode{\sphinxupquote{x0}} may cause it to return different solutions, with possibly different objective values.
 
 \sphinxAtStartPar
+In newer version of DFO\sphinxhyphen{}LS (v1.6 onwards), the input \sphinxcode{\sphinxupquote{x0}} may instead by an instance of a \sphinxcode{\sphinxupquote{dfols.EvaluationDatabase}}, which stores a collection
+of previously evaluated points and their associated vectors of residuals. One of these points is designated the starting point for the solver, and the other
+points may be used by DFO\sphinxhyphen{}LS to build its first approximation to \sphinxcode{\sphinxupquote{objfun}}, reducing the number of evaluations required to begin the main iteration.
+See the example below for more details for how to use this functionality.
+
+\sphinxAtStartPar
 The output of \sphinxcode{\sphinxupquote{dfols.solve}} is an object containing:
 \begin{itemize}
 \item {} 
@@ -556,7 +562,7 @@ For example, to save the results to a JSON file, you may use
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{import} \PYG{n+nn}{json}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{json}
 \PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{n}{soln}\PYG{o}{.}\PYG{n}{to\PYGZus{}dict}\PYG{p}{(}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} convert soln to serializable dict object}
 \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{dfols\PYGZus{}results.json}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{w}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{f}\PYG{p}{:}
     \PYG{n}{json}\PYG{o}{.}\PYG{n}{dump}\PYG{p}{(}\PYG{n}{soln\PYGZus{}dict}\PYG{p}{,} \PYG{n}{f}\PYG{p}{,} \PYG{n}{indent}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
@@ -571,7 +577,7 @@ To load results from a JSON file and convert to a solution object, you may use
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{import} \PYG{n+nn}{json}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{json}
 \PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{k+kc}{None}
 \PYG{k}{with} \PYG{n+nb}{open}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{dfols\PYGZus{}results.json}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)} \PYG{k}{as} \PYG{n}{f}\PYG{p}{:}
     \PYG{n}{soln\PYGZus{}dict} \PYG{o}{=} \PYG{n}{json}\PYG{o}{.}\PYG{n}{load}\PYG{p}{(}\PYG{n}{f}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} read JSON into dict}
@@ -699,12 +705,12 @@ A commonly\sphinxhyphen{}used starting point for testing purposes is \(x_0=(-1.2
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{c+c1}{\PYGZsh{} DFO\PYGZhy{}LS example: minimize the Rosenbrock function}
-\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{c+c1}{\PYGZsh{} Define the objective function}
-\PYG{k}{def} \PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{10.0} \PYG{o}{*} \PYG{p}{(}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{,} \PYG{l+m+mf}{1.0} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Define the starting point}
@@ -795,7 +801,7 @@ We can also get DFO\sphinxhyphen{}LS to print out more detailed information abou
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{import} \PYG{n+nn}{logging}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{logging}
 \PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{INFO}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} ... (call dfols.solve)}
@@ -895,11 +901,11 @@ ball constraint, namely \((x_1-0.7)^2 + (x_2-1.5)^2 \leq 0.4^2\).
 \begin{quote}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{c+c1}{\PYGZsh{} Define the objective function}
-\PYG{k}{def} \PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{10.0} \PYG{o}{*} \PYG{p}{(}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{,} \PYG{l+m+mf}{1.0} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Define the starting point}
@@ -991,8 +997,8 @@ We can use DFO\sphinxhyphen{}LS to solve a simple regularized linear least\sphin
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{c+c1}{\PYGZsh{} DFO\PYGZhy{}LS example: regularized least\PYGZhy{}squares regression}
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{5}  \PYG{c+c1}{\PYGZsh{} dimension of x}
 \PYG{n}{m} \PYG{o}{=} \PYG{l+m+mi}{10}  \PYG{c+c1}{\PYGZsh{} number of residuals, i.e. dimension of b}
@@ -1049,6 +1055,187 @@ We can see that 3 of the 5 components of the solution are very close to zero.
 Note that many LASSO\sphinxhyphen{}type algorithms can produce a solution with many entries being exactly zero, but DFO\sphinxhyphen{}LS can only make them very small (related to how it calculates a new point with trust\sphinxhyphen{}region constraints).
 
 
+\section{Using Initial Evaluation Database}
+\label{\detokenize{userguide:using-initial-evaluation-database}}
+\sphinxAtStartPar
+Since DFO\sphinxhyphen{}LS v1.6, the input \sphinxcode{\sphinxupquote{x0}} may instead be an instance of a \sphinxcode{\sphinxupquote{dfols.EvaluationDatabase}} class containing a collection of previously evaluated
+points and their associated vectors of residuals. One of these points must be flagged as the starting point for the solver (otherwise, the most recently added
+point is used). DFO\sphinxhyphen{}LS will automaticaly select some (but possibly none/all) of the other points to help build its first internal approximation to the objective,
+which reduces the number of times the objective must be evaluated during the initialization phase, before the main algorithm can begin.
+
+\sphinxAtStartPar
+For example, suppose we want to use DFO\sphinxhyphen{}LS to minimize the Watson test function (Problem 20 from \sphinxcite{userguide:mgh1981}). Using the standard starting point, our code looks like
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
+
+\PYG{c+c1}{\PYGZsh{} Define the objective function}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{watson}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}
+    \PYG{n}{m} \PYG{o}{=} \PYG{l+m+mi}{31}
+    \PYG{n}{fvec} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{p}{(}\PYG{n}{m}\PYG{p}{,}\PYG{p}{)}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{)}
+    \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{30}\PYG{p}{)}\PYG{p}{:}  \PYG{c+c1}{\PYGZsh{} i=1,...,29}
+        \PYG{n}{div} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)} \PYG{o}{/} \PYG{l+m+mf}{29.0}
+        \PYG{n}{s1} \PYG{o}{=} \PYG{l+m+mf}{0.0}
+        \PYG{n}{dx} \PYG{o}{=} \PYG{l+m+mf}{1.0}
+        \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n}{n} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{:}  \PYG{c+c1}{\PYGZsh{} j = 2,...,n}
+            \PYG{n}{s1} \PYG{o}{=} \PYG{n}{s1} \PYG{o}{+} \PYG{p}{(}\PYG{n}{j} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{o}{*} \PYG{n}{dx} \PYG{o}{*} \PYG{n}{x}\PYG{p}{[}\PYG{n}{j} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]}
+            \PYG{n}{dx} \PYG{o}{=} \PYG{n}{div} \PYG{o}{*} \PYG{n}{dx}
+        \PYG{n}{s2} \PYG{o}{=} \PYG{l+m+mf}{0.0}
+        \PYG{n}{dx} \PYG{o}{=} \PYG{l+m+mf}{1.0}
+        \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{:}  \PYG{c+c1}{\PYGZsh{} j = 1,...,n}
+            \PYG{n}{s2} \PYG{o}{=} \PYG{n}{s2} \PYG{o}{+} \PYG{n}{dx} \PYG{o}{*} \PYG{n}{x}\PYG{p}{[}\PYG{n}{j} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]}
+            \PYG{n}{dx} \PYG{o}{=} \PYG{n}{div} \PYG{o}{*} \PYG{n}{dx}
+        \PYG{n}{fvec}\PYG{p}{[}\PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{=} \PYG{n}{s1} \PYG{o}{\PYGZhy{}} \PYG{n}{s2} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.0}
+    \PYG{n}{fvec}\PYG{p}{[}\PYG{l+m+mi}{29}\PYG{p}{]} \PYG{o}{=} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{fvec}\PYG{p}{[}\PYG{l+m+mi}{30}\PYG{p}{]} \PYG{o}{=} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.0}
+    \PYG{k}{return} \PYG{n}{fvec}
+
+\PYG{c+c1}{\PYGZsh{} Define the starting point}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{6}
+\PYG{n}{x0} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{(}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,}\PYG{p}{)}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Show extra output to demonstrate the impact of using an initial evaluation database}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{logging}
+\PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{INFO}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{watson}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Display output}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+In the output of this code, we can check that DFO\sphinxhyphen{}LS finds the unique minimizer of this function. We can also see that before the main loop can begin,
+DFO\sphinxhyphen{}LS needs to evaluate the objective at the given starting point, and 6 extra points (since this problem has 6 variables to be minimized):
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+Function eval 1 at point 1 has obj = 16.4308311759923 at x = [...]
+Initialising (coordinate directions)
+Function eval 2 at point 2 has obj = 28.9196967094733 at x = [...]
+Function eval 3 at point 3 has obj = 22.0866904737059 at x = [...]
+Function eval 4 at point 4 has obj = 20.6560889343479 at x = [...]
+Function eval 5 at point 5 has obj = 19.2914312375462 at x = [...]
+Function eval 6 at point 6 has obj = 18.0373781384725 at x = [...]
+Function eval 7 at point 7 has obj = 16.8946356501339 at x = [...]
+Beginning main loop
+Function eval 8 at point 8 has obj = 8.45207899459595 at x = [...]
+Function eval 9 at point 9 has obj = 2.54949692496583 at x = [...]
+...
+Function eval 90 at point 90 has obj = 0.00228767005355292 at x = [...]
+Did a total of 1 run(s)
+
+****** DFO\PYGZhy{}LS Results ******
+Solution xmin = [\PYGZhy{}0.01572509  1.01243487 \PYGZhy{}0.23299162  1.26043004 \PYGZhy{}1.51372886  0.99299641]
+Not showing residual vector because it is too long; check self.resid
+Objective value f(xmin) = 0.002287670054
+Needed 90 objective evaluations (at 90 points)
+Not showing approximate Jacobian because it is too long; check self.jacobian
+Solution xmin was evaluation point 89
+Approximate Jacobian formed using evaluation points [87 85 76 89 86 88 84]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+Instead of this, we can build a database of points where we have previously evaluated the objective, marking one of them as the starting point
+for the algorithm. DFO\sphinxhyphen{}LS will then select some/all (but possibly none) of the other points and use them as initial evaluations, allowing it to begin
+the main loop faster. In general, DFO\sphinxhyphen{}LS will select points that are:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Not too close/far from the selected starting point (relative to the initial trust\sphinxhyphen{}region radius, input \sphinxcode{\sphinxupquote{rhobeg}})
+
+\item {} 
+\sphinxAtStartPar
+Not in similar directions (relative to the selected starting point) to other selected initial points. For example, if several points differ from
+the selected starting point in only the first variable, at most one of these will be selected.
+
+\end{itemize}
+
+\sphinxAtStartPar
+The following code demonstrates how an evaluation database may be constructed and given to DFO\sphinxhyphen{}LS:
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Assuming numpy and dfols already imported, watson function already defined}
+
+\PYG{c+c1}{\PYGZsh{} Build a database of evaluations}
+\PYG{n}{eval\PYGZus{}db} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{EvaluationDatabase}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Define the starting point and add it to the database}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{6}
+\PYG{n}{x0} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{(}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,}\PYG{p}{)}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{)}
+\PYG{n}{eval\PYGZus{}db}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{x0}\PYG{p}{,} \PYG{n}{watson}\PYG{p}{(}\PYG{n}{x0}\PYG{p}{)}\PYG{p}{,} \PYG{n}{make\PYGZus{}starting\PYGZus{}eval}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} make\PYGZus{}starting\PYGZus{}eval=True \PYGZhy{}\PYGZhy{}\PYGZgt{} use this point as the starting point for DFO\PYGZhy{}LS}
+
+\PYG{c+c1}{\PYGZsh{} Add other points to the database}
+\PYG{c+c1}{\PYGZsh{} Note: x0, x1 and x2 are colinear, so at least one of x1 and x2 will not be included in the initial model}
+\PYG{n}{x1} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{(}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,}\PYG{p}{)}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{)}
+\PYG{n}{x2} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,}\PYG{p}{)}\PYG{p}{,} \PYG{n}{dtype}\PYG{o}{=}\PYG{n+nb}{float}\PYG{p}{)}
+\PYG{n}{x3} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{o}{.}\PYG{n}{astype}\PYG{p}{(}\PYG{n+nb}{float}\PYG{p}{)}
+\PYG{n}{eval\PYGZus{}db}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{x1}\PYG{p}{,} \PYG{n}{watson}\PYG{p}{(}\PYG{n}{x1}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{eval\PYGZus{}db}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{x2}\PYG{p}{,} \PYG{n}{watson}\PYG{p}{(}\PYG{n}{x2}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{eval\PYGZus{}db}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{,} \PYG{n}{watson}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Show extra output to demonstrate the impact of using an initial evaluation database}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{logging}
+\PYG{n}{logging}\PYG{o}{.}\PYG{n}{basicConfig}\PYG{p}{(}\PYG{n}{level}\PYG{o}{=}\PYG{n}{logging}\PYG{o}{.}\PYG{n}{INFO}\PYG{p}{,} \PYG{n+nb}{format}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZpc{}(message)s}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Call DFO\PYGZhy{}LS}
+\PYG{n}{soln} \PYG{o}{=} \PYG{n}{dfols}\PYG{o}{.}\PYG{n}{solve}\PYG{p}{(}\PYG{n}{watson}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Display output}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+Running this code, we get the same (correct) answer but using fewer evaluations of the objective in the main call to \sphinxcode{\sphinxupquote{dfols.solve()}}.
+The logging information reveals that \sphinxcode{\sphinxupquote{x0}} was used as the starting point, and \sphinxcode{\sphinxupquote{x1}} and \sphinxcode{\sphinxupquote{x3}} were used to build the initial model.
+This means that only 4 evaluations of the objective were required in the initialization phase.
+\begin{quote}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+Using pre\PYGZhy{}existing evaluation 0 as starting point
+Adding pre\PYGZhy{}existing evaluation 1 to initial model
+Adding pre\PYGZhy{}existing evaluation 3 to initial model
+Function eval 1 at point 1 has obj = 15.1910664616598 at x = [...]
+Function eval 2 at point 2 has obj = 15.2288491702299 at x = [...]
+Function eval 3 at point 3 has obj = 15.228054997542 at x = [...]
+Function eval 4 at point 4 has obj = 15.3011037277481 at x = [...]
+Beginning main loop
+Function eval 5 at point 5 has obj = 13.5524099633802 at x = [...]
+Function eval 6 at point 6 has obj = 7.33371957636104 at x = [...]
+...
+Function eval 81 at point 81 has obj = 0.00228767005355266 at x = [...]
+Did a total of 1 run(s)
+
+****** DFO\PYGZhy{}LS Results ******
+Solution xmin = [\PYGZhy{}0.01572509  1.01243487 \PYGZhy{}0.23299163  1.26043009 \PYGZhy{}1.51372893  0.99299643]
+Not showing residual vector because it is too long; check self.resid
+Objective value f(xmin) = 0.002287670054
+Needed 81 objective evaluations (at 81 points)
+Not showing approximate Jacobian because it is too long; check self.jacobian
+Solution xmin was evaluation point 77
+Approximate Jacobian formed using evaluation points [76 73 79 74 77 75 80]
+Exit flag = 0
+Success: rho has reached rhoend
+****************************
+\end{sphinxVerbatim}
+\end{quote}
+
+\sphinxAtStartPar
+Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.
+
+
 \section{Example: Noisy Objective Evaluation}
 \label{\detokenize{userguide:example-noisy-objective-evaluation}}
 \sphinxAtStartPar
@@ -1057,16 +1244,16 @@ As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{c+c1}{\PYGZsh{} DFO\PYGZhy{}LS example: minimize the noisy Rosenbrock function}
-\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{c+c1}{\PYGZsh{} Define the objective function}
-\PYG{k}{def} \PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{10.0} \PYG{o}{*} \PYG{p}{(}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{,} \PYG{l+m+mf}{1.0} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Modified objective function: add 1\PYGZpc{} Gaussian noise}
-\PYG{k}{def} \PYG{n+nf}{rosenbrock\PYGZus{}noisy}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{rosenbrock\PYGZus{}noisy}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{rosenbrock}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mf}{1.0} \PYG{o}{+} \PYG{l+m+mf}{1e\PYGZhy{}2} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{n}{size}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Define the starting point}
@@ -1087,7 +1274,7 @@ As described in {\hyperref[\detokenize{info::doc}]{\sphinxcrossref{\DUrole{doc}{
 \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{soln}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Compare with a derivative\PYGZhy{}based solver}
-\PYG{k+kn}{import} \PYG{n+nn}{scipy}\PYG{n+nn}{.}\PYG{n+nn}{optimize} \PYG{k}{as} \PYG{n+nn}{opt}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{scipy}\PYG{n+nn}{.}\PYG{n+nn}{optimize}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{opt}
 \PYG{n}{soln} \PYG{o}{=} \PYG{n}{opt}\PYG{o}{.}\PYG{n}{least\PYGZus{}squares}\PYG{p}{(}\PYG{n}{rosenbrock\PYGZus{}noisy}\PYG{p}{,} \PYG{n}{x0}\PYG{p}{)}
 
 \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
@@ -1183,9 +1370,9 @@ The code for this is:
 \PYG{c+c1}{\PYGZsh{} DFO\PYGZhy{}LS example: data fitting problem}
 \PYG{c+c1}{\PYGZsh{} Originally from:}
 \PYG{c+c1}{\PYGZsh{} https://uk.mathworks.com/help/optim/ug/lsqcurvefit.html}
-\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{c+c1}{\PYGZsh{} Observations}
 \PYG{n}{tdata} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mf}{0.9}\PYG{p}{,} \PYG{l+m+mf}{1.5}\PYG{p}{,} \PYG{l+m+mf}{13.8}\PYG{p}{,} \PYG{l+m+mf}{19.8}\PYG{p}{,} \PYG{l+m+mf}{24.1}\PYG{p}{,} \PYG{l+m+mf}{28.2}\PYG{p}{,} \PYG{l+m+mf}{35.2}\PYG{p}{,}
@@ -1194,7 +1381,7 @@ The code for this is:
                   \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.4}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.3}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.5}\PYG{p}{]}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Model is y(t) = x[0] * exp(x[1] * t)}
-\PYG{k}{def} \PYG{n+nf}{prediction\PYGZus{}error}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{prediction\PYGZus{}error}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{ydata} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{*} \PYG{n}{tdata}\PYG{p}{)}
 
 \PYG{c+c1}{\PYGZsh{} Define the starting point}
@@ -1254,7 +1441,7 @@ To generate this plot, run:
 \PYG{n}{ts} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linspace}\PYG{p}{(}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{90.0}\PYG{p}{)}
 \PYG{n}{ys} \PYG{o}{=} \PYG{n}{soln}\PYG{o}{.}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{n}{soln}\PYG{o}{.}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{*} \PYG{n}{ts}\PYG{p}{)}
 
-\PYG{k+kn}{import} \PYG{n+nn}{matplotlib}\PYG{n+nn}{.}\PYG{n+nn}{pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{matplotlib}\PYG{n+nn}{.}\PYG{n+nn}{pyplot}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{plt}
 \PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{)}
 \PYG{n}{ax} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{gca}\PYG{p}{(}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} current axes}
 \PYG{n}{ax}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{ts}\PYG{p}{,} \PYG{n}{ys}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{k\PYGZhy{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Model}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
@@ -1285,15 +1472,15 @@ The code for this is:
 \PYG{c+c1}{\PYGZsh{} Originally from:}
 \PYG{c+c1}{\PYGZsh{} http://support.sas.com/documentation/cdl/en/imlug/66112/HTML/default/viewer.htm\PYGZsh{}imlug\PYGZus{}genstatexpls\PYGZus{}sect004.htm}
 
-\PYG{k+kn}{from} \PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}} \PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
-\PYG{k+kn}{from} \PYG{n+nn}{math} \PYG{k+kn}{import} \PYG{n}{exp}
-\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
-\PYG{k+kn}{import} \PYG{n+nn}{dfols}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{\PYGZus{}\PYGZus{}future\PYGZus{}\PYGZus{}}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{print\PYGZus{}function}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{math}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{exp}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{dfols}
 
 \PYG{c+c1}{\PYGZsh{} Want to solve:}
 \PYG{c+c1}{\PYGZsh{}   x1 + x2 \PYGZhy{} x1*x2 + 2 = 0}
 \PYG{c+c1}{\PYGZsh{}   x1 * exp(\PYGZhy{}x2) \PYGZhy{} 1   = 0}
-\PYG{k}{def} \PYG{n+nf}{nonlinear\PYGZus{}system}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{nonlinear\PYGZus{}system}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{:}
     \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{+} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{*}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{+} \PYG{l+m+mi}{2}\PYG{p}{,}
                      \PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{*} \PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{x}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.0}\PYG{p}{]}\PYG{p}{)}
 
@@ -2073,6 +2260,19 @@ Add ability to save/load results to/from a dictionary
 
 \end{itemize}
 
+
+\section{Version 1.6 (10 Sep 2025)}
+\label{\detokenize{history:version-1-6-10-sep-2025}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Allow use of evaluation database as \sphinxcode{\sphinxupquote{x0}} to reduce number of objective evaluations required in initialization phase
+
+\item {} 
+\sphinxAtStartPar
+When printing solution object, reduce the maximum length of residual/Jacobian vectors that are fully displayed
+
+\end{itemize}
+
 \sphinxstepscope
 
 
@@ -2083,7 +2283,7 @@ Add ability to save/load results to/from a dictionary
 \label{\detokenize{contributors:main-author}}\begin{itemize}
 \item {} 
 \sphinxAtStartPar
-\sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts} (University of Sydney)
+\sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts} (University of Melbourne)
 
 \end{itemize}
 
@@ -2132,6 +2332,9 @@ Yanjun Liu, Kevin H. Lam and Lindon Roberts, \sphinxhref{http://arxiv.org/abs/24
 \bibitem[B2017]{userguide:b2017}
 \sphinxAtStartPar
 Amir Beck, \sphinxhref{https://doi.org/10.1137/1.9781611974997}{First\sphinxhyphen{}Order Methods in Optimization}, SIAM (2017).
+\bibitem[MGH1981]{userguide:mgh1981}
+\sphinxAtStartPar
+Jorge J. More, Burton S. Garbow and Kenneth E. Hillstrom, \sphinxhref{https://doi.org/10.1145/355934.355936}{Testing Unconstrained Optimization Software}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 7:1 (1981), pp. 17\sphinxhyphen{}41.
 \bibitem[CFMR2018]{advanced:cfmr2018}
 \sphinxAtStartPar
 Coralia Cartis, Jan Fiala, Benjamin Marteau and Lindon Roberts, \sphinxhref{https://doi.org/10.1145/3338517}{Improving the Flexibility and Robustness of Model\sphinxhyphen{}Based Derivative\sphinxhyphen{}Free Optimization Solvers}, \sphinxstyleemphasis{ACM Transactions on Mathematical Software}, 45:3 (2019), pp. 32:1\sphinxhyphen{}32:41 {[}\sphinxhref{https://arxiv.org/abs/1804.00154}{preprint}{]}
