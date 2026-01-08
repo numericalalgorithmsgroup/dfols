@@ -1134,7 +1134,7 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
     if exit_info is not None:
         exit_flag = exit_info.flag
         exit_msg = exit_info.message(with_stem=True)
-        results = OptimResults(None, None, None, None, 0, 0, 0, exit_flag, exit_msg)
+        results = OptimResults(None, None, None, None, 0, 0, 0, exit_flag, exit_msg, -1, [])
         return results
 
     # Enforce arbitrary constraint bounds on x0
