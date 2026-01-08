@@ -599,6 +599,22 @@ This means that only 4 evaluations of the objective were required in the initial
 
 Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.
 
+The :code:`dfols.EvaluationDatabase` object contains the following user-exposed methods:
+
+* :code:`eval_db = EvaluationDatabase(eval_list=None, starting_eval=None)` - initialize, optionally including a list of tuples :code:`(x,rx)` with existing evaluation input/output pairs, and an optional index (in 0, ..., :code:`len(eval_list)-1`) to indicate which of these :code:`(x,rx)` pairs should be taken as the starting value. If no starting index is specified, the last provided evaluation :code:`eval_list[-1]` is used.
+* :code:`len(eval_db)` - the number of saved evaluations.
+* :code:`eval_db.append(x, rx, make_starting_eval=False)` - add a new evaluation :code:`(x,rx)` pair to the database, and optionally make this the starting evaluation.
+* :code:`eval_db.set_starting_eval(index)` - set a specific evaluation (currently in the database) to be the starting point (index in 0, ..., :code:`len(eval_db)-1`).
+* :code:`index = eval_db.get_starting_eval_idx()` - return the current index for the starting point to be used by DFO-LS.
+* :code:`x, rx = eval_db.get_eval(index)` - return a particular :code:`(x,rx)` pair saved in the database at a given index (index in 0, ..., :code:`len(eval_db)-1`).
+* :code:`x = eval_db.get_x(index)` - return a particular :code:`x` value saved in the database at a given index (index in 0, ..., :code:`len(eval_db)-1`).
+* :code:`rx = eval_db.get_rx(index)` - return a particular :code:`rx` value saved in the database at a given index (index in 0, ..., :code:`len(eval_db)-1`).
+
+The database object also contains two methods that are for internal DFO-LS use only:
+
+* :code:`eval_db.apply_scaling(scaling_changes)` - apply internal variable scaling to the :code:`x` values saved in the database.
+* :code:`eval_db.select_starting_evals(...)` - determine which saved points should be used in the initial model construction.
+
 Example: Noisy Objective Evaluation
 -----------------------------------
 As described in :doc:`info`, derivative-free algorithms such as DFO-LS are particularly useful when :code:`objfun` has noise. Let's modify the previous example to include random noise in our objective evaluation, and compare it to SciPy's derivative-based solver (the below results came from using SciPy v1.13.0):

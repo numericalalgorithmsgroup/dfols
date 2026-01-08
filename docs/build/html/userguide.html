@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using DFO-LS &mdash; DFO-LS v1.6 documentation</title>
+  <title>Using DFO-LS &mdash; DFO-LS v1.6.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9d552775"></script>
+      <script src="_static/documentation_options.js?v=d6a008b6"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -655,6 +655,22 @@ Success: rho has reached rhoend
 </div>
 </div></blockquote>
 <p>Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">dfols.EvaluationDatabase</span></code> object contains the following user-exposed methods:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">eval_db</span> <span class="pre">=</span> <span class="pre">EvaluationDatabase(eval_list=None,</span> <span class="pre">starting_eval=None)</span></code> - initialize, optionally including a list of tuples <code class="code docutils literal notranslate"><span class="pre">(x,rx)</span></code> with existing evaluation input/output pairs, and an optional index (in 0, …, <code class="code docutils literal notranslate"><span class="pre">len(eval_list)-1</span></code>) to indicate which of these <code class="code docutils literal notranslate"><span class="pre">(x,rx)</span></code> pairs should be taken as the starting value. If no starting index is specified, the last provided evaluation <code class="code docutils literal notranslate"><span class="pre">eval_list[-1]</span></code> is used.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">len(eval_db)</span></code> - the number of saved evaluations.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">eval_db.append(x,</span> <span class="pre">rx,</span> <span class="pre">make_starting_eval=False)</span></code> - add a new evaluation <code class="code docutils literal notranslate"><span class="pre">(x,rx)</span></code> pair to the database, and optionally make this the starting evaluation.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">eval_db.set_starting_eval(index)</span></code> - set a specific evaluation (currently in the database) to be the starting point (index in 0, …, <code class="code docutils literal notranslate"><span class="pre">len(eval_db)-1</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">index</span> <span class="pre">=</span> <span class="pre">eval_db.get_starting_eval_idx()</span></code> - return the current index for the starting point to be used by DFO-LS.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">x,</span> <span class="pre">rx</span> <span class="pre">=</span> <span class="pre">eval_db.get_eval(index)</span></code> - return a particular <code class="code docutils literal notranslate"><span class="pre">(x,rx)</span></code> pair saved in the database at a given index (index in 0, …, <code class="code docutils literal notranslate"><span class="pre">len(eval_db)-1</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">eval_db.get_x(index)</span></code> - return a particular <code class="code docutils literal notranslate"><span class="pre">x</span></code> value saved in the database at a given index (index in 0, …, <code class="code docutils literal notranslate"><span class="pre">len(eval_db)-1</span></code>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">rx</span> <span class="pre">=</span> <span class="pre">eval_db.get_rx(index)</span></code> - return a particular <code class="code docutils literal notranslate"><span class="pre">rx</span></code> value saved in the database at a given index (index in 0, …, <code class="code docutils literal notranslate"><span class="pre">len(eval_db)-1</span></code>).</p></li>
+</ul>
+<p>The database object also contains two methods that are for internal DFO-LS use only:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">eval_db.apply_scaling(scaling_changes)</span></code> - apply internal variable scaling to the <code class="code docutils literal notranslate"><span class="pre">x</span></code> values saved in the database.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">eval_db.select_starting_evals(...)</span></code> - determine which saved points should be used in the initial model construction.</p></li>
+</ul>
 </section>
 <section id="example-noisy-objective-evaluation">
 <h2>Example: Noisy Objective Evaluation<a class="headerlink" href="#example-noisy-objective-evaluation" title="Link to this heading"></a></h2>
@@ -942,7 +958,7 @@ Success: Objective is sufficiently small
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2017-2025, Lindon Roberts.</p>
+    <p>&#169; Copyright 2017-2026, Lindon Roberts.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{10 September 2025}
-\release{1.6}
+\date{08 January 2026}
+\release{1.6.1}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.6
+\sphinxstylestrong{Release:} 1.6.1
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 10 September 2025
+\sphinxstylestrong{Date:} 08 January 2026
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -1235,6 +1235,56 @@ Success: rho has reached rhoend
 \sphinxAtStartPar
 Note that the indices of the evaluation database mentioned in the log refer to the order in which the points were added to the evaluation database.
 
+\sphinxAtStartPar
+The \sphinxcode{\sphinxupquote{dfols.EvaluationDatabase}} object contains the following user\sphinxhyphen{}exposed methods:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{eval\_db = EvaluationDatabase(eval\_list=None, starting\_eval=None)}} \sphinxhyphen{} initialize, optionally including a list of tuples \sphinxcode{\sphinxupquote{(x,rx)}} with existing evaluation input/output pairs, and an optional index (in 0, …, \sphinxcode{\sphinxupquote{len(eval\_list)\sphinxhyphen{}1}}) to indicate which of these \sphinxcode{\sphinxupquote{(x,rx)}} pairs should be taken as the starting value. If no starting index is specified, the last provided evaluation \sphinxcode{\sphinxupquote{eval\_list{[}\sphinxhyphen{}1{]}}} is used.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{len(eval\_db)}} \sphinxhyphen{} the number of saved evaluations.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{eval\_db.append(x, rx, make\_starting\_eval=False)}} \sphinxhyphen{} add a new evaluation \sphinxcode{\sphinxupquote{(x,rx)}} pair to the database, and optionally make this the starting evaluation.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{eval\_db.set\_starting\_eval(index)}} \sphinxhyphen{} set a specific evaluation (currently in the database) to be the starting point (index in 0, …, \sphinxcode{\sphinxupquote{len(eval\_db)\sphinxhyphen{}1}}).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{index = eval\_db.get\_starting\_eval\_idx()}} \sphinxhyphen{} return the current index for the starting point to be used by DFO\sphinxhyphen{}LS.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{x, rx = eval\_db.get\_eval(index)}} \sphinxhyphen{} return a particular \sphinxcode{\sphinxupquote{(x,rx)}} pair saved in the database at a given index (index in 0, …, \sphinxcode{\sphinxupquote{len(eval\_db)\sphinxhyphen{}1}}).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{x = eval\_db.get\_x(index)}} \sphinxhyphen{} return a particular \sphinxcode{\sphinxupquote{x}} value saved in the database at a given index (index in 0, …, \sphinxcode{\sphinxupquote{len(eval\_db)\sphinxhyphen{}1}}).
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{rx = eval\_db.get\_rx(index)}} \sphinxhyphen{} return a particular \sphinxcode{\sphinxupquote{rx}} value saved in the database at a given index (index in 0, …, \sphinxcode{\sphinxupquote{len(eval\_db)\sphinxhyphen{}1}}).
+
+\end{itemize}
+
+\sphinxAtStartPar
+The database object also contains two methods that are for internal DFO\sphinxhyphen{}LS use only:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{eval\_db.apply\_scaling(scaling\_changes)}} \sphinxhyphen{} apply internal variable scaling to the \sphinxcode{\sphinxupquote{x}} values saved in the database.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{eval\_db.select\_starting\_evals(...)}} \sphinxhyphen{} determine which saved points should be used in the initial model construction.
+
+\end{itemize}
+
 
 \section{Example: Noisy Objective Evaluation}
 \label{\detokenize{userguide:example-noisy-objective-evaluation}}
@@ -2270,6 +2320,15 @@ Allow use of evaluation database as \sphinxcode{\sphinxupquote{x0}} to reduce nu
 \item {} 
 \sphinxAtStartPar
 When printing solution object, reduce the maximum length of residual/Jacobian vectors that are fully displayed
+
+\end{itemize}
+
+
+\section{Version 1.6.1 (8 Jan 2026)}
+\label{\detokenize{history:version-1-6-1-8-jan-2026}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Bugfix when returning solution object containing error information from bad inputs (otherwise caused a Python error)
 
 \end{itemize}
 

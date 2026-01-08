@@ -89,3 +89,7 @@ Version 1.6 (10 Sep 2025)
 -------------------------
 * Allow use of evaluation database as :code:`x0` to reduce number of objective evaluations required in initialization phase
 * When printing solution object, reduce the maximum length of residual/Jacobian vectors that are fully displayed
+
+Version 1.6.1 (8 Jan 2026)
+-------------------------
+* Bugfix when returning solution object containing error information from bad inputs (otherwise caused a Python error)

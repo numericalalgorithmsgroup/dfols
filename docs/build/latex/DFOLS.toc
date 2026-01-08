@@ -66,6 +66,7 @@
 \contentsline {section}{\numberline {6.16}Version 1.5.3 (30 Oct 2024)}{37}{section.6.16}%
 \contentsline {section}{\numberline {6.17}Version 1.5.4 (11 Feb 2025)}{37}{section.6.17}%
 \contentsline {section}{\numberline {6.18}Version 1.6 (10 Sep 2025)}{37}{section.6.18}%
+\contentsline {section}{\numberline {6.19}Version 1.6.1 (8 Jan 2026)}{37}{section.6.19}%
 \contentsline {chapter}{\numberline {7}Contributors}{39}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Main author}{39}{section.7.1}%
 \contentsline {section}{\numberline {7.2}Contributors}{39}{section.7.2}%
