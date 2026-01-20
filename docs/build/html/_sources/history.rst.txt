@@ -93,3 +93,9 @@ Version 1.6 (10 Sep 2025)
 Version 1.6.1 (8 Jan 2026)
 -------------------------
 * Bugfix when returning solution object containing error information from bad inputs (otherwise caused a Python error)
+
+Version 1.6.2 (21 Jan 2026)
+-------------------------
+* Using evaluation database with :code:`scaling_within_bounds=True` does not overwrite database values.
+* Bugfix in output logging
+

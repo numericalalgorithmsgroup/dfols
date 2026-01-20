@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{08 January 2026}
-\release{1.6.1}
+\date{20 January 2026}
+\release{1.6.2}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.6.1
+\sphinxstylestrong{Release:} 1.6.2
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 08 January 2026
+\sphinxstylestrong{Date:} 20 January 2026
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -2329,6 +2329,19 @@ When printing solution object, reduce the maximum length of residual/Jacobian ve
 \item {} 
 \sphinxAtStartPar
 Bugfix when returning solution object containing error information from bad inputs (otherwise caused a Python error)
+
+\end{itemize}
+
+
+\section{Version 1.6.2 (21 Jan 2026)}
+\label{\detokenize{history:version-1-6-2-21-jan-2026}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Using evaluation database with \sphinxcode{\sphinxupquote{scaling\_within\_bounds=True}} does not overwrite database values.
+
+\item {} 
+\sphinxAtStartPar
+Bugfix in output logging
 
 \end{itemize}
 
