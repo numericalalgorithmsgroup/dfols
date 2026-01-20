@@ -429,14 +429,14 @@ class Controller(object):
         # Add suitable pre-existing evaluations
         for i, idx in enumerate(perturbation_idx):
             module_logger.info("Adding pre-existing evaluation %g to initial model" % idx)
-            x, rx = eval_database.get_eval(idx)
+            x, rx = eval_database.get_eval(idx, scaled_x=True)
             self.model.change_point(i + 1, x - self.model.xbase, rx, -idx)  # use eval_num = -idx
 
         if new_perturbations is not None:
             num_perturbations = new_perturbations.shape[0]
             module_logger.debug("Adding %g new evaluations to initial model" % num_perturbations)
             for i in range(num_perturbations):
-                new_point = (eval_database.get_x(base_idx) - self.model.xbase) + new_perturbations[i,:]  # new_perturbations[i,:] has length <= self.delta
+                new_point = (eval_database.get_x(base_idx, scaled_x=True) - self.model.xbase) + new_perturbations[i,:]  # new_perturbations[i,:] has length <= self.delta
 
                 # Evaluate objective
                 x = self.model.as_absolute_coordinates(new_point)

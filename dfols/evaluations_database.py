@@ -27,6 +27,9 @@ class EvaluationDatabase(object):
         if starting_eval is not None and 0 <= starting_eval <= len(self._evals):
             self.starting_eval = starting_eval
 
+        # Scaling changes
+        self.scaling_changes = None
+
     def __len__(self):
         return len(self._evals)
 
@@ -50,25 +53,28 @@ class EvaluationDatabase(object):
 
         return self.starting_eval
 
-    def get_eval(self, index):
+    def get_eval(self, index, scaled_x=False):
         # Return (x, rx) for given index
         if 0 <= index < len(self):
-            return self._evals[index][0], self._evals[index][1]
+            x = self._evals[index][0]
+            rx = self._evals[index][1]
+            if scaled_x and self.scaling_changes is not None:
+                return apply_scaling(x, self.scaling_changes), rx
+            else:
+                return x, rx
         else:
             raise IndexError("Invalid index %g given current set of %g evaluations" % (index, len(self)))
 
-    def get_x(self, index):
-        return self.get_eval(index)[0]
+    def get_x(self, index, scaled_x=False):
+        return self.get_eval(index, scaled_x=scaled_x)[0]
 
     def get_rx(self, index):
         return self.get_eval(index)[1]
 
     def apply_scaling(self, scaling_changes):
-        # Adjust all input x values based on scaling
-        if scaling_changes is not None:
-            for i in range(len(self)):
-                x, rx = self._evals[i]
-                self._evals[i] = (apply_scaling(x, scaling_changes), rx)
+        # Save scaling information for on-the-fly use
+        # (don't change self._evals internally as prevents the database being re-used)
+        self.scaling_changes = scaling_changes
         return
 
     def select_starting_evals(self, delta, xl=None, xu=None, projections=[], tol=1e-8,
@@ -85,7 +91,7 @@ class EvaluationDatabase(object):
             raise RuntimeError("Need at least one evaluation to select starting evaluations")
 
         base_idx = self.get_starting_eval_idx()
-        xbase = self.get_x(self.get_starting_eval_idx())
+        xbase = self.get_x(self.get_starting_eval_idx(), scaled_x=True)
         n = len(xbase)
         module_logger.debug("Selecting starting evaluations from existing database")
         module_logger.debug("Have %g evaluations to choose from" % len(self))
@@ -100,7 +106,7 @@ class EvaluationDatabase(object):
         for i in range(n_perturbations + 1):
             if i == base_idx:
                 continue
-            Lfull[row_idx, :] = (self.get_x(i) - xbase) / delta  # Lfull[i,:] = (xi-xbase) / delta
+            Lfull[row_idx, :] = (self.get_x(i, scaled_x=True) - xbase) / delta  # Lfull[i,:] = (xi-xbase) / delta
             row_idx += 1
 
         xdist = np.linalg.norm(Lfull, axis=1)  # xdist[i] = ||Lfull[i,:]|| = ||xi-xbase|| / delta
