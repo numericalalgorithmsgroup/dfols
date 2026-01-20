@@ -966,7 +966,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
     x, rvec, obj, jacmin, nsamples, x_eval_num, jac_eval_nums = control.model.get_final_results()
     if do_logging:
         module_logger.debug("At return from DFO-LS, number of function evals = %i" % nf)
-        module_logger.debug("Smallest objective value = %.15g at x = " % obj + str(x))
+        module_logger.debug("Smallest objective value = %.15g at x = " % obj + str(remove_scaling(x, control.scaling_changes)))
     return x, rvec, obj, jacmin, nsamples, control.nf, control.nx, nruns_so_far, exit_info, diagnostic_info, x_eval_num, jac_eval_nums
 
 
