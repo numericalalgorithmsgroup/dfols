@@ -1122,10 +1122,6 @@ def solve(objfun, x0, h=None, lh=None, prox_uh=None, argsf=(), argsh=(), argspro
                 exit_info = ExitInformation(EXIT_INPUT_ERROR,
                                             "Must have exactly one of additive or multiplicative noise estimate")
 
-    if exit_info is None and params("init.run_in_parallel") and not params("init.random_initial_directions"):
-        exit_info = ExitInformation(EXIT_INPUT_ERROR,
-                                    "Parallel initialisation not yet developed for coordinate initial directions")
-
     if exit_info is None and params("growing.reset_rho"):
         if not params("growing.reset_delta"):
             exit_info = ExitInformation(EXIT_INPUT_ERROR, "Growing: if resetting rho, must also reset delta")
