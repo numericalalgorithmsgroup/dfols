@@ -609,7 +609,13 @@ class Controller(object):
             else:
                 # Solve problem: bounds are sl <= xnew <= su, and ||xnew-xopt|| <= adelt
                 xnew = trsbox_geometry(self.model.xopt(), c, g, np.minimum(self.model.sl, 0.0), np.maximum(self.model.su, 0.0), adelt)
-        except LA.LinAlgError:
+        except LA.LinAlgError as e:
+            # This could come from throw_error_on_nans, in which case we actually want to throw properly
+            if throw_error_on_nans and "NaN encountered in objective evaluations" in str(e):
+                # Re-raise
+                raise np.linalg.LinAlgError(str(e))
+
+            # Otherwise, handle silently
             exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix encountered in geometry step")
             return exit_info  # didn't fix geometry - return & quit
 

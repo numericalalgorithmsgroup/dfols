@@ -431,6 +431,8 @@ class Model(object):
             if np.any(np.isnan(self.fval_v[fval_row_idx, :])):  # check objective values
                 if self.do_logging:
                     module_logger.warning("model.lagrange_gradient: NaNs encountered in objective evaluations, raising error")
+                # WARNING: Do not change this error message without checking controller.geometry_step
+                # error handling/string matching
                 raise np.linalg.LinAlgError("NaN encountered in objective evaluations during Lagrange polynomial construction")
 
         soln = self.solve_geom_system(rhs)
