@@ -107,3 +107,7 @@ Version 1.6.4 (23 Mar 2026)
 -------------------------
 * Add new parameter :code:`restarts.throw_error_on_nans` to customize handling of NaN objective values during restarts
 
+Version 1.6.5 (23 Mar 2026)
+-------------------------
+* Bugfix in handling of :code:`restarts.throw_error_on_nans` from v1.6.4
+
