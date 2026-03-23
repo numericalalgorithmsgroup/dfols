@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Advanced Usage &mdash; DFO-LS v1.6.3 documentation</title>
+  <title>Advanced Usage &mdash; DFO-LS v1.6.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=452006c5"></script>
+      <script src="_static/documentation_options.js?v=8ea99608"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -181,6 +181,7 @@
 <h2>Multiple Restarts<a class="headerlink" href="#multiple-restarts" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">restarts.use_restarts</span></code> - Whether to do restarts when <span class="math notranslate nohighlight">\(\rho_k\)</span> reaches <span class="math notranslate nohighlight">\(\rho_{end}\)</span>, or (optionally) when all points are within noise level of <span class="math notranslate nohighlight">\(f(x_k)\)</span>. Default is <code class="code docutils literal notranslate"><span class="pre">False</span></code> for smooth problems or <code class="code docutils literal notranslate"><span class="pre">True</span></code> for noisy problems.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">restarts.throw_error_on_nans</span></code> - whether or not to throw <code class="code docutils literal notranslate"><span class="pre">numpy.linalg.LinAlgError</span></code> if trying to interpolate to NaN objective values. If <code class="code docutils literal notranslate"><span class="pre">False</span></code>, DFO-LS should terminate gracefully with an error flag. Default is <code class="code docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">restarts.max_unsuccessful_restarts</span></code> - Maximum number of consecutive unsuccessful restarts allowed (i.e.~restarts which did not reduce the objective further). Default is 10.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">restarts.rhoend_scale</span></code> - Factor to reduce <span class="math notranslate nohighlight">\(\rho_{end}\)</span> by with each restart. Default is 1.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">restarts.use_soft_restarts</span></code> - Whether to use soft or hard restarts. Default is <code class="code docutils literal notranslate"><span class="pre">True</span></code>.</p></li>

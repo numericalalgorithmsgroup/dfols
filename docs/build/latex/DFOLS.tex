@@ -64,8 +64,8 @@
 
 
 \title{DFO-LS Documentation}
-\date{15 March 2026}
-\release{1.6.3}
+\date{23 March 2026}
+\release{1.6.4}
 \author{Lindon Roberts}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -86,10 +86,10 @@
 
 
 \sphinxAtStartPar
-\sphinxstylestrong{Release:} 1.6.3
+\sphinxstylestrong{Release:} 1.6.4
 
 \sphinxAtStartPar
-\sphinxstylestrong{Date:} 15 March 2026
+\sphinxstylestrong{Date:} 23 March 2026
 
 \sphinxAtStartPar
 \sphinxstylestrong{Author:} \sphinxhref{https://lindonroberts.github.io/}{Lindon Roberts}
@@ -1768,6 +1768,10 @@ The default values, used if no override is given, in some cases vary depending o
 
 \item {} 
 \sphinxAtStartPar
+\sphinxcode{\sphinxupquote{restarts.throw\_error\_on\_nans}} \sphinxhyphen{} whether or not to throw \sphinxcode{\sphinxupquote{numpy.linalg.LinAlgError}} if trying to interpolate to NaN objective values. If \sphinxcode{\sphinxupquote{False}}, DFO\sphinxhyphen{}LS should terminate gracefully with an error flag. Default is \sphinxcode{\sphinxupquote{False}}.
+
+\item {} 
+\sphinxAtStartPar
 \sphinxcode{\sphinxupquote{restarts.max\_unsuccessful\_restarts}} \sphinxhyphen{} Maximum number of consecutive unsuccessful restarts allowed (i.e.\textasciitilde{}restarts which did not reduce the objective further). Default is 10.
 
 \item {} 
@@ -2351,6 +2355,15 @@ Bugfix in output logging
 \item {} 
 \sphinxAtStartPar
 Allow parameter \sphinxcode{\sphinxupquote{init.run\_in\_parallel=True}} when \sphinxcode{\sphinxupquote{init.random\_initial\_directions=False}}
+
+\end{itemize}
+
+
+\section{Version 1.6.4 (23 Mar 2026)}
+\label{\detokenize{history:version-1-6-4-23-mar-2026}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Add new parameter \sphinxcode{\sphinxupquote{restarts.throw\_error\_on\_nans}} to customize handling of NaN objective values during restarts
 
 \end{itemize}
 

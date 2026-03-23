@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.7.14)  16 MAR 2026 10:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.7.14)  23 MAR 2026 14:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -927,7 +927,7 @@ Underfull \vbox (badness 1226) detected at line 1372
  []
 
 [22] [23]
-<data_fitting.png, id=582, 524.6802pt x 403.2666pt>
+<data_fitting.png, id=587, 524.6802pt x 403.2666pt>
 File: data_fitting.png Graphic file (type png)
 <use data_fitting.png>
 Package pdftex.def Info: data_fitting.png  used on input line 1483.
@@ -968,13 +968,13 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `DFOLS.out' has not changed.
-(rerunfilecheck)             Checksum: FEB0FCC45F958649C927609833953A7C;13114.
+(rerunfilecheck)             Checksum: 1899D0CA833C9A45C70A5D6BB75EF21C;13323.
  ) 
 Here is how much of TeX's memory you used:
- 20170 strings out of 476182
- 358165 string characters out of 5795595
+ 20173 strings out of 476182
+ 358226 string characters out of 5795595
  1997975 words of memory out of 5000000
- 41624 multiletter control sequences out of 15000+600000
+ 41626 multiletter control sequences out of 15000+600000
  615340 words of font info for 83 fonts, out of 8000000 for 9000
  15 hyphenation exceptions out of 8191
  72i,20n,83p,1194b,719s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -997,10 +997,10 @@ hare/texmf/fonts/type1/public/tex-gyre/qtmri.pfb></usr/share/texlive/texmf-dist
 e1/public/txfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/t
 xfonts/t1xtt.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/txfonts/tcxt
 t.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on DFOLS.pdf (47 pages, 400073 bytes).
+Output written on DFOLS.pdf (47 pages, 400446 bytes).
 PDF statistics:
- 830 PDF objects out of 1000 (max. 8388607)
- 738 compressed objects within 8 object streams
- 140 named destinations out of 1000 (max. 500000)
- 626 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 835 PDF objects out of 1000 (max. 8388607)
+ 743 compressed objects within 8 object streams
+ 141 named destinations out of 1000 (max. 500000)
+ 634 words of extra memory for PDF output out of 10000 (max. 10000000)
 
