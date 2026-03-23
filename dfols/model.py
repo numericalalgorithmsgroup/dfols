@@ -413,7 +413,9 @@ class Model(object):
         H = 2.0 * np.dot(J.T, J)
         return g, H
 
-    def lagrange_gradient(self, k=None, factorise_first=True):
+    def lagrange_gradient(self, k=None, factorise_first=True, throw_error_on_nans=False):
+        # throw_error_on_nans: throw an error if the *actual* rhs (i.e. objective values) have nans
+        # (needed for optclim with soft restarts)
         if factorise_first:
             self.factorise_geom_system()
 
@@ -423,6 +425,14 @@ class Model(object):
             rhs[k] = 1.0
         else:
             rhs = np.eye(self.npt())  # find all Lagrange polynomials
+
+        if throw_error_on_nans:
+            fval_row_idx = np.arange(self.npt())  # indices of all rows
+            if np.any(np.isnan(self.fval_v[fval_row_idx, :])):  # check objective values
+                if self.do_logging:
+                    module_logger.warning("model.lagrange_gradient: NaNs encountered in objective evaluations, raising error")
+                raise np.linalg.LinAlgError("NaN encountered in objective evaluations during Lagrange polynomial construction")
+
         soln = self.solve_geom_system(rhs)
 
         if k is not None:

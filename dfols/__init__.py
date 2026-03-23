@@ -39,7 +39,7 @@ alternative licensing.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 # DFO-LS version
-__version__ = '1.6.3'
+__version__ = '1.6.4'
 
 # Main solver & exit flags
 from .solver import *

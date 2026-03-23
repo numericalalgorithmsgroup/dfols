@@ -596,11 +596,11 @@ class Controller(object):
         
         return d, gopt, H, gnew, crvmin
 
-    def geometry_step(self, knew, adelt, number_of_samples, params):
+    def geometry_step(self, knew, adelt, number_of_samples, params, throw_error_on_nans=False):
         if self.do_logging:
             module_logger.debug("Running geometry-fixing step")
         try:
-            c, g = self.model.lagrange_gradient(knew)
+            c, g = self.model.lagrange_gradient(knew, throw_error_on_nans=throw_error_on_nans)
             # c = 1.0 if knew == self.model.kopt else 0.0  # based at xopt, just like d
             if self.model.projections:
                 # Solve problem: use projection onto arbitrary constraints, and ||xnew-xopt|| <= adelt
@@ -707,7 +707,7 @@ class Controller(object):
         exit_info = None
 
         try:
-            cs, gs = self.model.lagrange_gradient(k=None)  # find all Lagrange polynomials for k in range(self.model.npt())
+            cs, gs = self.model.lagrange_gradient(k=None, throw_error_on_nans=False)  # find all Lagrange polynomials for k in range(self.model.npt())
         except LA.LinAlgError:
             exit_info = ExitInformation(EXIT_LINALG_ERROR, "Singular matrix when choosing point to replace")
             return knew, exit_info
@@ -872,9 +872,16 @@ class Controller(object):
             # Determine which point to update (knew)
             knew = closest_points[i]
 
+            throw_error_on_nans = params("restarts.throw_error_on_nans")
+            # If throwing error on NaNs, can safely skip this on the first iteration, since we always force moving the base point
+            # So, the first two evaluations from a restart will always be the same (third may change depending on if
+            # second evaluation becomes the new base/current iterate or not)
+            if params("restarts.soft.move_xk") and i == 0:
+                throw_error_on_nans = False
+
             # Using adelt=delta in fix_geometry (adelt determines the ball to max lagrange poly in altmov)
             # [Only reason actual 'delta' is needed in fix_geometry is for calling nsamples()]
-            exit_info = self.geometry_step(knew, self.delta, number_of_samples, params)
+            exit_info = self.geometry_step(knew, self.delta, number_of_samples, params, throw_error_on_nans=throw_error_on_nans)
             if exit_info is not None:
                 return exit_info
 

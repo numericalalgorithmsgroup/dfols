@@ -67,7 +67,8 @@ Regression Model Management
 
 Multiple Restarts
 -----------------
-* :code:`restarts.use_restarts` - Whether to do restarts when :math:`\rho_k` reaches :math:`\rho_{end}`, or (optionally) when all points are within noise level of :math:`f(x_k)`. Default is :code:`False` for smooth problems or :code:`True` for noisy problems. 
+* :code:`restarts.use_restarts` - Whether to do restarts when :math:`\rho_k` reaches :math:`\rho_{end}`, or (optionally) when all points are within noise level of :math:`f(x_k)`. Default is :code:`False` for smooth problems or :code:`True` for noisy problems.
+* :code:`restarts.throw_error_on_nans` - whether or not to throw :code:`numpy.linalg.LinAlgError` if trying to interpolate to NaN objective values. If :code:`False`, DFO-LS should terminate gracefully with an error flag. Default is :code:`False`.
 * :code:`restarts.max_unsuccessful_restarts` - Maximum number of consecutive unsuccessful restarts allowed (i.e.~restarts which did not reduce the objective further). Default is 10. 
 * :code:`restarts.rhoend_scale` - Factor to reduce :math:`\rho_{end}` by with each restart. Default is 1. 
 * :code:`restarts.use_soft_restarts` - Whether to use soft or hard restarts. Default is :code:`True`. 

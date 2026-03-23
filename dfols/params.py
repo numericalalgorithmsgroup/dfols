@@ -77,6 +77,7 @@ class ParameterList(object):
         self.params["regression.momentum_extra_steps"] = False  # use momentum (False) or geometry (True) to do steps
         # Restarts
         self.params["restarts.use_restarts"] = True if objfun_has_noise else False
+        self.params["restarts.throw_error_on_nans"] = False  # throw numpy.linalg.LinAlgError if building a Lagrange polynomial with nan objective values?
         self.params["restarts.max_unsuccessful_restarts"] = 10
         self.params["restarts.rhoend_scale"] = 1.0  # how much to decrease rhoend by after each restart
         self.params["restarts.use_soft_restarts"] = True
@@ -210,6 +211,8 @@ class ParameterList(object):
         elif key == "regression.momentum_extra_steps":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
         elif key == "restarts.use_restarts":
+            type_str, nonetype_ok, lower, upper = 'bool', False, None, None
+        elif key == "restarts.throw_error_on_nans":
             type_str, nonetype_ok, lower, upper = 'bool', False, None, None
         elif key == "restarts.max_unsuccessful_restarts":
             type_str, nonetype_ok, lower, upper = 'int', False, 0, None

@@ -102,3 +102,8 @@ Version 1.6.2 (21 Jan 2026)
 Version 1.6.3 (16 Mar 2026)
 -------------------------
 * Allow parameter :code:`init.run_in_parallel=True` when :code:`init.random_initial_directions=False`
+
+Version 1.6.4 (23 Mar 2026)
+-------------------------
+* Add new parameter :code:`restarts.throw_error_on_nans` to customize handling of NaN objective values during restarts
+
