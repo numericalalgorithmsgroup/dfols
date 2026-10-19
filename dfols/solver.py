@@ -159,7 +159,7 @@ def solve_main(objfun, x0, argsf, xl, xu, projections, npt, rhobeg, rhoend, maxf
 
     if type(x0) == EvaluationDatabase:
         x0_is_eval_database = True
-        x0_vec = x0.get_x(x0.get_starting_eval_idx())
+        x0_vec = x0.get_x(x0.get_starting_eval_idx(), scaled_x=True)
     else:
         x0_vec = x0
         x0_is_eval_database = False

@@ -229,3 +229,37 @@ class TestStartAtMin(unittest.TestCase):
         xmin = x0.copy()
         soln = dfols.solve(objfun=objfun, x0=x0, user_params={"logging.save_diagnostic_info": True})
         self.assertTrue(array_compare(soln.x, xmin, thresh=1e-8), "Wrong xmin")
+
+class TestDatabaseScaling(unittest.TestCase):
+    # Bug 8/10/26: database + internal scaling gives wrong result
+    # Add the previously-breaking code as a new test
+    def runTest(self):
+        def residual(x):
+            c = np.full(3, -0.1)
+            return np.array(x) - c
+
+        start = np.full(3, 0.0)
+        bounds = (np.full(3, -1.0), np.full(3, 1.0))
+        width = 2.0
+        rhobeg = 0.05
+
+        database = dfols.EvaluationDatabase(
+            (x, residual(x)) for x in [start] + [start + rhobeg * pt for pt in np.eye(3)]
+        )
+        database.set_starting_eval(0)
+        soln = dfols.solve(
+            residual,
+            database,
+            bounds=bounds,
+            rhobeg=rhobeg / width,
+            rhoend=1e-8 / width,
+            scaling_within_bounds=True,
+        )
+
+        xmin = np.full(3, -0.1)
+        rmin = residual(xmin)
+        jmin = np.eye(len(xmin))
+        self.assertTrue(array_compare(soln.x, xmin, thresh=1e-10), "Wrong xmin")
+        self.assertTrue(array_compare(soln.resid, rmin, thresh=1e-10), "Wrong resid")
+        self.assertTrue(array_compare(soln.jacobian, jmin, thresh=1e-10), "Wrong Jacobian")
+        self.assertTrue(abs(soln.obj) < 1e-10, "Wrong fmin")
