@@ -119,10 +119,19 @@ def ctrsbox_sfista(xopt, g, H, projections, delta, h, L_h, prox_uh, argsh=(), ar
     # where Fu(d) := g(d) + h_u(d) and h_u(d) is a 1/u-smooth approximation of h.
     # We assume that h is globally Lipschitz continous with constant L_h,
     # then we can let h_u(d) be the Moreau Envelope M_h_u(d) of h.
-        return g + H @ d + (xopt + d - prox_uh(remove_scaling(xopt + d, scaling_changes), u, *argsprox)) / u
+        # h (and hence its prox) is evaluated in the original, unscaled
+        # coordinates: apply the chain rule factor dx_raw/dx_scaled.
+        z = remove_scaling(xopt + d, scaling_changes)
+        grad_h_u = (z - prox_uh(z, u, *argsprox)) / u
+        if scaling_changes is not None:
+            grad_h_u = grad_h_u * scaling_changes[1]
+        return g + H @ d + grad_h_u
 
-    # Lipschitz constant of gradient_Fu
-    l = k_H + 1 / u 
+    # Lipschitz constant of gradient_Fu (in the scaled coordinates of d:
+    # the chain-rule factor contributes a factor scale^2 to the h_u term)
+    l = k_H + 1 / u
+    if scaling_changes is not None:
+        l = k_H + np.max(np.asarray(scaling_changes[1]) ** 2) / u
 
     # trust region is a ball of radius delta around xopt
     trproj = lambda w: pball(w, xopt, delta)

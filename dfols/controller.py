@@ -536,7 +536,12 @@ class Controller(object):
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
                                 scaling_changes=self.scaling_changes, sfista_iters_scale=params("sfista.max_iters_scaling"))
         else:
-            proj = lambda x: pbox(x, self.model.sl, self.model.su)
+            # model.sl/su are bounds relative to model.xbase, but the step d is
+            # relative to the absolute point xopt(abs_coordinates=True), so the
+            # box must be shifted back into absolute coordinates.
+            box_lo = self.model.sl + self.model.xbase
+            box_hi = self.model.su + self.model.xbase
+            proj = lambda x: pbox(x, box_lo, box_hi)
             d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, np.zeros(H.shape), [proj], 1,
                                 self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol, 
                                 max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
@@ -583,7 +588,11 @@ class Controller(object):
             else:
                 # NOTE: alternative way if using trsbox
                 # d, gnew, crvmin = trsbox(self.model.xopt(), gopt, H, self.model.sl, self.model.su, self.delta)
-                proj = lambda x: pbox(x, self.model.sl, self.model.su)
+                # model.sl/su are relative to model.xbase; see
+                # evaluate_criticality_measure for the shift into absolute coordinates.
+                box_lo = self.model.sl + self.model.xbase
+                box_hi = self.model.su + self.model.xbase
+                proj = lambda x: pbox(x, box_lo, box_hi)
                 d, gnew, crvmin = ctrsbox_sfista(self.model.xopt(abs_coordinates=True), gopt, H, [proj], self.delta,
                                       self.h, self.lh, self.prox_uh, argsh = self.argsh, argsprox=self.argsprox, func_tol=func_tol,
                                       max_iters=params("func_tol.max_iters"), d_max_iters=params("dykstra.max_iters"), d_tol=params("dykstra.d_tol"),
